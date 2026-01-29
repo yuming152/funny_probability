@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>概率实验操作 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- LaTex公式编辑器 -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- 公式编辑器 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .step-active {
+                background-color: #1E40AF;
+                color: white;
+            }
+            .step-completed {
+                background-color: #10B981;
+                color: white;
+            }
+            .step-pending {
+                background-color: #E5E7EB;
+                color: #6B7280;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-robot w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">实验提示</h4>
+                    <p class="text-sm text-gray-600">实验过程中遇到问题可点击右下角AI助手寻求帮助。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">连续抛硬币实验</h2>
+                <p class="text-gray-600">探索频率与概率的关系，验证大数定律。</p>
+            </div>
+
+            <!-- 实验步骤导航 -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-1 flex-1">
+                        <!-- 步骤1：场景设置 -->
+                        <div class="flex flex-col items-center flex-1">
+                            <div class="w-10 h-10 rounded-full step-completed flex items-center justify-center mb-2">
+                                <i class="fa fa-check"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-800">场景设置</span>
+                        </div>
+                        <div class="h-1 flex-1 bg-success"></div>
+                        <!-- 步骤2：参数配置 -->
+                        <div class="flex flex-col items-center flex-1">
+                            <div class="w-10 h-10 rounded-full step-completed flex items-center justify-center mb-2">
+                                <i class="fa fa-check"></i>
+                            </div>
+                            <span class="text-sm font-medium text-gray-800">参数配置</span>
+                        </div>
+                        <div class="h-1 flex-1 bg-success"></div>
+                        <!-- 步骤3：实验执行 -->
+                        <div class="flex flex-col items-center flex-1">
+                            <div class="w-10 h-10 rounded-full step-active flex items-center justify-center mb-2">
+                                <span>3</span>
+                            </div>
+                            <span class="text-sm font-medium text-primary">实验执行</span>
+                        </div>
+                        <div class="h-1 flex-1 bg-gray-200"></div>
+                        <!-- 步骤4：结果分析 -->
+                        <div class="flex flex-col items-center flex-1">
+                            <div class="w-10 h-10 rounded-full step-pending flex items-center justify-center mb-2">
+                                <span>4</span>
+                            </div>
+                            <span class="text-sm font-medium text-gray-500">结果分析</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验执行界面 -->
+            <div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800">步骤3：实验执行</h3>
+                </div>
+                <div class="p-6">
+                    <!-- AI提示 -->
+                    <div class="bg-blue-50 rounded-lg p-4 mb-6 flex items-start">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                            <i class="fa fa-lightbulb-o text-primary"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-primary mb-1">AI提示</h4>
+                            <p class="text-sm text-gray-700">实验过程中，你可以点击"开始实验"按钮进行抛硬币操作，系统会实时记录数据并生成频率分布图表。建议进行多次实验以验证大数定律。</p>
+                        </div>
+                    </div>
+
+                    <!-- 实验操作台 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- 左侧：实验操作区 -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-800 mb-4">实验操作</h4>
+                            <div class="flex flex-col items-center justify-center py-8">
+                                <div class="w-40 h-40 bg-blue-100 rounded-full flex items-center justify-center mb-6 relative">
+                                    <div id="coin" class="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                        <i class="fa fa-dot-circle-o text-4xl text-gray-600"></i>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-4">
+                                    <button id="start-experiment" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 flex items-center">
+                                        <i class="fa fa-play mr-2"></i>开始实验
+                                    </button>
+                                    <button id="stop-experiment" class="px-6 py-3 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 flex items-center">
+                                        <i class="fa fa-stop mr-2"></i>停止实验
+                                    </button>
+                                </div>
+                                <div class="mt-6 text-center">
+                                    <p class="text-sm text-gray-600 mb-2">当前实验次数：<span id="experiment-count" class="font-medium text-primary">0</span></p>
+                                    <p class="text-sm text-gray-600">正面朝上次数：<span id="heads-count" class="font-medium text-primary">0</span></p>
+                                    <p class="text-sm text-gray-600">反面朝上次数：<span id="tails-count" class="font-medium text-primary">0</span></p>
+                                    <p class="text-sm text-gray-600">正面朝上频率：<span id="heads-frequency" class="font-medium text-primary">0%</span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 右侧：频率分布图表 -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-800 mb-4">频率分布图表</h4>
+                            <div class="h-64">
+                                <canvas id="frequency-chart"></canvas>
+                            </div>
+                            <div class="mt-4 flex items-center justify-center space-x-4">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-primary rounded-full mr-2"></div>
+                                    <span class="text-sm text-gray-700">正面频率</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-danger rounded-full mr-2"></div>
+                                    <span class="text-sm text-gray-700">反面频率</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-success rounded-full mr-2"></div>
+                                    <span class="text-sm text-gray-700">理论概率</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 共享操作台 -->
+                    <div class="border border-gray-200 rounded-lg p-4 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-gray-800">共享操作台</h4>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                                    4人在线
+                                </span>
+                                <button class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                                    <i class="fa fa-microphone text-gray-600"></i>
+                                </button>
+                                <button class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                                    <i class="fa fa-comment text-gray-600"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <!-- 小组成员1 -->
+                            <div class="bg-blue-50 rounded-lg p-3 text-center">
+                                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-2">
+                                    <span class="text-primary font-medium text-lg">李</span>
+                                </div>
+                                <div class="text-sm font-medium text-gray-800">李明（你）</div>
+                                <div class="text-xs text-green-600">在线</div>
+                            </div>
+                            <!-- 小组成员2 -->
+                            <div class="bg-pink-50 rounded-lg p-3 text-center">
+                                <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mx-auto mb-2">
+                                    <span class="text-pink-600 font-medium text-lg">王</span>
+                                </div>
+                                <div class="text-sm font-medium text-gray-800">王芳</div>
+                                <div class="text-xs text-green-600">在线</div>
+                            </div>
+                            <!-- 小组成员3 -->
+                            <div class="bg-purple-50 rounded-lg p-3 text-center">
+                                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-2">
+                                    <span class="text-purple-600 font-medium text-lg">赵</span>
+                                </div>
+                                <div class="text-sm font-medium text-gray-800">赵伟</div>
+                                <div class="text-xs text-green-600">在线</div>
+                            </div>
+                            <!-- 小组成员4 -->
+                            <div class="bg-green-50 rounded-lg p-3 text-center">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-2">
+                                    <span class="text-green-600 font-medium text-lg">张</span>
+                                </div>
+                                <div class="text-sm font-medium text-gray-800">张伟</div>
+                                <div class="text-xs text-gray-500">离线</div>
+                            </div>
+                        </div>
+                        <!-- 操作记录 -->
+                        <div class="bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
+                            <h5 class="font-medium text-gray-800 mb-2">操作记录</h5>
+                            <div class="space-y-2">
+                                <div class="text-sm">
+                                    <span class="font-medium text-primary">李明</span>
+                                    <span class="text-gray-600">于 14:20 修改样本量为 1000</span>
+                                </div>
+                                <div class="text-sm">
+                                    <span class="font-medium text-pink-600">王芳</span>
+                                    <span class="text-gray-600">于 14:21 开始实验</span>
+                                </div>
+                                <div class="text-sm">
+                                    <span class="font-medium text-purple-600">赵伟</span>
+                                    <span class="text-gray-600">于 14:25 停止实验</span>
+                                </div>
+                                <div class="text-sm">
+                                    <span class="font-medium text-primary">李明</span>
+                                    <span class="text-gray-600">于 14:30 开始新实验</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 实验控制按钮 -->
+                    <div class="flex justify-between">
+                        <button class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                            上一步
+                        </button>
+                        <button class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            完成实验
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实时数据 -->
+            <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800">实时数据</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-blue-50 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-primary mb-1" id="total-experiments">0</div>
+                            <div class="text-sm text-gray-600">总实验次数</div>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-success mb-1" id="heads-total">0</div>
+                            <div class="text-sm text-gray-600">正面朝上次数</div>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-secondary mb-1" id="tails-total">0</div>
+                            <div class="text-sm text-gray-600">反面朝上次数</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-800 mb-4">实验数据表格</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">实验序号</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">结果</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作人</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="experiment-table-body">
+                                    <!-- 数据将通过JavaScript动态添加 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 概率公式编辑器 -->
+                    <div class="border border-gray-200 rounded-lg p-4 mt-4">
+                        <h4 class="font-bold text-gray-800 mb-4">概率公式编辑</h4>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">常用公式</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="px-3 py-1 bg-blue-50 text-primary rounded-md text-sm hover:bg-blue-100 transition-all-300" data-formula="P(A) = \frac{m}{n}">
+                                    古典概型
+                                </button>
+                                <button class="px-3 py-1 bg-blue-50 text-primary rounded-md text-sm hover:bg-blue-100 transition-all-300" data-formula="P(A) = \lim_{n \to \infty} \frac{n_A}{n}">
+                                    频率定义
+                                </button>
+                                <button class="px-3 py-1 bg-blue-50 text-primary rounded-md text-sm hover:bg-blue-100 transition-all-300" data-formula="E(X) = \sum_{i=1}^{n} x_i P(x_i)">
+                                    期望值
+                                </button>
+                                <button class="px-3 py-1 bg-blue-50 text-primary rounded-md text-sm hover:bg-blue-100 transition-all-300" data-formula="Var(X) = E[(X - \mu)^2]">
+                                    方差
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">公式输入</label>
+                            <input type="text" id="formula-input" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入LaTex公式，例如: P(A) = \frac{m}{n}">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">公式预览</label>
+                            <div id="formula-preview" class="p-4 bg-gray-50 rounded-lg min-h-[60px]">
+                                <!-- 公式预览将在这里显示 -->
+                            </div>
+                        </div>
+                        <button id="render-formula" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            渲染公式
+                        </button>
+                    </div>
+
+                    <!-- 统计图表导出 -->
+                    <div class="border border-gray-200 rounded-lg p-4 mt-4">
+                        <h4 class="font-bold text-gray-800 mb-4">图表导出</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button id="export-png" class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-primary transition-all-300">
+                                <i class="fa fa-file-image-o text-primary text-2xl mb-2"></i>
+                                <span class="text-sm text-gray-700">导出为PNG</span>
+                            </button>
+                            <button id="export-svg" class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-primary transition-all-300">
+                                <i class="fa fa-file-code-o text-primary text-2xl mb-2"></i>
+                                <span class="text-sm text-gray-700">导出为SVG</span>
+                            </button>
+                            <button id="export-data" class="flex flex-col items-center justify-center p-4 border border-gray-200 rounded-lg hover:border-primary transition-all-300">
+                                <i class="fa fa-file-excel-o text-primary text-2xl mb-2"></i>
+                                <span class="text-sm text-gray-700">导出数据</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-robot text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何提高实验准确性？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        大数定律的具体内容是什么？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何分析实验结果？
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 实验数据
+        let experimentCount = 0;
+        let headsCount = 0;
+        let tailsCount = 0;
+        let experimentData = [];
+        let frequencyData = [];
+
+        // 初始化图表
+        let frequencyChart;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化频率分布图表
+            const ctx = document.getElementById('frequency-chart').getContext('2d');
+            frequencyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: '正面频率',
+                            data: [],
+                            borderColor: '#1E40AF',
+                            backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: '反面频率',
+                            data: [],
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: '理论概率',
+                            data: [],
+                            borderColor: '#10B981',
+                            borderDash: [5, 5],
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.1,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value * 100) + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '实验次数'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 开始实验按钮
+            document.getElementById('start-experiment').addEventListener('click', function() {
+                startExperiment();
+            });
+
+            // 停止实验按钮
+            document.getElementById('stop-experiment').addEventListener('click', function() {
+                stopExperiment();
+            });
+
+            // AI助手按钮
+            document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+                const modal = document.getElementById('ai-assistant-modal');
+                modal.classList.toggle('hidden');
+            });
+
+            // 关闭AI助手弹窗
+            document.getElementById('close-ai-modal').addEventListener('click', function() {
+                const modal = document.getElementById('ai-assistant-modal');
+                modal.classList.add('hidden');
+            });
+
+            // 点击其他地方关闭弹窗
+            document.addEventListener('click', function(event) {
+                const btn = document.getElementById('ai-assistant-btn');
+                const modal = document.getElementById('ai-assistant-modal');
+                if (!btn.contains(event.target) && !modal.contains(event.target)) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+            // 公式编辑器功能
+            // 常用公式按钮点击事件
+            document.querySelectorAll('[data-formula]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const formula = this.getAttribute('data-formula');
+                    document.getElementById('formula-input').value = formula;
+                });
+            });
+
+            // 渲染公式按钮点击事件
+            document.getElementById('render-formula').addEventListener('click', function() {
+                const formulaInput = document.getElementById('formula-input');
+                const formulaPreview = document.getElementById('formula-preview');
+                const formula = formulaInput.value;
+
+                if (formula) {
+                    // 使用KaTeX渲染公式
+                    formulaPreview.innerHTML = '';
+                    try {
+                        katex.render(formula, formulaPreview, {
+                            throwOnError: false,
+                            displayMode: true
+                        });
+                    } catch (error) {
+                        formulaPreview.innerHTML = '<p class="text-red-500 text-sm">公式语法错误，请检查输入</p>';
+                    }
+                } else {
+                    formulaPreview.innerHTML = '<p class="text-gray-500 text-sm">请输入公式</p>';
+                }
+            });
+
+            // 图表导出功能
+            document.getElementById('export-png').addEventListener('click', function() {
+                // 模拟导出PNG
+                alert('图表已导出为PNG格式');
+            });
+
+            document.getElementById('export-svg').addEventListener('click', function() {
+                // 模拟导出SVG
+                alert('图表已导出为SVG格式');
+            });
+
+            document.getElementById('export-data').addEventListener('click', function() {
+                // 模拟导出数据
+                alert('实验数据已导出为CSV格式');
+            });
+        });
+
+        // 开始实验
+        function startExperiment() {
+            // 模拟抛硬币实验
+            const interval = setInterval(function() {
+                experimentCount++;
+                
+                // 模拟硬币正反面
+                const isHeads = Math.random() > 0.5;
+                if (isHeads) {
+                    headsCount++;
+                } else {
+                    tailsCount++;
+                }
+
+                // 更新UI
+                document.getElementById('experiment-count').textContent = experimentCount;
+                document.getElementById('heads-count').textContent = headsCount;
+                document.getElementById('tails-count').textContent = tailsCount;
+                document.getElementById('heads-frequency').textContent = ((headsCount / experimentCount) * 100).toFixed(2) + '%';
+                document.getElementById('total-experiments').textContent = experimentCount;
+                document.getElementById('heads-total').textContent = headsCount;
+                document.getElementById('tails-total').textContent = tailsCount;
+
+                // 更新图表数据
+                frequencyChart.data.labels.push(experimentCount);
+                frequencyChart.data.datasets[0].data.push(headsCount / experimentCount);
+                frequencyChart.data.datasets[1].data.push(tailsCount / experimentCount);
+                frequencyChart.data.datasets[2].data.push(0.5);
+                frequencyChart.update();
+
+                // 添加到表格
+                addExperimentToTable(experimentCount, isHeads ? '正面' : '反面', '李明', new Date().toLocaleTimeString());
+
+                // 限制实验次数
+                if (experimentCount >= 100) {
+                    clearInterval(interval);
+                }
+            }, 100);
+
+            // 停止实验函数
+            window.stopExperimentInterval = interval;
+        }
+
+        // 停止实验
+        function stopExperiment() {
+            if (window.stopExperimentInterval) {
+                clearInterval(window.stopExperimentInterval);
+            }
+        }
+
+        // 添加实验数据到表格
+        function addExperimentToTable(experimentNumber, result, operator, time) {
+            const tableBody = document.getElementById('experiment-table-body');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-sm font-medium text-gray-900">${experimentNumber}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${result === '正面' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}">
+                        ${result}
+                    </span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-sm text-gray-900">${operator}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-sm text-gray-500">${time}</span>
+                </td>
+            `;
+            tableBody.appendChild(row);
+
+            // 滚动到底部
+            tableBody.scrollTop = tableBody.scrollHeight;
+        }
+
+        // 模拟硬币动画
+        function animateCoin() {
+            const coin = document.getElementById('coin');
+            coin.classList.add('animate-spin');
+            setTimeout(() => {
+                coin.classList.remove('animate-spin');
+            }, 1000);
+        }
+
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

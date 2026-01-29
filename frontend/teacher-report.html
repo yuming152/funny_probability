@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学情分析与报告 - 教师端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-primary">邮数工坊 - 教师端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button id="ai-assistant-btn" class="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300">
+                        <i class="fa fa-robot"></i>
+                        <span>AI备课助手</span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                            <i class="fa fa-bell text-gray-600"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-primary font-medium">张</span>
+                        </div>
+                        <span class="text-gray-700 font-medium">张老师</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside class="w-64 bg-white shadow-md p-4 flex flex-col">
+            <nav class="space-y-1">
+                <a href="teacher.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-dashboard w-5 text-center"></i>
+                    <span>教学决策中枢</span>
+                </a>
+                <a href="teacher-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验管理</span>
+                </a>
+                <a href="teacher-report.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-bar-chart w-5 text-center"></i>
+                    <span>学情分析报告</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-file-text w-5 text-center"></i>
+                    <span>作业与小测</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>班级管理</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识库</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">点击生成报告按钮，AI将自动整合学生数据生成个性化报告。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间内容区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">学情分析与报告</h2>
+                <p class="text-gray-600">多维度分析学生学习情况，生成个性化学习报告。</p>
+            </div>
+
+            <!-- 班级选择与维度切换 -->
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">选择班级</label>
+                        <select class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option>概率论与数理统计（1班）</option>
+                            <option>概率论与数理统计（2班）</option>
+                            <option>概率论与数理统计（3班）</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">选择时间范围</label>
+                        <select class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option>最近一周</option>
+                            <option>最近一个月</option>
+                            <option>本学期</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">分析维度</label>
+                    <div class="flex space-x-2">
+                        <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            正确率
+                        </button>
+                        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                            完成时长
+                        </button>
+                        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                            错误类型
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 班级整体学情概览 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">班级整体学情概览</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- 平均正确率 -->
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">平均正确率</h4>
+                                <p class="text-3xl font-bold text-primary mt-1">72%</p>
+                            </div>
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-check-circle text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-success flex items-center mr-2">
+                                <i class="fa fa-arrow-up mr-1"></i>4%
+                            </span>
+                            <span class="text-gray-500">较上次分析</span>
+                        </div>
+                    </div>
+
+                    <!-- 知识点掌握率 -->
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">知识点掌握率</h4>
+                                <p class="text-3xl font-bold text-success mt-1">68%</p>
+                            </div>
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-book text-success"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-success flex items-center mr-2">
+                                <i class="fa fa-arrow-up mr-1"></i>3%
+                            </span>
+                            <span class="text-gray-500">较上次分析</span>
+                        </div>
+                    </div>
+
+                    <!-- 实验完成率 -->
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">实验完成率</h4>
+                                <p class="text-3xl font-bold text-secondary mt-1">85%</p>
+                            </div>
+                            <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-flask text-secondary"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-success flex items-center mr-2">
+                                <i class="fa fa-arrow-up mr-1"></i>5%
+                            </span>
+                            <span class="text-gray-500">较上次分析</span>
+                        </div>
+                    </div>
+
+                    <!-- 薄弱知识点数量 -->
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">薄弱知识点</h4>
+                                <p class="text-3xl font-bold text-danger mt-1">3个</p>
+                            </div>
+                            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-exclamation-triangle text-danger"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-danger flex items-center mr-2">
+                                <i class="fa fa-arrow-up mr-1"></i>1个
+                            </span>
+                            <span class="text-gray-500">较上次分析</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 知识点掌握情况图表 -->
+                <div class="bg-white rounded-xl shadow-card p-4">
+                    <h4 class="text-lg font-bold text-gray-800 mb-4">知识点掌握情况</h4>
+                    <div class="h-80">
+                        <canvas id="knowledge-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识点维度分析 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">知识点维度分析</h3>
+                <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                    <div class="p-4 border-b border-gray-200">
+                        <h4 class="font-bold text-gray-800">知识点掌握详情</h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">知识点</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">掌握率</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">薄弱人数</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">高频错误</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">推荐资源</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">古典概型</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                                <div class="bg-success h-2.5 rounded-full" style="width: 68%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-gray-900">68%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            10人
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">样本空间分析错误</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-primary">
+                                            <a href="#" class="hover:underline">古典概型微课</a>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">正态分布</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                                <div class="bg-danger h-2.5 rounded-full" style="width: 45%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-danger">45%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            17人
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">区间概率计算错误</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-primary">
+                                            <a href="#" class="hover:underline">正态分布计算器</a>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">几何概型</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                                <div class="bg-warning h-2.5 rounded-full" style="width: 58%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-warning">58%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            13人
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">区域面积计算错误</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-primary">
+                                            <a href="#" class="hover:underline">几何概型练习</a>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">二项分布</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                                <div class="bg-success h-2.5 rounded-full" style="width: 75%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-success">75%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            8人
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">概率公式应用错误</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-primary">
+                                            <a href="#" class="hover:underline">二项分布练习</a>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">大数定律</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                                <div class="bg-warning h-2.5 rounded-full" style="width: 62%"></div>
+                                            </div>
+                                            <span class="text-sm font-medium text-warning">62%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            12人
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">概念理解错误</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-primary">
+                                            <a href="#" class="hover:underline">大数定律微课</a>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学生个体分析 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">学生个体分析</h3>
+                <div class="bg-white rounded-xl shadow-card p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-gray-800">学生学习情况</h4>
+                        <div class="relative">
+                            <input type="text" placeholder="搜索学生姓名" class="border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学生姓名</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">正确率</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">薄弱知识点</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">实验参与</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最近表现</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-2">
+                                                <span class="text-primary font-medium">李</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">李明</div>
+                                                <div class="text-xs text-gray-500">学号: 2023001</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-success">92%</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">正态分布</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">12次</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center text-sm">
+                                            <span class="text-success flex items-center mr-2">
+                                                <i class="fa fa-arrow-up mr-1"></i>8%
+                                            </span>
+                                            <span class="text-gray-500">进步</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center mr-2">
+                                                <span class="text-pink-600 font-medium">王</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">王芳</div>
+                                                <div class="text-xs text-gray-500">学号: 2023002</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-success">85%</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">正态分布</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">10次</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center text-sm">
+                                            <span class="text-success flex items-center mr-2">
+                                                <i class="fa fa-arrow-up mr-1"></i>5%
+                                            </span>
+                                            <span class="text-gray-500">进步</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                                                <span class="text-green-600 font-medium">张</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">张伟</div>
+                                                <div class="text-xs text-gray-500">学号: 2023003</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-warning">65%</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">正态分布、几何概型</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">6次</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center text-sm">
+                                            <span class="text-danger flex items-center mr-2">
+                                                <i class="fa fa-arrow-down mr-1"></i>3%
+                                            </span>
+                                            <span class="text-gray-500">退步</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center mr-2">
+                                                <span class="text-yellow-600 font-medium">刘</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">刘伟</div>
+                                                <div class="text-xs text-gray-500">学号: 2023004</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-warning">70%</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">几何概型</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">8次</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center text-sm">
+                                            <span class="text-success flex items-center mr-2">
+                                                <i class="fa fa-arrow-up mr-1"></i>2%
+                                            </span>
+                                            <span class="text-gray-500">进步</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center mr-2">
+                                                <span class="text-red-600 font-medium">陈</span>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">陈静</div>
+                                                <div class="text-xs text-gray-500">学号: 2023005</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-danger">58%</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">正态分布、古典概型</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">5次</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center text-sm">
+                                            <span class="text-danger flex items-center mr-2">
+                                                <i class="fa fa-arrow-down mr-1"></i>5%
+                                            </span>
+                                            <span class="text-gray-500">退步</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-primary hover:text-secondary transition-all-300">查看详情</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 个性化报告生成 -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-4">个性化报告生成</h3>
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-4">生成学生学习报告</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">报告类型</label>
+                            <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option>个人学习报告</option>
+                                <option>班级整体报告</option>
+                                <option>知识点专项报告</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">选择学生</label>
+                            <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option>李明 (2023001)</option>
+                                <option>王芳 (2023002)</option>
+                                <option>张伟 (2023003)</option>
+                                <option>刘伟 (2023004)</option>
+                                <option>陈静 (2023005)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">报告内容（可多选）</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="flex items-center">
+                                <input type="checkbox" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <label class="ml-2 text-sm text-gray-700">学习概览</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <label class="ml-2 text-sm text-gray-700">知识点掌握情况</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <label class="ml-2 text-sm text-gray-700">实验参与情况</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <label class="ml-2 text-sm text-gray-700">薄弱点分析</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <label class="ml-2 text-sm text-gray-700">学习建议</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <label class="ml-2 text-sm text-gray-700">家长反馈</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                            取消
+                        </button>
+                        <button class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            <i class="fa fa-file-pdf-o mr-2"></i>生成PDF报告
+                        </button>
+                        <button class="px-6 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                            <i class="fa fa-paper-plane mr-2"></i>推送至家长端
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 知识点掌握情况图表
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('knowledge-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['古典概型', '正态分布', '几何概型', '二项分布', '大数定律'],
+                    datasets: [
+                        {
+                            label: '掌握率',
+                            data: [68, 45, 58, 75, 62],
+                            backgroundColor: [
+                                'rgba(16, 185, 129, 0.7)',
+                                'rgba(239, 68, 68, 0.7)',
+                                'rgba(245, 158, 11, 0.7)',
+                                'rgba(16, 185, 129, 0.7)',
+                                'rgba(245, 158, 11, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(16, 185, 129, 1)',
+                                'rgba(239, 68, 68, 1)',
+                                'rgba(245, 158, 11, 1)',
+                                'rgba(16, 185, 129, 1)',
+                                'rgba(245, 158, 11, 1)'
+                            ],
+                            borderWidth: 1
+                        },
+                        {
+                            label: '目标掌握率',
+                            data: [80, 80, 80, 80, 80],
+                            type: 'line',
+                            borderColor: '#1E40AF',
+                            borderDash: [5, 5],
+                            backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                            tension: 0.1,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

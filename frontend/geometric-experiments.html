@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>几何概型实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .needle-animation {
+                animation: rotate 2s ease-in-out infinite;
+            }
+            @keyframes rotate {
+                0% {
+                    transform: rotate(0deg);
+                }
+                50% {
+                    transform: rotate(90deg);
+                }
+                100% {
+                    transform: rotate(0deg);
+                }
+            }
+            .point-animation {
+                animation: pulse 1s ease-in-out infinite;
+            }
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.2);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="geometric-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>几何概型实验</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">几何概型实验基于几何度量计算概率，通过可视化实验理解连续概率模型。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">几何概型实验</h2>
+                <p class="text-gray-600">探索基于几何度量的概率模型，理解连续概率的计算方法。</p>
+            </div>
+
+            <!-- 实验类型选择 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验类型</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="needle">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-map-pin text-primary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">投针实验</h4>
+                        <p class="text-sm text-gray-600">验证几何概型，计算π值</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="random-number">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-random text-success text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">随机取数实验</h4>
+                        <p class="text-sm text-gray-600">验证均匀分布</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="random-point">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-dot-circle-o text-secondary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">随机取点实验</h4>
+                        <p class="text-sm text-gray-600">平面/空间随机点选择</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="meeting">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-users text-purple-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">相遇问题实验</h4>
+                        <p class="text-sm text-gray-600">两人会面概率计算</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="waiting-time">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-clock-o text-danger text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">等待时间分配实验</h4>
+                        <p class="text-sm text-gray-600">随机时间分配问题</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验操作区 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验操作</h3>
+                
+                <!-- 投针实验 -->
+                <div id="needle-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">投针实验</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">针长度</label>
+                                    <input type="number" id="needle-length" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">平行线间距</label>
+                                    <input type="number" id="line-spacing" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="2">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="needle-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div class="pt-2">
+                                    <button id="needle-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="relative w-full max-w-xs">
+                                        <!-- 平行线 -->
+                                        <div class="absolute top-0 left-0 right-0 h-0.5 bg-gray-400"></div>
+                                        <div class="absolute top-1/4 left-0 right-0 h-0.5 bg-gray-400"></div>
+                                        <div class="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-400"></div>
+                                        <div class="absolute top-3/4 left-0 right-0 h-0.5 bg-gray-400"></div>
+                                        <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-400"></div>
+                                        <!-- 针 -->
+                                        <div id="needle-animation" class="absolute top-1/2 left-1/4 w-16 h-0.5 bg-primary transform -translate-y-1/2"></div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">相交次数</p>
+                                        <p id="needle-intersect" class="text-xl font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">计算π值</p>
+                                        <p id="pi-value" class="text-xl font-bold text-secondary">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h5 class="font-medium text-gray-700 mb-3">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <canvas id="needle-chart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 随机取数实验 -->
+                <div id="random-number-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">随机取数实验</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">最小值</label>
+                                    <input type="number" id="min-value" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">最大值</label>
+                                    <input type="number" id="max-value" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="random-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div class="pt-2">
+                                    <button id="random-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="w-full max-w-xs">
+                                        <div class="h-32 bg-blue-100 rounded-lg relative overflow-hidden">
+                                            <div id="random-points" class="absolute inset-0"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">平均值</p>
+                                        <p id="random-mean" class="text-xl font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">标准差</p>
+                                        <p id="random-std" class="text-xl font-bold text-secondary">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h5 class="font-medium text-gray-700 mb-3">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <canvas id="random-chart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 随机取点实验 -->
+                <div id="random-point-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">随机取点实验</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">维度</label>
+                                    <select id="point-dimension" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="2d">二维平面</option>
+                                        <option value="3d">三维空间</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="point-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div class="pt-2">
+                                    <button id="point-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="w-32 h-32 bg-blue-100 rounded-full relative overflow-hidden">
+                                        <div id="point-animation" class="absolute top-1/2 left-1/2 w-3 h-3 bg-primary rounded-full transform -translate-x-1/2 -translate-y-1/2 point-animation"></div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">单位圆/球内点数</p>
+                                        <p id="point-inside" class="text-xl font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">计算π值</p>
+                                        <p id="point-pi" class="text-xl font-bold text-secondary">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h5 class="font-medium text-gray-700 mb-3">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <canvas id="point-chart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 相遇问题实验 -->
+                <div id="meeting-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">相遇问题实验</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">等待时间（分钟）</label>
+                                    <input type="number" id="meeting-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="30">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">到达时间范围（分钟）</label>
+                                    <input type="number" id="arrival-range" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="60">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="meeting-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div class="pt-2">
+                                    <button id="meeting-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="w-32 h-32 bg-blue-100 relative">
+                                        <div class="absolute top-0 left-0 w-full h-full border border-gray-400"></div>
+                                        <div id="meeting-point1" class="absolute w-3 h-3 bg-primary rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                                        <div id="meeting-point2" class="absolute w-3 h-3 bg-secondary rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">相遇次数</p>
+                                        <p id="meeting-success" class="text-xl font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">相遇概率</p>
+                                        <p id="meeting-probability" class="text-xl font-bold text-secondary">0%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h5 class="font-medium text-gray-700 mb-3">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <canvas id="meeting-chart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 等待时间分配实验 -->
+                <div id="waiting-time-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">等待时间分配实验</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">时间区间长度</label>
+                                    <input type="number" id="time-length" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">事件发生次数</label>
+                                    <input type="number" id="event-count" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="time-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div class="pt-2">
+                                    <button id="time-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="w-full max-w-xs">
+                                        <div class="h-32 bg-blue-100 rounded-lg relative">
+                                            <div id="time-events" class="absolute inset-0"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">平均等待时间</p>
+                                        <p id="time-mean" class="text-xl font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">方差</p>
+                                        <p id="time-variance" class="text-xl font-bold text-secondary">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h5 class="font-medium text-gray-700 mb-3">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <canvas id="time-chart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验数据记录 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验数据记录</h3>
+                <div class="bg-white rounded-xl shadow-card p-4">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">实验时间</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">实验类型</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">参数设置</th>
+                                    <th class="py-3 px-4 text-left text-sm font-medium text-gray-700">结果摘要</th>
+                                </tr>
+                            </thead>
+                            <tbody id="experiment-records">
+                                <tr class="border-b border-gray-200">
+                                    <td class="py-3 px-4 text-sm text-gray-600">2024-01-29 10:00</td>
+                                    <td class="py-3 px-4 text-sm text-gray-600">投针实验</td>
+                                    <td class="py-3 px-4 text-sm text-gray-600">针长1，间距2，1000次</td>
+                                    <td class="py-3 px-4 text-sm text-gray-600">相交次数：318，计算π值：3.1446</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算几何概型的概率？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        投针实验的原理是什么？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何理解均匀分布？
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验类型选择
+        document.querySelectorAll('.experiment-type').forEach(type => {
+            type.addEventListener('click', function() {
+                const experiment = this.getAttribute('data-experiment');
+                // 隐藏所有实验内容
+                document.querySelectorAll('.experiment-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                // 显示选中的实验内容
+                document.getElementById(`${experiment}-experiment`).classList.remove('hidden');
+                // 高亮选中的实验类型
+                document.querySelectorAll('.experiment-type').forEach(t => {
+                    t.classList.remove('ring-2', 'ring-primary');
+                });
+                this.classList.add('ring-2', 'ring-primary');
+            });
+        });
+
+        // 投针实验
+        document.getElementById('needle-start').addEventListener('click', function() {
+            const length = parseFloat(document.getElementById('needle-length').value);
+            const spacing = parseFloat(document.getElementById('line-spacing').value);
+            const times = parseInt(document.getElementById('needle-times').value);
+            
+            // 开始动画
+            const needleAnimation = document.getElementById('needle-animation');
+            needleAnimation.classList.add('needle-animation');
+            
+            // 模拟实验
+            let intersect = 0;
+            
+            for (let i = 0; i < times; i++) {
+                const y = Math.random() * spacing;
+                const theta = Math.random() * Math.PI;
+                const halfLength = length / 2;
+                
+                if (y <= halfLength * Math.sin(theta)) {
+                    intersect++;
+                }
+            }
+            
+            // 计算π值
+            const pi = (2 * length * times) / (spacing * intersect);
+            
+            // 停止动画并显示结果
+            setTimeout(() => {
+                needleAnimation.classList.remove('needle-animation');
+                document.getElementById('needle-intersect').textContent = intersect;
+                document.getElementById('pi-value').textContent = pi.toFixed(4);
+                
+                // 更新图表
+                updateNeedleChart(intersect, times, pi);
+                
+                // 添加记录
+                addExperimentRecord('投针实验', `${times}次, 针长${length}, 间距${spacing}`, `相交：${intersect}次, 计算π值：${pi.toFixed(4)}`);
+            }, 2000);
+        });
+
+        // 随机取数实验
+        document.getElementById('random-start').addEventListener('click', function() {
+            const min = parseFloat(document.getElementById('min-value').value);
+            const max = parseFloat(document.getElementById('max-value').value);
+            const times = parseInt(document.getElementById('random-times').value);
+            
+            // 模拟实验
+            const numbers = [];
+            let sum = 0;
+            
+            for (let i = 0; i < times; i++) {
+                const num = min + Math.random() * (max - min);
+                numbers.push(num);
+                sum += num;
+            }
+            
+            // 计算统计量
+            const mean = sum / times;
+            const variance = numbers.reduce((acc, num) => acc + Math.pow(num - mean, 2), 0) / times;
+            const std = Math.sqrt(variance);
+            
+            // 显示结果
+            document.getElementById('random-mean').textContent = mean.toFixed(4);
+            document.getElementById('random-std').textContent = std.toFixed(4);
+            
+            // 更新图表
+            updateRandomChart(numbers, min, max);
+            
+            // 添加记录
+            addExperimentRecord('随机取数', `${times}次, 范围[${min}, ${max}]`, `平均值：${mean.toFixed(4)}, 标准差：${std.toFixed(4)}`);
+        });
+
+        // 随机取点实验
+        document.getElementById('point-start').addEventListener('click', function() {
+            const dimension = document.getElementById('point-dimension').value;
+            const times = parseInt(document.getElementById('point-times').value);
+            
+            // 模拟实验
+            let inside = 0;
+            
+            for (let i = 0; i < times; i++) {
+                if (dimension === '2d') {
+                    const x = Math.random() * 2 - 1;
+                    const y = Math.random() * 2 - 1;
+                    if (x * x + y * y <= 1) {
+                        inside++;
+                    }
+                } else {
+                    const x = Math.random() * 2 - 1;
+                    const y = Math.random() * 2 - 1;
+                    const z = Math.random() * 2 - 1;
+                    if (x * x + y * y + z * z <= 1) {
+                        inside++;
+                    }
+                }
+            }
+            
+            // 计算π值
+            let pi;
+            if (dimension === '2d') {
+                pi = (4 * inside) / times;
+            } else {
+                pi = (6 * inside) / times;
+            }
+            
+            // 显示结果
+            document.getElementById('point-inside').textContent = inside;
+            document.getElementById('point-pi').textContent = pi.toFixed(4);
+            
+            // 更新图表
+            updatePointChart(inside, times, dimension);
+            
+            // 添加记录
+            addExperimentRecord('随机取点', `${times}次, ${dimension === '2d' ? '二维' : '三维'}`, `单位圆/球内点数：${inside}, 计算π值：${pi.toFixed(4)}`);
+        });
+
+        // 相遇问题实验
+        document.getElementById('meeting-start').addEventListener('click', function() {
+            const waitingTime = parseInt(document.getElementById('meeting-time').value);
+            const arrivalRange = parseInt(document.getElementById('arrival-range').value);
+            const times = parseInt(document.getElementById('meeting-times').value);
+            
+            // 模拟实验
+            let success = 0;
+            
+            for (let i = 0; i < times; i++) {
+                const arrival1 = Math.random() * arrivalRange;
+                const arrival2 = Math.random() * arrivalRange;
+                
+                if (Math.abs(arrival1 - arrival2) <= waitingTime) {
+                    success++;
+                }
+            }
+            
+            // 计算概率
+            const probability = (success / times) * 100;
+            
+            // 显示结果
+            document.getElementById('meeting-success').textContent = success;
+            document.getElementById('meeting-probability').textContent = probability.toFixed(2) + '%';
+            
+            // 更新图表
+            updateMeetingChart(success, times, probability);
+            
+            // 添加记录
+            addExperimentRecord('相遇问题', `${times}次, 等待时间${waitingTime}分钟`, `相遇次数：${success}, 概率：${probability.toFixed(2)}%`);
+        });
+
+        // 等待时间分配实验
+        document.getElementById('time-start').addEventListener('click', function() {
+            const timeLength = parseFloat(document.getElementById('time-length').value);
+            const eventCount = parseInt(document.getElementById('event-count').value);
+            const times = parseInt(document.getElementById('time-times').value);
+            
+            // 模拟实验
+            const waitingTimes = [];
+            
+            for (let i = 0; i < times; i++) {
+                const events = [];
+                for (let j = 0; j < eventCount; j++) {
+                    events.push(Math.random() * timeLength);
+                }
+                events.sort((a, b) => a - b);
+                
+                // 计算等待时间
+                let totalWaitingTime = 0;
+                for (let j = 1; j < events.length; j++) {
+                    totalWaitingTime += events[j] - events[j - 1];
+                }
+                waitingTimes.push(totalWaitingTime / (eventCount - 1));
+            }
+            
+            // 计算统计量
+            const mean = waitingTimes.reduce((sum, time) => sum + time, 0) / waitingTimes.length;
+            const variance = waitingTimes.reduce((acc, time) => acc + Math.pow(time - mean, 2), 0) / waitingTimes.length;
+            
+            // 显示结果
+            document.getElementById('time-mean').textContent = mean.toFixed(4);
+            document.getElementById('time-variance').textContent = variance.toFixed(4);
+            
+            // 更新图表
+            updateTimeChart(waitingTimes);
+            
+            // 添加记录
+            addExperimentRecord('等待时间分配', `${times}次, 时间区间${timeLength}, 事件${eventCount}次`, `平均等待时间：${mean.toFixed(4)}, 方差：${variance.toFixed(4)}`);
+        });
+
+        // 更新投针实验图表
+        function updateNeedleChart(intersect, times, pi) {
+            const ctx = document.getElementById('needle-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['相交', '不相交'],
+                    datasets: [{
+                        label: '次数',
+                        data: [intersect, times - intersect],
+                        backgroundColor: ['#1E40AF', '#9CA3AF'],
+                        borderColor: ['#1E40AF', '#9CA3AF'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `投针实验结果 - 计算π值: ${pi.toFixed(4)}`
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新随机取数实验图表
+        function updateRandomChart(numbers, min, max) {
+            const ctx = document.getElementById('random-chart').getContext('2d');
+            
+            // 生成直方图数据
+            const binCount = 20;
+            const bins = new Array(binCount).fill(0);
+            const binWidth = (max - min) / binCount;
+            
+            numbers.forEach(num => {
+                const binIndex = Math.min(Math.floor((num - min) / binWidth), binCount - 1);
+                bins[binIndex]++;
+            });
+            
+            const binLabels = [];
+            for (let i = 0; i < binCount; i++) {
+                binLabels.push((min + i * binWidth).toFixed(2));
+            }
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: binLabels,
+                    datasets: [{
+                        label: '次数',
+                        data: bins,
+                        backgroundColor: '#1E40AF',
+                        borderColor: '#1E40AF',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '随机取数分布'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新随机取点实验图表
+        function updatePointChart(inside, times, dimension) {
+            const ctx = document.getElementById('point-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['单位圆/球内', '单位圆/球外'],
+                    datasets: [{
+                        data: [inside, times - inside],
+                        backgroundColor: ['#1E40AF', '#9CA3AF'],
+                        borderColor: ['#1E40AF', '#9CA3AF'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `${dimension === '2d' ? '二维' : '三维'}随机取点结果`
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新相遇问题实验图表
+        function updateMeetingChart(success, times, probability) {
+            const ctx = document.getElementById('meeting-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['相遇', '不相遇'],
+                    datasets: [{
+                        label: '次数',
+                        data: [success, times - success],
+                        backgroundColor: ['#1E40AF', '#9CA3AF'],
+                        borderColor: ['#1E40AF', '#9CA3AF'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `相遇概率: ${probability.toFixed(2)}%`
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新等待时间分配实验图表
+        function updateTimeChart(waitingTimes) {
+            const ctx = document.getElementById('time-chart').getContext('2d');
+            
+            // 生成直方图数据
+            const binCount = 20;
+            const minTime = Math.min(...waitingTimes);
+            const maxTime = Math.max(...waitingTimes);
+            const binWidth = (maxTime - minTime) / binCount;
+            
+            const bins = new Array(binCount).fill(0);
+            waitingTimes.forEach(time => {
+                const binIndex = Math.min(Math.floor((time - minTime) / binWidth), binCount - 1);
+                bins[binIndex]++;
+            });
+            
+            const binLabels = [];
+            for (let i = 0; i < binCount; i++) {
+                binLabels.push((minTime + i * binWidth).toFixed(2));
+            }
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: binLabels,
+                    datasets: [{
+                        label: '次数',
+                        data: bins,
+                        backgroundColor: '#1E40AF',
+                        borderColor: '#1E40AF',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '等待时间分布'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 添加实验记录
+        function addExperimentRecord(type, params, result) {
+            const records = document.getElementById('experiment-records');
+            const now = new Date();
+            const time = now.toLocaleString();
+            
+            const row = document.createElement('tr');
+            row.className = 'border-b border-gray-200';
+            row.innerHTML = `
+                <td class="py-3 px-4 text-sm text-gray-600">${time}</td>
+                <td class="py-3 px-4 text-sm text-gray-600">${type}</td>
+                <td class="py-3 px-4 text-sm text-gray-600">${params}</td>
+                <td class="py-3 px-4 text-sm text-gray-600">${result}</td>
+            `;
+            
+            records.insertBefore(row, records.firstChild);
+        }
+    </script>
+</body>
+</html>

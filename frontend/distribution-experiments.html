@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常用分布的验证实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- LaTex公式编辑器 -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- 公式编辑器 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .step-active {
+                background-color: #1E40AF;
+                color: white;
+            }
+            .step-completed {
+                background-color: #10B981;
+                color: white;
+            }
+            .step-pending {
+                background-color: #E5E7EB;
+                color: #6B7280;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-knowledge-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">实验提示</h4>
+                    <p class="text-sm text-gray-600">实验过程中遇到问题可点击右下角AI助手寻求帮助。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">常用分布的验证实验</h2>
+                <p class="text-gray-600">探索各种概率分布的特性和应用场景。</p>
+            </div>
+
+            <!-- 实验类型选择 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验类型</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 离散型分布 -->
+                    <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                        <div class="bg-blue-50 p-4">
+                            <h4 class="font-bold text-primary">离散型分布</h4>
+                        </div>
+                        <div class="p-4">
+                            <div class="space-y-2">
+                                <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm" data-distribution="binomial">
+                                    0-1分布
+                                </button>
+                                <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm" data-distribution="binomial">
+                                    二项分布
+                                </button>
+                                <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm" data-distribution="poisson">
+                                    泊松分布
+                                </button>
+                                <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm" data-distribution="hypergeometric">
+                                    超几何分布
+                                </button>
+                                <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm" data-distribution="geometric">
+                                    几何分布
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 连续型分布 -->
+                    <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                        <div class="bg-orange-50 p-4">
+                            <h4 class="font-bold text-secondary">连续型分布</h4>
+                        </div>
+                        <div class="p-4">
+                            <div class="space-y-2">
+                                <button class="w-full text-left px-3 py-2 bg-orange-50 text-secondary rounded-lg hover:bg-orange-100 transition-all-300 text-sm" data-distribution="uniform">
+                                    均匀分布
+                                </button>
+                                <button class="w-full text-left px-3 py-2 bg-orange-50 text-secondary rounded-lg hover:bg-orange-100 transition-all-300 text-sm" data-distribution="exponential">
+                                    指数分布
+                                </button>
+                                <button class="w-full text-left px-3 py-2 bg-orange-50 text-secondary rounded-lg hover:bg-orange-100 transition-all-300 text-sm" data-distribution="normal">
+                                    正态分布
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分布特性 -->
+                    <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                        <div class="bg-green-50 p-4">
+                            <h4 class="font-bold text-success">分布特性</h4>
+                        </div>
+                        <div class="p-4">
+                            <div class="space-y-2">
+                                <button class="w-full text-left px-3 py-2 bg-green-50 text-success rounded-lg hover:bg-green-100 transition-all-300 text-sm">
+                                    期望值计算
+                                </button>
+                                <button class="w-full text-left px-3 py-2 bg-green-50 text-success rounded-lg hover:bg-green-100 transition-all-300 text-sm">
+                                    方差计算
+                                </button>
+                                <button class="w-full text-left px-3 py-2 bg-green-50 text-success rounded-lg hover:bg-green-100 transition-all-300 text-sm">
+                                    分布拟合
+                                </button>
+                                <button class="w-full text-left px-3 py-2 bg-green-50 text-success rounded-lg hover:bg-green-100 transition-all-300 text-sm">
+                                    分布比较
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验操作区 -->
+            <div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800" id="experiment-title">二项分布实验</h3>
+                </div>
+                <div class="p-6">
+                    <!-- 实验参数设置 -->
+                    <div class="mb-6">
+                        <h4 class="font-bold text-gray-800 mb-4">参数设置</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="parameter-settings">
+                            <!-- 参数设置将根据选择的分布类型动态加载 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">试验次数 (n)</label>
+                                <input type="number" id="n-trials" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="10" min="1" max="1000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">成功概率 (p)</label>
+                                <input type="number" id="success-prob" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.5" min="0" max="1" step="0.01">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">模拟次数</label>
+                                <input type="number" id="simulation-count" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000" min="1" max="10000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 实验执行 -->
+                    <div class="mb-6">
+                        <h4 class="font-bold text-gray-800 mb-4">实验执行</h4>
+                        <div class="flex justify-center mb-6">
+                            <button id="start-simulation" class="px-8 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 flex items-center">
+                                <i class="fa fa-play mr-2"></i>开始模拟
+                            </button>
+                        </div>
+
+                        <!-- 结果可视化 -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- 左侧：分布直方图 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h5 class="font-bold text-gray-800 mb-4">分布直方图</h5>
+                                <div class="h-64">
+                                    <canvas id="distribution-chart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- 右侧：理论与实际比较 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h5 class="font-bold text-gray-800 mb-4">理论与实际比较</h5>
+                                <div class="h-64">
+                                    <canvas id="comparison-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 实验结果 -->
+                    <div class="mb-6">
+                        <h4 class="font-bold text-gray-800 mb-4">实验结果</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="bg-blue-50 rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-primary mb-1" id="mean-value">0</div>
+                                <div class="text-sm text-gray-600">样本均值</div>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-success mb-1" id="variance-value">0</div>
+                                <div class="text-sm text-gray-600">样本方差</div>
+                            </div>
+                            <div class="bg-orange-50 rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-secondary mb-1" id="theoretical-mean">0</div>
+                                <div class="text-sm text-gray-600">理论均值</div>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-4 text-center">
+                                <div class="text-2xl font-bold text-purple-600 mb-1" id="theoretical-variance">0</div>
+                                <div class="text-sm text-gray-600">理论方差</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 概率公式编辑器 -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-800 mb-4">概率公式编辑</h4>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">常用公式</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button class="px-3 py-1 bg-blue-50 text-primary rounded-md text-sm hover:bg-blue-100 transition-all-300" data-formula="P(X=k) = C(n,k) p^k (1-p)^{n-k}">
+                                    二项分布概率质量函数
+                                </button>
+                                <button class="px-3 py-1 bg-blue-50 text-primary rounded-md text-sm hover:bg-blue-100 transition-all-300" data-formula="E(X) = np">
+                                    二项分布期望值
+                                </button>
+                                <button class="px-3 py-1 bg-blue-50 text-primary rounded-md text-sm hover:bg-blue-100 transition-all-300" data-formula="Var(X) = np(1-p)">
+                                    二项分布方差
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">公式输入</label>
+                            <input type="text" id="formula-input" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入LaTex公式，例如: P(X=k) = C(n,k) p^k (1-p)^{n-k}">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">公式预览</label>
+                            <div id="formula-preview" class="p-4 bg-gray-50 rounded-lg min-h-[60px]">
+                                <!-- 公式预览将在这里显示 -->
+                            </div>
+                        </div>
+                        <button id="render-formula" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            渲染公式
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实时数据 -->
+            <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800">实时数据</h3>
+                </div>
+                <div class="p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">成功次数</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">实际频率</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">理论概率</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">误差</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="data-table-body">
+                                <!-- 数据将通过JavaScript动态添加 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        二项分布的应用场景
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算二项分布的概率
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        二项分布与泊松分布的关系
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 实验数据
+        let simulationData = [];
+        let distributionChart, comparisonChart;
+        let currentDistribution = 'binomial'; // 默认二项分布
+
+        // 分布配置
+        const distributions = {
+            'binomial': {
+                title: '二项分布实验',
+                parameters: `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">试验次数 (n)</label>
+                        <input type="number" id="n-trials" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="10" min="1" max="1000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">成功概率 (p)</label>
+                        <input type="number" id="success-prob" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.5" min="0" max="1" step="0.01">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟次数</label>
+                        <input type="number" id="simulation-count" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000" min="1" max="10000">
+                    </div>
+                `
+            },
+            'poisson': {
+                title: '泊松分布实验',
+                parameters: `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">λ值</label>
+                        <input type="number" id="lambda" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="3" min="0.1" max="20" step="0.1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">最大计数</label>
+                        <input type="number" id="max-count" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="15" min="1" max="50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟次数</label>
+                        <input type="number" id="simulation-count" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000" min="1" max="10000">
+                    </div>
+                `
+            },
+            'uniform': {
+                title: '均匀分布实验',
+                parameters: `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">最小值 (a)</label>
+                        <input type="number" id="min-value" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0" min="-100" max="100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">最大值 (b)</label>
+                        <input type="number" id="max-value" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1" min="-100" max="100">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟次数</label>
+                        <input type="number" id="simulation-count" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000" min="1" max="10000">
+                    </div>
+                `
+            },
+            'normal': {
+                title: '正态分布实验',
+                parameters: `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">均值 (μ)</label>
+                        <input type="number" id="mean" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0" min="-10" max="10">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">标准差 (σ)</label>
+                        <input type="number" id="std-dev" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1" min="0.1" max="10">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟次数</label>
+                        <input type="number" id="simulation-count" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000" min="1" max="10000">
+                    </div>
+                `
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化图表
+            initCharts();
+
+            // 分布按钮点击事件
+            document.querySelectorAll('[data-distribution]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const distribution = this.getAttribute('data-distribution');
+                    loadDistribution(distribution);
+                });
+            });
+
+            // 开始模拟按钮
+            document.getElementById('start-simulation').addEventListener('click', function() {
+                startSimulation();
+            });
+
+            // 公式编辑器功能
+            document.querySelectorAll('[data-formula]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const formula = this.getAttribute('data-formula');
+                    document.getElementById('formula-input').value = formula;
+                });
+            });
+
+            // 渲染公式按钮
+            document.getElementById('render-formula').addEventListener('click', function() {
+                const formulaInput = document.getElementById('formula-input');
+                const formulaPreview = document.getElementById('formula-preview');
+                const formula = formulaInput.value;
+
+                if (formula) {
+                    // 使用KaTeX渲染公式
+                    formulaPreview.innerHTML = '';
+                    try {
+                        katex.render(formula, formulaPreview, {
+                            throwOnError: false,
+                            displayMode: true
+                        });
+                    } catch (error) {
+                        formulaPreview.innerHTML = '<p class="text-red-500 text-sm">公式语法错误，请检查输入</p>';
+                    }
+                } else {
+                    formulaPreview.innerHTML = '<p class="text-gray-500 text-sm">请输入公式</p>';
+                }
+            });
+
+            // AI助手按钮
+            document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+                const modal = document.getElementById('ai-assistant-modal');
+                modal.classList.toggle('hidden');
+            });
+
+            // 关闭AI助手弹窗
+            document.getElementById('close-ai-modal').addEventListener('click', function() {
+                const modal = document.getElementById('ai-assistant-modal');
+                modal.classList.add('hidden');
+            });
+
+            // 点击其他地方关闭弹窗
+            document.addEventListener('click', function(event) {
+                const btn = document.getElementById('ai-assistant-btn');
+                const modal = document.getElementById('ai-assistant-modal');
+                if (!btn.contains(event.target) && !modal.contains(event.target)) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+            // 移动端菜单控制
+            document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('hidden');
+            });
+
+            // 点击侧边栏外部关闭侧边栏（移动端）
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                    sidebar.classList.add('hidden');
+                }
+            });
+        });
+
+        // 初始化图表
+        function initCharts() {
+            // 分布直方图
+            const distributionCtx = document.getElementById('distribution-chart').getContext('2d');
+            distributionChart = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '实际频率',
+                        data: [],
+                        backgroundColor: 'rgba(30, 64, 175, 0.7)',
+                        borderColor: 'rgba(30, 64, 175, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: '二项分布直方图'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '成功次数'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 理论与实际比较
+            const comparisonCtx = document.getElementById('comparison-chart').getContext('2d');
+            comparisonChart = new Chart(comparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: '实际频率',
+                            data: [],
+                            backgroundColor: 'rgba(30, 64, 175, 0.7)',
+                            borderColor: 'rgba(30, 64, 175, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: '理论概率',
+                            data: [],
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: '理论与实际比较'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '概率/频率'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '成功次数'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 开始模拟
+        function startSimulation() {
+            const n = parseInt(document.getElementById('n-trials').value);
+            const p = parseFloat(document.getElementById('success-prob').value);
+            const simulationCount = parseInt(document.getElementById('simulation-count').value);
+
+            // 模拟二项分布
+            const results = Array(n + 1).fill(0);
+            let sum = 0;
+
+            for (let i = 0; i < simulationCount; i++) {
+                let successes = 0;
+                for (let j = 0; j < n; j++) {
+                    if (Math.random() < p) {
+                        successes++;
+                    }
+                }
+                results[successes]++;
+                sum += successes;
+            }
+
+            // 计算均值和方差
+            const mean = sum / simulationCount;
+            let variance = 0;
+            for (let i = 0; i < results.length; i++) {
+                variance += Math.pow(i - mean, 2) * results[i];
+            }
+            variance /= simulationCount;
+
+            // 计算理论值
+            const theoreticalMean = n * p;
+            const theoreticalVariance = n * p * (1 - p);
+
+            // 更新UI
+            document.getElementById('mean-value').textContent = mean.toFixed(4);
+            document.getElementById('variance-value').textContent = variance.toFixed(4);
+            document.getElementById('theoretical-mean').textContent = theoreticalMean.toFixed(4);
+            document.getElementById('theoretical-variance').textContent = theoreticalVariance.toFixed(4);
+
+            // 更新图表
+            const labels = Array.from({length: n + 1}, (_, i) => i);
+            const actualFrequencies = results.map(count => count / simulationCount);
+            const theoreticalProbabilities = labels.map(k => binomialProbability(n, k, p));
+
+            distributionChart.data.labels = labels;
+            distributionChart.data.datasets[0].data = actualFrequencies;
+            distributionChart.update();
+
+            comparisonChart.data.labels = labels;
+            comparisonChart.data.datasets[0].data = actualFrequencies;
+            comparisonChart.data.datasets[1].data = theoreticalProbabilities;
+            comparisonChart.update();
+
+            // 更新数据表格
+            updateDataTable(labels, actualFrequencies, theoreticalProbabilities);
+        }
+
+        // 计算二项分布概率
+        function binomialProbability(n, k, p) {
+            return combination(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k);
+        }
+
+        // 计算组合数
+        function combination(n, k) {
+            if (k === 0 || k === n) return 1;
+            if (k > n) return 0;
+            k = Math.min(k, n - k); // 优化计算
+            let result = 1;
+            for (let i = 1; i <= k; i++) {
+                result = result * (n - k + i) / i;
+            }
+            return result;
+        }
+
+        // 更新数据表格
+        function updateDataTable(labels, actualFrequencies, theoreticalProbabilities) {
+            const tableBody = document.getElementById('data-table-body');
+            tableBody.innerHTML = '';
+
+            labels.forEach((k, index) => {
+                const actual = actualFrequencies[index];
+                const theoretical = theoreticalProbabilities[index];
+                const error = Math.abs(actual - theoretical);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="text-sm font-medium text-gray-900">${k}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="text-sm text-gray-900">${actual.toFixed(4)}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="text-sm text-gray-900">${theoretical.toFixed(4)}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="text-sm text-gray-900">${error.toFixed(4)}</span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>

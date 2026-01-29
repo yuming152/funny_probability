@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习成就 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .achievement-card {
+                transition: all 0.3s ease;
+            }
+            .achievement-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .badge {
+                transition: all 0.3s ease;
+            }
+            .badge:hover {
+                transform: scale(1.05);
+            }
+            .progress-bar {
+                transition: width 1s ease-in-out;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">查看你的学习成就和进度，了解自己的学习情况。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间学习成就区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">学习成就</h2>
+                <p class="text-gray-600">查看你的学习进度和获得的成就。</p>
+            </div>
+
+            <!-- 学习概览 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">学习概览</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-medium text-gray-500">总学习时长</h4>
+                            <i class="fa fa-clock-o text-primary"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800">12.5小时</p>
+                        <p class="text-xs text-success mt-1">
+                            <i class="fa fa-arrow-up mr-1"></i> 较上周增加2小时
+                        </p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-medium text-gray-500">完成实验数</h4>
+                            <i class="fa fa-flask text-secondary"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800">18个</p>
+                        <p class="text-xs text-success mt-1">
+                            <i class="fa fa-arrow-up mr-1"></i> 较上周增加3个
+                        </p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-medium text-gray-500">完成习题数</h4>
+                            <i class="fa fa-pencil text-success"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800">45道</p>
+                        <p class="text-xs text-success mt-1">
+                            <i class="fa fa-arrow-up mr-1"></i> 较上周增加8道
+                        </p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-medium text-gray-500">获得徽章</h4>
+                            <i class="fa fa-trophy text-warning"></i>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800">12个</p>
+                        <p class="text-xs text-success mt-1">
+                            <i class="fa fa-arrow-up mr-1"></i> 较上周增加2个
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习进度图表 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">学习进度</h3>
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                        <h4 class="text-md font-bold text-gray-700 mb-4 md:mb-0">最近四周学习情况</h4>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 text-sm bg-primary text-white rounded-md">周</button>
+                            <button class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md">月</button>
+                            <button class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md">年</button>
+                        </div>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="learning-progress-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 获得的徽章 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">获得的徽章</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    <!-- 徽章1 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-star text-primary text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">初学者</h4>
+                        <p class="text-xs text-gray-500">完成第一个实验</p>
+                    </div>
+                    <!-- 徽章2 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-flask text-success text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">实验达人</h4>
+                        <p class="text-xs text-gray-500">完成10个实验</p>
+                    </div>
+                    <!-- 徽章3 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-pencil text-secondary text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">习题能手</h4>
+                        <p class="text-xs text-gray-500">完成30道习题</p>
+                    </div>
+                    <!-- 徽章4 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-lightbulb-o text-purple-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">思考者</h4>
+                        <p class="text-xs text-gray-500">使用AI助手10次</p>
+                    </div>
+                    <!-- 徽章5 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-fire text-danger text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">学习热情</h4>
+                        <p class="text-xs text-gray-500">连续学习7天</p>
+                    </div>
+                    <!-- 徽章6 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-trophy text-warning text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">优胜者</h4>
+                        <p class="text-xs text-gray-500">习题正确率90%以上</p>
+                    </div>
+                    <!-- 徽章7 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-clock-o text-indigo-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">坚持者</h4>
+                        <p class="text-xs text-gray-500">累计学习10小时</p>
+                    </div>
+                    <!-- 徽章8 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-heart text-pink-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">热爱学习</h4>
+                        <p class="text-xs text-gray-500">完成所有古典概型实验</p>
+                    </div>
+                    <!-- 徽章9 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-line-chart text-teal-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">数据分析</h4>
+                        <p class="text-xs text-gray-500">完成所有分布验证实验</p>
+                    </div>
+                    <!-- 徽章10 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-lock text-gray-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">探索者</h4>
+                        <p class="text-xs text-gray-500">完成所有实验类型</p>
+                    </div>
+                    <!-- 徽章11 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-magic text-primary text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">AI助手</h4>
+                        <p class="text-xs text-gray-500">使用AI助手解决复杂问题</p>
+                    </div>
+                    <!-- 徽章12 -->
+                    <div class="badge bg-white rounded-xl shadow-card p-4 text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fa fa-check-circle text-success text-2xl"></i>
+                        </div>
+                        <h4 class="text-sm font-bold text-gray-700">完美主义</h4>
+                        <p class="text-xs text-gray-500">实验参数设置最优</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 成就里程碑 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">成就里程碑</h3>
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <div class="space-y-6">
+                        <!-- 里程碑1 -->
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center">
+                                    <i class="fa fa-flag"></i>
+                                </div>
+                                <div class="h-full w-0.5 bg-gray-200 ml-6 mt-2"></div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold text-gray-700">完成古典概型实验系列</h4>
+                                <p class="text-gray-600 mb-2">成功完成所有7个古典概型实验，掌握了等可能事件的概率计算方法。</p>
+                                <p class="text-sm text-gray-500">2023年10月15日完成</p>
+                            </div>
+                        </div>
+                        <!-- 里程碑2 -->
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 bg-secondary text-white rounded-full flex items-center justify-center">
+                                    <i class="fa fa-trophy"></i>
+                                </div>
+                                <div class="h-full w-0.5 bg-gray-200 ml-6 mt-2"></div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold text-gray-700">习题正确率达到90%</h4>
+                                <p class="text-gray-600 mb-2">在概率理论习题练习中，正确率达到90%以上，展现了扎实的理论基础。</p>
+                                <p class="text-sm text-gray-500">2023年10月20日完成</p>
+                            </div>
+                        </div>
+                        <!-- 里程碑3 -->
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="w-12 h-12 bg-success text-white rounded-full flex items-center justify-center">
+                                    <i class="fa fa-star"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-bold text-gray-700">完成所有实验类型</h4>
+                                <p class="text-gray-600 mb-2">成功完成了所有8个实验类型的学习，全面掌握了概率统计的核心概念。</p>
+                                <p class="text-sm text-gray-500">2023年10月25日完成</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习建议 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">学习建议</h3>
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mt-1">
+                                <i class="fa fa-lightbulb-o text-primary"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-bold text-gray-700 mb-1">继续探索高级实验</h4>
+                                <p class="text-gray-600">尝试完成更多复杂的概率实验，如多维随机变量和极限定理验证实验。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mt-1">
+                                <i class="fa fa-book text-success"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-bold text-gray-700 mb-1">加强理论学习</h4>
+                                <p class="text-gray-600">结合实验结果，复习概率统计的理论知识，加深理解。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mt-1">
+                                <i class="fa fa-users text-secondary"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="font-bold text-gray-700 mb-1">参与讨论</h4>
+                                <p class="text-gray-600">与同学和老师讨论实验结果，分享学习心得，拓展思路。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何提高学习效率？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        推荐适合我的实验
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何理解大数定律？
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 绘制学习进度图表
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('learning-progress-chart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['第1周', '第2周', '第3周', '第4周'],
+                    datasets: [{
+                        label: '学习时长（小时）',
+                        data: [2.5, 3.0, 2.0, 5.0],
+                        borderColor: '#1E40AF',
+                        backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: '完成实验数',
+                        data: [3, 5, 4, 6],
+                        borderColor: '#F97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

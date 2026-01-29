@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮数工坊 - 大模型赋能教学练用一体化互动平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-primary">邮数工坊</h1>
+            </div>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-primary font-medium hover:text-secondary transition-all-300">首页</a>
+                <a href="teacher.html" class="text-gray-600 font-medium hover:text-secondary transition-all-300">教师端</a>
+                <a href="student.html" class="text-gray-600 font-medium hover:text-secondary transition-all-300">学生端</a>
+                <a href="#features" class="text-gray-600 font-medium hover:text-secondary transition-all-300">功能介绍</a>
+                <a href="#about" class="text-gray-600 font-medium hover:text-secondary transition-all-300">关于我们</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <button id="login-btn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                    <i class="fa fa-user-circle mr-2"></i>登录
+                </button>
+                <button class="md:hidden text-gray-600">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="bg-gradient-primary text-white py-20">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">大模型赋能教学练用一体化互动平台</h2>
+            <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">
+                围绕"教师端-学生端"双端场景，以"教-学-练-用"全链路为核心逻辑，
+                确保功能模块对应、数据实时联动，同时兼顾学术严谨性与操作便捷性
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <button class="px-8 py-3 bg-white text-primary font-bold rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-eye mr-2"></i>查看演示
+                </button>
+                <button class="px-8 py-3 bg-secondary text-white font-bold rounded-lg hover:bg-orange-600 transition-all-300">
+                    <i class="fa fa-download mr-2"></i>下载方案
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心功能 -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">核心功能</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 教师端功能 -->
+                <div class="bg-light rounded-xl p-6 shadow-card hover:shadow-lg transition-all-300">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa fa-chalkboard-teacher text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">教师端</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>教学决策中枢</li>
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>概率实验管理</li>
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>学情分析报告</li>
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>AI备课助手</li>
+                    </ul>
+                    <a href="teacher.html" class="mt-6 inline-block text-primary font-medium hover:text-secondary transition-all-300">
+                        查看详情 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+
+                <!-- 学生端功能 -->
+                <div class="bg-light rounded-xl p-6 shadow-card hover:shadow-lg transition-all-300">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa fa-graduation-cap text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">学生端</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>学习路径引导</li>
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>概率实验操作</li>
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>AI学习助手</li>
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>协作交互设计</li>
+                    </ul>
+                    <a href="student.html" class="mt-6 inline-block text-primary font-medium hover:text-secondary transition-all-300">
+                        查看详情 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+
+                <!-- 技术特性 -->
+                <div class="bg-light rounded-xl p-6 shadow-card hover:shadow-lg transition-all-300">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                        <i class="fa fa-cogs text-success text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">技术特性</h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>概率公式编辑器</li>
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>统计图表工具</li>
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>响应速度优化</li>
+                        <li class="flex items-center"><i class="fa fa-check text-success mr-2"></i>安全权限管控</li>
+                    </ul>
+                    <a href="#" class="mt-6 inline-block text-primary font-medium hover:text-secondary transition-all-300">
+                        查看详情 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 设计原则 -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">设计核心原则</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 原则1 -->
+                <div class="bg-white rounded-xl p-6 shadow-card">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-link text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">双端适配，链路闭环</h3>
+                    <p class="text-gray-600">
+                        围绕"教师端-学生端"双端场景，以"教-学-练-用"全链路为核心逻辑，
+                        确保功能模块对应、数据实时联动，同时兼顾学术严谨性与操作便捷性
+                    </p>
+                </div>
+
+                <!-- 原则2 -->
+                <div class="bg-white rounded-xl p-6 shadow-card">
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-layer-group text-secondary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">分层可视化，聚焦核心场景</h3>
+                    <p class="text-gray-600">
+                        针对"概率论与数理统计"学科特性，采用"基础功能+进阶工具+创新实验"的分层视觉设计，
+                        通过色彩分区、模块优先级排序，让核心功能一目了然
+                    </p>
+                </div>
+
+                <!-- 原则3 -->
+                <div class="bg-white rounded-xl p-6 shadow-card">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-magic text-success"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-800">AI赋能隐形化，降低操作门槛</h3>
+                    <p class="text-gray-600">
+                        将大模型能力融入各环节，以"轻交互"形式呈现，避免复杂操作流程。
+                        同时，通过动态演示降低抽象知识理解难度，符合教育产品"辅助而非替代"的设计逻辑
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 底部 -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                            <i class="fa fa-line-chart text-primary text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">邮数工坊</h3>
+                    </div>
+                    <p class="text-gray-400">
+                        大模型赋能教学练用一体化互动平台，
+                        为概率论与数理统计学科提供专业的教学解决方案
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">快速链接</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-all-300">首页</a></li>
+                        <li><a href="teacher.html" class="hover:text-white transition-all-300">教师端</a></li>
+                        <li><a href="student.html" class="hover:text-white transition-all-300">学生端</a></li>
+                        <li><a href="#" class="hover:text-white transition-all-300">功能介绍</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">联系我们</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center"><i class="fa fa-envelope mr-2"></i>contact@youshugongfang.com</li>
+                        <li class="flex items-center"><i class="fa fa-phone mr-2"></i>400-123-4567</li>
+                        <li class="flex items-center"><i class="fa fa-map-marker mr-2"></i>北京市海淀区中关村大街1号</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">关注我们</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary transition-all-300">
+                            <i class="fa fa-weixin"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary transition-all-300">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center hover:bg-primary transition-all-300">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2026 邮数工坊. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 登录弹窗 -->
+    <div id="login-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">登录 / 注册</h3>
+                <button id="close-login" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 登录/注册切换 -->
+            <div class="flex mb-6 border-b border-gray-200">
+                <button id="login-tab" class="flex-1 py-2 text-center font-medium text-primary border-b-2 border-primary">
+                    登录
+                </button>
+                <button id="register-tab" class="flex-1 py-2 text-center font-medium text-gray-500 hover:text-primary">
+                    注册
+                </button>
+            </div>
+            
+            <!-- 登录表单 -->
+            <div id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                    <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入用户名">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">学号/工号</label>
+                    <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入学号或工号">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">身份</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="identity" value="student" class="mr-2" checked>
+                            <span>学生</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="identity" value="teacher" class="mr-2">
+                            <span>教师</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                    <input type="password" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入密码">
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="remember" class="mr-2">
+                        <label for="remember" class="text-sm text-gray-600">记住我</label>
+                    </div>
+                    <a href="#" class="text-sm text-primary hover:text-secondary transition-all-300">忘记密码？</a>
+                </div>
+                <button id="login-submit" class="w-full bg-primary text-white rounded-lg px-4 py-3 hover:bg-blue-700 transition-all-300 font-medium">
+                    登录
+                </button>
+            </div>
+            
+            <!-- 注册表单 -->
+            <div id="register-form" class="hidden space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                    <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入用户名">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">学号/工号</label>
+                    <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入学号或工号">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">身份</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="reg-identity" value="student" class="mr-2" checked>
+                            <span>学生</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="reg-identity" value="teacher" class="mr-2">
+                            <span>教师</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                    <input type="password" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入密码">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">确认密码</label>
+                    <input type="password" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请确认密码">
+                </div>
+                <button id="register-submit" class="w-full bg-primary text-white rounded-lg px-4 py-3 hover:bg-blue-700 transition-all-300 font-medium">
+                    注册
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 登录弹窗控制
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginModal = document.getElementById('login-modal');
+            const loginBtn = document.getElementById('login-btn');
+            const closeLogin = document.getElementById('close-login');
+            const loginTab = document.getElementById('login-tab');
+            const registerTab = document.getElementById('register-tab');
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const loginSubmit = document.getElementById('login-submit');
+            
+            // 打开登录弹窗
+            loginBtn.addEventListener('click', function() {
+                loginModal.classList.remove('hidden');
+            });
+            
+            // 关闭登录弹窗
+            closeLogin.addEventListener('click', function() {
+                loginModal.classList.add('hidden');
+            });
+            
+            // 点击弹窗外部关闭
+            loginModal.addEventListener('click', function(event) {
+                if (event.target === loginModal) {
+                    loginModal.classList.add('hidden');
+                }
+            });
+            
+            // 切换到登录标签
+            loginTab.addEventListener('click', function() {
+                loginTab.classList.add('text-primary', 'border-b-2', 'border-primary');
+                loginTab.classList.remove('text-gray-500');
+                registerTab.classList.remove('text-primary', 'border-b-2', 'border-primary');
+                registerTab.classList.add('text-gray-500');
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+            });
+            
+            // 切换到注册标签
+            registerTab.addEventListener('click', function() {
+                registerTab.classList.add('text-primary', 'border-b-2', 'border-primary');
+                registerTab.classList.remove('text-gray-500');
+                loginTab.classList.remove('text-primary', 'border-b-2', 'border-primary');
+                loginTab.classList.add('text-gray-500');
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            });
+            
+            // 登录提交
+            loginSubmit.addEventListener('click', function() {
+                // 模拟登录成功
+                alert('登录成功！');
+                loginModal.classList.add('hidden');
+                // 这里可以添加登录后的逻辑，比如显示用户信息
+            });
+        });
+    </script>
+</body>
+</html>

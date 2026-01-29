@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI学习助手 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">AI学习助手可以帮助你解决学习中的问题，提供个性化学习建议。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间AI助手功能区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">AI学习助手</h2>
+                <p class="text-gray-600">智能解答你的学习问题，提供个性化学习建议。</p>
+            </div>
+
+            <!-- 场景化答疑入口 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">场景化答疑</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 实验答疑 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-flask text-primary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">实验答疑</h4>
+                        <p class="text-sm text-gray-600 mb-4">解决概率实验中的操作问题和理论疑问</p>
+                        <button class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            开始提问
+                        </button>
+                    </div>
+
+                    <!-- 习题答疑 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-pencil text-success text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">习题答疑</h4>
+                        <p class="text-sm text-gray-600 mb-4">解析习题难点，提供解题思路和方法</p>
+                        <button class="w-full px-4 py-2 bg-success text-white rounded-lg hover:bg-green-700 transition-all-300">
+                            开始提问
+                        </button>
+                    </div>
+
+                    <!-- 复习答疑 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-book text-secondary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">复习答疑</h4>
+                        <p class="text-sm text-gray-600 mb-4">梳理知识点，巩固学习成果</p>
+                        <button class="w-full px-4 py-2 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                            开始提问
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 智能问答界面 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">智能问答</h3>
+                <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                    <div class="p-4 border-b border-gray-200">
+                        <h4 class="font-bold text-gray-800">AI答疑室</h4>
+                    </div>
+                    <div class="p-6">
+                        <!-- 聊天记录 -->
+                        <div class="mb-6 max-h-96 overflow-y-auto space-y-4" id="chat-messages">
+                            <!-- AI消息 -->
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                    <i class="fa fa-magic text-primary"></i>
+                                </div>
+                                <div class="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                                    <p class="text-gray-800">你好，李明！有什么我可以帮助你的吗？你可以问我关于概率论与数理统计的问题，或者让我帮你分析学习情况。</p>
+                                </div>
+                            </div>
+
+                            <!-- 用户消息 -->
+                            <div class="flex items-start justify-end">
+                                <div class="bg-primary text-white rounded-lg p-3 max-w-[80%]">
+                                    <p>什么是大数定律？它在实际生活中有什么应用？</p>
+                                </div>
+                                <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center ml-3 flex-shrink-0">
+                                    <i class="fa fa-user text-gray-600"></i>
+                                </div>
+                            </div>
+
+                            <!-- AI消息 -->
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                    <i class="fa fa-magic text-primary"></i>
+                                </div>
+                                <div class="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                                    <p class="text-gray-800 mb-2"><strong>大数定律</strong>是概率论中的一个重要定理，它指出：当随机试验次数足够多时，事件发生的频率会趋近于其理论概率。</p>
+                                    <p class="text-gray-800 mb-2">大数定律分为<strong>弱大数定律</strong>和<strong>强大数定律</strong>：</p>
+                                    <ul class="list-disc pl-5 text-gray-800 mb-2">
+                                        <li>弱大数定律：随着试验次数增加，频率与概率的差异可以任意小的概率趋近于1</li>
+                                        <li>强大数定律：随着试验次数增加，频率几乎必然趋近于概率</li>
+                                    </ul>
+                                    <p class="text-gray-800 mb-2"><strong>实际应用</strong>：</p>
+                                    <ul class="list-disc pl-5 text-gray-800">
+                                        <li>保险业：通过大量保单分散风险</li>
+                                        <li>统计学：通过样本估计总体参数</li>
+                                        <li>质量管理：通过抽样检验产品质量</li>
+                                        <li>金融投资：通过多元化投资降低风险</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 提问输入区 -->
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <div class="flex border-b border-gray-200">
+                                <button class="flex-1 py-2 px-4 text-center border-r border-gray-200 hover:bg-gray-50 transition-all-300">
+                                    <i class="fa fa-font mr-2"></i>文字
+                                </button>
+                                <button class="flex-1 py-2 px-4 text-center border-r border-gray-200 hover:bg-gray-50 transition-all-300">
+                                    <i class="fa fa-square-root-o mr-2"></i>公式
+                                </button>
+                                <button class="flex-1 py-2 px-4 text-center hover:bg-gray-50 transition-all-300">
+                                    <i class="fa fa-image mr-2"></i>图片
+                                </button>
+                            </div>
+                            <div class="flex">
+                                <input type="text" class="flex-1 border-none px-4 py-3 focus:outline-none" placeholder="输入你的问题...">
+                                <button class="bg-primary text-white px-6 py-3 hover:bg-blue-700 transition-all-300">
+                                    <i class="fa fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 个性化学习推荐 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">个性化学习推荐</h3>
+                <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                    <div class="p-4 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold text-gray-800">基于你的薄弱点推荐</h4>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+                                正态分布薄弱
+                            </span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- 微课视频 -->
+                            <div class="bg-blue-50 rounded-lg p-4">
+                                <div class="aspect-w-16 aspect-h-9 mb-3 rounded-lg overflow-hidden bg-blue-100">
+                                    <div class="flex items-center justify-center h-full">
+                                        <i class="fa fa-play-circle text-4xl text-primary"></i>
+                                    </div>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">正态分布详解</h4>
+                                <div class="flex items-center text-sm text-gray-600 mb-3">
+                                    <i class="fa fa-clock-o mr-2"></i>
+                                    <span>5分钟</span>
+                                </div>
+                                <button class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                                    观看视频
+                                </button>
+                            </div>
+
+                            <!-- 基础题 -->
+                            <div class="bg-green-50 rounded-lg p-4">
+                                <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                    <i class="fa fa-check-square-o text-success text-3xl"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">正态分布基础题</h4>
+                                <div class="flex items-center text-sm text-gray-600 mb-3">
+                                    <i class="fa fa-list-ol mr-2"></i>
+                                    <span>2道题</span>
+                                </div>
+                                <button class="w-full px-4 py-2 bg-success text-white rounded-lg hover:bg-green-700 transition-all-300">
+                                    开始练习
+                                </button>
+                            </div>
+
+                            <!-- 进阶题 -->
+                            <div class="bg-orange-50 rounded-lg p-4">
+                                <div class="w-16 h-16 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                                    <i class="fa fa-star text-secondary text-3xl"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">正态分布进阶题</h4>
+                                <div class="flex items-center text-sm text-gray-600 mb-3">
+                                    <i class="fa fa-list-ol mr-2"></i>
+                                    <span>1道题</span>
+                                </div>
+                                <button class="w-full px-4 py-2 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                                    开始练习
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                    <i class="fa fa-lightbulb-o text-primary"></i>
+                                </div>
+                                <div>
+                                    <h5 class="font-medium text-gray-800 mb-1">学习建议</h5>
+                                    <p class="text-sm text-gray-600">根据你的学习情况，建议你先观看正态分布的微课视频，然后完成基础题，最后尝试进阶题。预计总耗时约15分钟。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习历史 -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-4">学习历史</h3>
+                <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                    <div class="p-4 border-b border-gray-200">
+                        <h4 class="font-bold text-gray-800">最近的AI交互记录</h4>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <!-- 历史记录1 -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-all-300">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h5 class="font-medium text-gray-800">大数定律的概念和应用</h5>
+                                    <span class="text-sm text-gray-500">今天 14:30</span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-3">探讨了大数定律的定义、分类及其在实际生活中的应用场景。</p>
+                                <button class="text-primary hover:text-secondary transition-all-300 text-sm">
+                                    查看详情
+                                </button>
+                            </div>
+
+                            <!-- 历史记录2 -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-all-300">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h5 class="font-medium text-gray-800">正态分布的计算方法</h5>
+                                    <span class="text-sm text-gray-500">昨天 16:45</span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-3">学习了正态分布的概率密度函数、标准正态分布表的使用以及常见概率计算方法。</p>
+                                <button class="text-primary hover:text-secondary transition-all-300 text-sm">
+                                    查看详情
+                                </button>
+                            </div>
+
+                            <!-- 历史记录3 -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-all-300">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h5 class="font-medium text-gray-800">古典概型的样本空间分析</h5>
+                                    <span class="text-sm text-gray-500">前天 10:20</span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-3">讨论了古典概型中样本空间的正确分析方法，解决了几个典型例题。</p>
+                                <button class="text-primary hover:text-secondary transition-all-300 text-sm">
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button class="text-primary hover:text-secondary transition-all-300">
+                                查看更多历史记录
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 悬浮AI助手按钮 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="floating-ai-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- 悬浮AI助手弹窗 -->
+        <div id="floating-ai-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-floating-ai" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        讲解正态分布的概念
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何完成抛硬币实验？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        推荐正态分布的学习资源
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 悬浮AI助手
+        document.addEventListener('DOMContentLoaded', function() {
+            const floatingAiBtn = document.getElementById('floating-ai-btn');
+            const floatingAiModal = document.getElementById('floating-ai-modal');
+            const closeFloatingAi = document.getElementById('close-floating-ai');
+
+            floatingAiBtn.addEventListener('click', function() {
+                floatingAiModal.classList.toggle('hidden');
+            });
+
+            closeFloatingAi.addEventListener('click', function() {
+                floatingAiModal.classList.add('hidden');
+            });
+
+            // 点击其他地方关闭弹窗
+            document.addEventListener('click', function(event) {
+                if (!floatingAiBtn.contains(event.target) && !floatingAiModal.contains(event.target)) {
+                    floatingAiModal.classList.add('hidden');
+                }
+            });
+        });
+
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伯努利型实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- LaTex公式编辑器 -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- 公式编辑器 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .step-active {
+                background-color: #1E40AF;
+                color: white;
+            }
+            .step-completed {
+                background-color: #10B981;
+                color: white;
+            }
+            .step-pending {
+                background-color: #E5E7EB;
+                color: #6B7280;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .animate-spin {
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+            .animate-bounce {
+                animation: bounce 2s infinite;
+            }
+            @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% {
+                    transform: translateY(0);
+                }
+                40% {
+                    transform: translateY(-20px);
+                }
+                60% {
+                    transform: translateY(-10px);
+                }
+            }
+            .animate-pulse {
+                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            @keyframes pulse {
+                0%, 100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.5s ease-in;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="bernoulli-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>伯努利型实验</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">实验提示</h4>
+                    <p class="text-sm text-gray-600">伯努利型实验基于独立重复试验，通过实验验证二项分布、几何分布等概率模型。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">伯努利型实验</h2>
+                <p class="text-gray-600">探索独立重复试验的概率分布，验证伯努利型实验的基本原理。</p>
+            </div>
+
+            <!-- 实验类型选择 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验类型</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 单独伯努利实验 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-experiment="single">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-check-circle text-primary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">单独伯努利实验</h4>
+                        <p class="text-sm text-gray-600 mb-3">单次抛硬币、抽检、射击等</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">预计耗时：10分钟</span>
+                            <button class="px-3 py-1 bg-primary text-white rounded-md text-sm hover:bg-blue-700 transition-all-300 start-experiment">
+                                开始实验
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- n重伯努利实验 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-experiment="n-bernoulli">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-refresh text-secondary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">n重伯努利实验</h4>
+                        <p class="text-sm text-gray-600 mb-3">n次抛硬币、抽检、射击（有放回）</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">预计耗时：15分钟</span>
+                            <button class="px-3 py-1 bg-primary text-white rounded-md text-sm hover:bg-blue-700 transition-all-300 start-experiment">
+                                开始实验
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 几何实验 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-experiment="geometric">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-line-chart text-success text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">几何实验</h4>
+                        <p class="text-sm text-gray-600 mb-3">连续抛硬币直到正面，连续抽检至次品</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">预计耗时：20分钟</span>
+                            <button class="px-3 py-1 bg-primary text-white rounded-md text-sm hover:bg-blue-700 transition-all-300 start-experiment">
+                                开始实验
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 帕斯卡实验 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-experiment="pascal">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-trophy text-purple-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">帕斯卡实验</h4>
+                        <p class="text-sm text-gray-600 mb-3">连续抛硬币直到第3次命中</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">预计耗时：15分钟</span>
+                            <button class="px-3 py-1 bg-primary text-white rounded-md text-sm hover:bg-blue-700 transition-all-300 start-experiment">
+                                开始实验
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验操作区域 -->
+            <div id="experiment-container" class="bg-white rounded-xl shadow-card overflow-hidden mb-6 hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800" id="experiment-title">实验操作</h3>
+                </div>
+                <div class="p-6">
+                    <!-- AI提示 -->
+                    <div class="bg-blue-50 rounded-lg p-4 mb-6 flex items-start">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                            <i class="fa fa-lightbulb-o text-primary"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-primary mb-1">AI提示</h4>
+                            <p class="text-sm text-gray-700" id="ai-tip">调整实验参数，观察结果变化，验证伯努利型实验的基本原理。</p>
+                        </div>
+                    </div>
+
+                    <!-- 实验操作台 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- 左侧：实验操作区 -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-800 mb-4">实验操作</h4>
+                            <div id="experiment-operation" class="flex flex-col items-center justify-center py-8">
+                                <!-- 实验操作内容将动态加载 -->
+                                <div class="w-40 h-40 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                                    <i class="fa fa-flask text-primary text-4xl"></i>
+                                </div>
+                                <p class="text-gray-500">请选择一个实验类型开始操作</p>
+                            </div>
+                        </div>
+
+                        <!-- 右侧：结果显示区 -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-800 mb-4">实验结果</h4>
+                            <div class="h-64">
+                                <canvas id="result-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 实验参数设置 -->
+                    <div class="border border-gray-200 rounded-lg p-4 mb-6">
+                        <h4 class="font-bold text-gray-800 mb-4">参数设置</h4>
+                        <div id="parameter-settings" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- 参数设置将动态加载 -->
+                        </div>
+                    </div>
+
+                    <!-- 实验控制按钮 -->
+                    <div class="flex justify-between">
+                        <button id="reset-experiment" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                            重置实验
+                        </button>
+                        <button id="start-experiment-btn" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            开始实验
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实时数据 -->
+            <div id="data-container" class="bg-white rounded-xl shadow-card overflow-hidden mb-6 hidden">
+                <div class="p-4 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800">实时数据</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-blue-50 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-primary mb-1" id="total-experiments">0</div>
+                            <div class="text-sm text-gray-600">总实验次数</div>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-success mb-1" id="success-count">0</div>
+                            <div class="text-sm text-gray-600">成功次数</div>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-secondary mb-1" id="success-rate">0%</div>
+                            <div class="text-sm text-gray-600">成功率</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-800 mb-4">实验数据表格</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">实验序号</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">结果</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="experiment-table-body">
+                                    <!-- 数据将通过JavaScript动态添加 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        伯努利实验的定义是什么？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算二项分布的概率？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        实验结果如何分析？
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 实验数据
+        let currentExperiment = null;
+        let experimentCount = 0;
+        let successCount = 0;
+        let experimentData = [];
+        let resultChartInstance;
+
+        // 实验配置
+        const experiments = {
+            single: {
+                title: "单独伯努利实验",
+                tip: "单独伯努利实验是只有两种可能结果的单次实验，通过实验验证成功概率的计算。",
+                operation: `
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="w-40 h-40 bg-blue-100 rounded-full flex items-center justify-center mb-6 relative">
+                            <div id="single-experiment" class="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                <i class="fa fa-question-circle text-gray-600 text-4xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="run-single" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 flex items-center">
+                                <i class="fa fa-play mr-2"></i>开始实验
+                            </button>
+                        </div>
+                    </div>
+                `,
+                parameters: `
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">成功概率 (p)</label>
+                        <input type="number" id="success-probability" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="0.5" min="0" max="1" step="0.01">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">实验次数</label>
+                        <input type="number" id="experiment-count" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="1" min="1" max="1">
+                    </div>
+                `
+            },
+            'n-bernoulli': {
+                title: "n重伯努利实验",
+                tip: "n重伯努利实验是独立重复的伯努利实验，通过实验验证二项分布的概率计算。",
+                operation: `
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="w-40 h-40 bg-orange-100 rounded-full flex items-center justify-center mb-6 relative">
+                            <div id="n-experiment" class="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                <span class="text-3xl font-bold text-gray-800">n</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="run-n-bernoulli" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 flex items-center">
+                                <i class="fa fa-play mr-2"></i>开始实验
+                            </button>
+                        </div>
+                    </div>
+                `,
+                parameters: `
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">成功概率 (p)</label>
+                        <input type="number" id="success-probability" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="0.5" min="0" max="1" step="0.01">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">实验次数 (n)</label>
+                        <input type="number" id="n-trials" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="10" min="1" max="1000">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">重复次数</label>
+                        <input type="number" id="experiment-count" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="100" min="1" max="1000">
+                    </div>
+                `
+            },
+            geometric: {
+                title: "几何实验",
+                tip: "几何实验是直到首次成功为止的独立重复伯努利实验，通过实验验证几何分布的概率计算。",
+                operation: `
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="w-40 h-40 bg-green-100 rounded-full flex items-center justify-center mb-6 relative">
+                            <div id="geometric-experiment" class="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                <i class="fa fa-line-chart text-gray-600 text-4xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="run-geometric" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 flex items-center">
+                                <i class="fa fa-play mr-2"></i>开始实验
+                            </button>
+                        </div>
+                    </div>
+                `,
+                parameters: `
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">成功概率 (p)</label>
+                        <input type="number" id="success-probability" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="0.5" min="0" max="1" step="0.01">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">实验次数</label>
+                        <input type="number" id="experiment-count" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="100" min="1" max="1000">
+                    </div>
+                `
+            },
+            pascal: {
+                title: "帕斯卡实验",
+                tip: "帕斯卡实验是直到第r次成功为止的独立重复伯努利实验，通过实验验证帕斯卡分布的概率计算。",
+                operation: `
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="w-40 h-40 bg-purple-100 rounded-full flex items-center justify-center mb-6 relative">
+                            <div id="pascal-experiment" class="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                <span class="text-3xl font-bold text-gray-800">r</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-4">
+                            <button id="run-pascal" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 flex items-center">
+                                <i class="fa fa-play mr-2"></i>开始实验
+                            </button>
+                        </div>
+                    </div>
+                `,
+                parameters: `
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">成功概率 (p)</label>
+                        <input type="number" id="success-probability" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="0.5" min="0" max="1" step="0.01">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">成功次数 (r)</label>
+                        <input type="number" id="success-times" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="3" min="1" max="10">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">实验次数</label>
+                        <input type="number" id="experiment-count" class="w-full border border-gray-300 rounded-lg px-3 py-2" value="100" min="1" max="1000">
+                    </div>
+                `
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化结果图表
+            const ctx = document.getElementById('result-chart').getContext('2d');
+            resultChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '实验结果',
+                        data: [],
+                        backgroundColor: 'rgba(30, 64, 175, 0.6)',
+                        borderColor: 'rgba(30, 64, 175, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 实验类型点击事件
+            document.querySelectorAll('.experiment-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const experimentType = this.getAttribute('data-experiment');
+                    loadExperiment(experimentType);
+                });
+            });
+
+            // 开始实验按钮点击事件
+            document.querySelectorAll('.start-experiment').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const experimentType = this.closest('.experiment-card').getAttribute('data-experiment');
+                    loadExperiment(experimentType);
+                });
+            });
+
+            // 重置实验按钮点击事件
+            document.getElementById('reset-experiment').addEventListener('click', function() {
+                resetExperiment();
+            });
+
+            // 开始实验按钮点击事件
+            document.getElementById('start-experiment-btn').addEventListener('click', function() {
+                startExperiment();
+            });
+
+            // AI助手弹窗控制
+            document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+                const modal = document.getElementById('ai-assistant-modal');
+                modal.classList.toggle('hidden');
+            });
+
+            document.getElementById('close-ai-modal').addEventListener('click', function() {
+                const modal = document.getElementById('ai-assistant-modal');
+                modal.classList.add('hidden');
+            });
+
+            // 点击其他地方关闭弹窗
+            document.addEventListener('click', function(event) {
+                const btn = document.getElementById('ai-assistant-btn');
+                const modal = document.getElementById('ai-assistant-modal');
+                if (!btn.contains(event.target) && !modal.contains(event.target)) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+            // 移动端菜单控制
+            document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('hidden');
+            });
+
+            // 点击侧边栏外部关闭侧边栏（移动端）
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                    sidebar.classList.add('hidden');
+                }
+            });
+        });
+
+        // 加载实验
+        function loadExperiment(experimentType) {
+            currentExperiment = experimentType;
+            const experiment = experiments[experimentType];
+
+            // 更新实验标题和提示
+            document.getElementById('experiment-title').textContent = experiment.title;
+            document.getElementById('ai-tip').textContent = experiment.tip;
+
+            // 加载实验操作内容
+            document.getElementById('experiment-operation').innerHTML = experiment.operation;
+
+            // 加载参数设置
+            document.getElementById('parameter-settings').innerHTML = experiment.parameters;
+
+            // 显示实验容器和数据容器
+            document.getElementById('experiment-container').classList.remove('hidden');
+            document.getElementById('data-container').classList.remove('hidden');
+
+            // 绑定实验特定的事件监听器
+            bindExperimentEvents(experimentType);
+
+            // 重置实验数据
+            resetExperiment();
+        }
+
+        // 绑定实验特定的事件监听器
+        function bindExperimentEvents(experimentType) {
+            // 根据实验类型绑定事件监听器
+            switch (experimentType) {
+                case 'single':
+                    document.getElementById('run-single').addEventListener('click', runSingleBernoulli);
+                    break;
+                case 'n-bernoulli':
+                    document.getElementById('run-n-bernoulli').addEventListener('click', runNBernoulli);
+                    break;
+                case 'geometric':
+                    document.getElementById('run-geometric').addEventListener('click', runGeometric);
+                    break;
+                case 'pascal':
+                    document.getElementById('run-pascal').addEventListener('click', runPascal);
+                    break;
+            }
+        }
+
+        // 运行单独伯努利实验
+        function runSingleBernoulli() {
+            const successProb = parseFloat(document.getElementById('success-probability').value);
+            const isSuccess = Math.random() < successProb;
+            const result = isSuccess ? '成功' : '失败';
+            
+            document.getElementById('single-experiment').innerHTML = isSuccess ? 
+                '<i class="fa fa-check-circle text-success text-4xl"></i>' : 
+                '<i class="fa fa-times-circle text-danger text-4xl"></i>';
+            
+            // 记录实验结果
+            recordExperimentResult(result);
+        }
+
+        // 运行n重伯努利实验
+        function runNBernoulli() {
+            const successProb = parseFloat(document.getElementById('success-probability').value);
+            const nTrials = parseInt(document.getElementById('n-trials').value);
+            let successes = 0;
+            
+            for (let i = 0; i < nTrials; i++) {
+                if (Math.random() < successProb) {
+                    successes++;
+                }
+            }
+            
+            document.getElementById('n-experiment').innerHTML = `<span class="text-3xl font-bold text-gray-800">${successes}/${nTrials}</span>`;
+            
+            // 记录实验结果
+            recordExperimentResult(`${successes}/${nTrials}`);
+        }
+
+        // 运行几何实验
+        function runGeometric() {
+            const successProb = parseFloat(document.getElementById('success-probability').value);
+            let trials = 0;
+            
+            while (Math.random() >= successProb) {
+                trials++;
+            }
+            trials++;
+            
+            document.getElementById('geometric-experiment').innerHTML = `<span class="text-3xl font-bold text-gray-800">${trials}</span>`;
+            
+            // 记录实验结果
+            recordExperimentResult(trials.toString());
+        }
+
+        // 运行帕斯卡实验
+        function runPascal() {
+            const successProb = parseFloat(document.getElementById('success-probability').value);
+            const successTimes = parseInt(document.getElementById('success-times').value);
+            let trials = 0;
+            let successes = 0;
+            
+            while (successes < successTimes) {
+                if (Math.random() < successProb) {
+                    successes++;
+                }
+                trials++;
+            }
+            
+            document.getElementById('pascal-experiment').innerHTML = `<span class="text-3xl font-bold text-gray-800">${trials}</span>`;
+            
+            // 记录实验结果
+            recordExperimentResult(trials.toString());
+        }
+
+        // 记录实验结果
+        function recordExperimentResult(result) {
+            experimentCount++;
+            
+            // 更新数据
+            document.getElementById('total-experiments').textContent = experimentCount;
+            
+            // 添加到表格
+            addExperimentToTable(experimentCount, result);
+            
+            // 更新图表
+            updateChart(result);
+        }
+
+        // 添加实验数据到表格
+        function addExperimentToTable(experimentNumber, result) {
+            const tableBody = document.getElementById('experiment-table-body');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-sm font-medium text-gray-900">${experimentNumber}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        ${result}
+                    </span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-sm text-gray-500">${new Date().toLocaleTimeString()}</span>
+                </td>
+            `;
+            tableBody.appendChild(row);
+
+            // 滚动到底部
+            tableBody.scrollTop = tableBody.scrollHeight;
+        }
+
+        // 更新图表
+        function updateChart(result) {
+            // 简化版图表更新，实际应用中可以根据需要进行更复杂的处理
+            const labels = resultChartInstance.data.labels;
+            const data = resultChartInstance.data.datasets[0].data;
+            
+            // 检查结果是否已经存在
+            const index = labels.indexOf(result);
+            if (index >= 0) {
+                // 如果存在，增加计数
+                data[index]++;
+            } else {
+                // 如果不存在，添加新标签和计数
+                labels.push(result);
+                data.push(1);
+            }
+            
+            // 更新图表
+            resultChartInstance.update();
+        }
+
+        // 重置实验
+        function resetExperiment() {
+            experimentCount = 0;
+            successCount = 0;
+            
+            // 更新数据
+            document.getElementById('total-experiments').textContent = '0';
+            document.getElementById('success-count').textContent = '0';
+            document.getElementById('success-rate').textContent = '0%';
+            
+            // 清空表格
+            document.getElementById('experiment-table-body').innerHTML = '';
+            
+            // 重置图表
+            resultChartInstance.data.labels = [];
+            resultChartInstance.data.datasets[0].data = [];
+            resultChartInstance.update();
+        }
+
+        // 开始实验
+        function startExperiment() {
+            const experimentCountInput = document.getElementById('experiment-count');
+            if (experimentCountInput) {
+                const count = parseInt(experimentCountInput.value);
+                for (let i = 0; i < count; i++) {
+                    setTimeout(() => {
+                        switch (currentExperiment) {
+                            case 'single':
+                                runSingleBernoulli();
+                                break;
+                            case 'n-bernoulli':
+                                runNBernoulli();
+                                break;
+                            case 'geometric':
+                                runGeometric();
+                                break;
+                            case 'pascal':
+                                runPascal();
+                                break;
+                        }
+                    }, i * 100);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

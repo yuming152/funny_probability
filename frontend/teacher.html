@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师端 - 邮数工坊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 教师端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button id="ai-assistant-btn" class="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300">
+                        <i class="fa fa-magic"></i>
+                        <span>AI备课助手</span>
+                    </button>
+                    <!-- AI备课助手弹窗 -->
+                    <div id="ai-assistant-modal" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">AI备课助手</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">请输入需求</label>
+                            <textarea class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="例如：生成古典概型3道分层练习题"></textarea>
+                        </div>
+                        <div class="flex justify-end space-x-2">
+                            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">取消</button>
+                            <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">生成</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                            <i class="fa fa-bell text-gray-600"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-primary font-medium">张</span>
+                        </div>
+                        <span class="text-gray-700 font-medium">张老师</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-dashboard w-5 text-center"></i>
+                    <span>教学决策中枢</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验管理</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-bar-chart w-5 text-center"></i>
+                    <span>学情分析报告</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-file-text w-5 text-center"></i>
+                    <span>作业与小测</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>班级管理</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识库</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">点击学情卡片可钻取至学生个人报告，查看详细学习情况。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间数据看板 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">教学决策中枢</h2>
+                <p class="text-gray-600">欢迎回来，张老师！以下是您的班级学情概览。</p>
+            </div>
+
+            <!-- 学情总览看板 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">学情总览看板</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- 古典概型掌握率 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">古典概型掌握率</h4>
+                                <p class="text-3xl font-bold text-primary mt-1">68%</p>
+                            </div>
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-dice text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-success flex items-center mr-2">
+                                <i class="fa fa-arrow-up mr-1"></i>5%
+                            </span>
+                            <span class="text-gray-500">较上次小测</span>
+                        </div>
+                    </div>
+
+                    <!-- 正态分布薄弱率 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">正态分布薄弱率</h4>
+                                <p class="text-3xl font-bold text-danger mt-1">32%</p>
+                            </div>
+                            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-bell-slash text-danger"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-danger flex items-center mr-2">
+                                <i class="fa fa-arrow-up mr-1"></i>8%
+                            </span>
+                            <span class="text-gray-500">较上次小测</span>
+                        </div>
+                    </div>
+
+                    <!-- 近期作业完成率 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">近期作业完成率</h4>
+                                <p class="text-3xl font-bold text-success mt-1">92%</p>
+                            </div>
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-check-circle text-success"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-success flex items-center mr-2">
+                                <i class="fa fa-arrow-up mr-1"></i>3%
+                            </span>
+                            <span class="text-gray-500">较上周</span>
+                        </div>
+                    </div>
+
+                    <!-- 参与实验次数 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600">参与实验次数</h4>
+                                <p class="text-3xl font-bold text-secondary mt-1">128</p>
+                            </div>
+                            <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-flask text-secondary"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <span class="text-success flex items-center mr-2">
+                                <i class="fa fa-arrow-up mr-1"></i>15%
+                            </span>
+                            <span class="text-gray-500">较上周</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 近3次作业/小测数据变化 -->
+                <div class="bg-white rounded-xl shadow-card p-4">
+                    <h4 class="text-lg font-bold text-gray-800 mb-4">近3次作业/小测数据变化</h4>
+                    <div class="h-80">
+                        <canvas id="performance-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学生学习情况 -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-4">学生学习情况</h3>
+                <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学生姓名</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">古典概型</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">正态分布</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">最近一次作业</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">实验参与</th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                            <span class="text-primary text-sm font-medium">李</span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">李明</div>
+                                            <div class="text-xs text-gray-500">学号: 2023001</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-success h-2.5 rounded-full" style="width: 92%"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">92%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-warning h-2.5 rounded-full" style="width: 65%"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">65%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        优秀
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <i class="fa fa-check-circle text-success mr-1"></i>
+                                        <span class="text-sm text-gray-900">12次</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="#" class="text-primary hover:text-secondary transition-all-300">查看详情</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center mr-3">
+                                            <span class="text-pink-600 text-sm font-medium">王</span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">王芳</div>
+                                            <div class="text-xs text-gray-500">学号: 2023002</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-success h-2.5 rounded-full" style="width: 85%"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">85%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-danger h-2.5 rounded-full" style="width: 45%"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">45%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        良好
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <i class="fa fa-check-circle text-success mr-1"></i>
+                                        <span class="text-sm text-gray-900">10次</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="#" class="text-primary hover:text-secondary transition-all-300">查看详情</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                            <span class="text-green-600 text-sm font-medium">张</span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">张伟</div>
+                                            <div class="text-xs text-gray-500">学号: 2023003</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-warning h-2.5 rounded-full" style="width: 72%"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">72%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-danger h-2.5 rounded-full" style="width: 38%"></div>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-900">38%</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        及格
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <i class="fa fa-exclamation-circle text-warning mr-1"></i>
+                                        <span class="text-sm text-gray-900">6次</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="#" class="text-primary hover:text-secondary transition-all-300">查看详情</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- 右侧快捷工具 -->
+        <aside class="w-80 bg-white shadow-md p-4 overflow-y-auto">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">快捷操作区</h3>
+            
+            <!-- 上传PPT/教案 -->
+            <div class="mb-6">
+                <button class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 mb-2">
+                    <i class="fa fa-upload"></i>
+                    <span>上传PPT/教案</span>
+                </button>
+                <div class="text-xs text-gray-500 text-center mt-1">支持拖拽上传，响应时间≤1秒</div>
+                <div class="mt-3 space-y-2">
+                    <button class="w-full flex items-center space-x-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all-300">
+                        <i class="fa fa-file-powerpoint-o text-orange-500"></i>
+                        <span>上传教案</span>
+                    </button>
+                    <button class="w-full flex items-center space-x-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all-300">
+                        <i class="fa fa-file-video-o text-blue-500"></i>
+                        <span>上传视频</span>
+                    </button>
+                    <button class="w-full flex items-center space-x-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all-300">
+                        <i class="fa fa-file-text-o text-green-500"></i>
+                        <span>上传案例</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 发起课堂小测 -->
+            <div class="mb-6">
+                <button class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                    <i class="fa fa-pencil-square-o"></i>
+                    <span>发起课堂小测</span>
+                </button>
+                <div class="mt-3 space-y-2">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <h4 class="text-sm font-medium text-gray-800 mb-2">最近小测</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-600">正态分布小测</span>
+                                <span class="text-xs text-gray-500">今天 10:30</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs text-gray-600">古典概型小测</span>
+                                <span class="text-xs text-gray-500">昨天 14:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 布置作业 -->
+            <div class="mb-6">
+                <button class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-success text-white rounded-lg hover:bg-green-700 transition-all-300">
+                    <i class="fa fa-homework"></i>
+                    <span>布置作业</span>
+                </button>
+                <div class="mt-3 space-y-2">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <h4 class="text-sm font-medium text-gray-800 mb-2">待批改作业</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-600">概率模型作业</span>
+                            <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">12/30</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 近期实验 -->
+            <div>
+                <h4 class="font-medium text-gray-800 mb-3">近期实验</h4>
+                <div class="space-y-3">
+                    <div class="p-3 bg-blue-50 rounded-lg">
+                        <div class="flex justify-between items-start mb-2">
+                            <h5 class="text-sm font-medium text-primary">连续抛硬币实验</h5>
+                            <span class="text-xs text-gray-500">今天</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-2">班级：概率论与数理统计（1班）</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">参与率：28/30</span>
+                            <button class="text-xs text-primary hover:text-secondary transition-all-300">查看详情</button>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-orange-50 rounded-lg">
+                        <div class="flex justify-between items-start mb-2">
+                            <h5 class="text-sm font-medium text-secondary">正态分布模拟实验</h5>
+                            <span class="text-xs text-gray-500">明天</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mb-2">班级：概率论与数理统计（1班）</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500">未开始</span>
+                            <button class="text-xs text-primary hover:text-secondary transition-all-300">查看详情</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // 显示/隐藏AI备课助手弹窗
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const btn = document.getElementById('ai-assistant-btn');
+            const modal = document.getElementById('ai-assistant-modal');
+            if (!btn.contains(event.target) && !modal.contains(event.target)) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // 性能图表
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('performance-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['第1次', '第2次', '第3次'],
+                    datasets: [
+                        {
+                            label: '古典概型',
+                            data: [62, 65, 68],
+                            borderColor: '#1E40AF',
+                            backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: '正态分布',
+                            data: [45, 38, 32],
+                            borderColor: '#EF4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: '作业完成率',
+                            data: [85, 88, 92],
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

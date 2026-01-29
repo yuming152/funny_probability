@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大数定律与中心极限定理验证实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+                position: relative;
+                z-index: 10;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px) scale(1.02);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                z-index: 20;
+            }
+            .coin {
+                transition: transform 0.5s ease;
+            }
+            .coin-flip {
+                animation: flip 1s ease-in-out;
+            }
+            @keyframes flip {
+                0% { transform: rotateY(0deg); }
+                100% { transform: rotateY(360deg); }
+            }
+            .progress-bar {
+                transition: width 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">大数定律和中心极限定理是概率论的重要定理，通过实验可以直观理解它们的含义。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">大数定律与中心极限定理验证实验</h2>
+                <p class="text-gray-600">通过实验验证概率论中的重要定理。</p>
+            </div>
+
+            <!-- 实验类型卡片 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验类型</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 伯努利大数定律 -->
+                    <div class="experiment-card bg-white rounded-xl shadow-card p-4 cursor-pointer" data-experiment="bernoulli-law">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-balance-scale text-primary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">伯努利大数定律</h4>
+                        <p class="text-sm text-gray-600 mb-4">大量抛硬币统计正面概率，验证频率趋近于概率</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">预计耗时：15分钟</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- 列维-林德伯格中心极限定理 -->
+                    <div class="experiment-card bg-white rounded-xl shadow-card p-4 cursor-pointer" data-experiment="levy-lindeberg">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-area-chart text-success text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">列维-林德伯格中心极限定理</h4>
+                        <p class="text-sm text-gray-600 mb-4">多次独立随机取数求和，验证分布趋近于正态分布</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">预计耗时：20分钟</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- 棣莫弗-拉普拉斯中心极限定理 -->
+                    <div class="experiment-card bg-white rounded-xl shadow-card p-4 cursor-pointer" data-experiment="demoivre-laplace">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-bar-chart text-purple-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">棣莫弗-拉普拉斯中心极限定理</h4>
+                        <p class="text-sm text-gray-600 mb-4">n重伯努利实验成功次数，验证近似正态分布</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">预计耗时：15分钟</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验操作界面 -->
+            <div class="experiment-container hidden">
+                <!-- 伯努利大数定律实验 -->
+                <div id="experiment-bernoulli-law" class="experiment-content bg-white rounded-xl shadow-card overflow-hidden mb-6">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800">伯努利大数定律实验</h3>
+                    </div>
+                    <div class="p-6">
+                        <!-- 参数设置 -->
+                        <div class="mb-6">
+                            <h4 class="font-medium text-gray-800 mb-3">参数设置</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="bernoulli-experiment-count" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">每次实验抛硬币次数</label>
+                                    <input type="number" id="coins-per-experiment" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 实验操作区 -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                            <!-- 左侧：抛硬币模拟 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="font-bold text-gray-800 mb-4">抛硬币模拟</h4>
+                                <div class="flex justify-center mb-6">
+                                    <div id="coin" class="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center coin">
+                                        <i class="fa fa-dot-circle-o text-white text-5xl"></i>
+                                    </div>
+                                </div>
+                                <div class="flex justify-center">
+                                    <button id="start-bernoulli-experiment" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 flex items-center">
+                                        <i class="fa fa-play mr-2"></i>开始实验
+                                    </button>
+                                </div>
+                                <div class="mt-4 text-center">
+                                    <p class="text-sm text-gray-600 mb-2">当前实验次数：<span id="current-bernoulli-experiment" class="font-medium text-primary">0</span></p>
+                                    <p class="text-sm text-gray-600">正面朝上频率：<span id="current-frequency" class="font-medium text-primary">0%</span></p>
+                                </div>
+                            </div>
+
+                            <!-- 右侧：频率变化图表 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="font-bold text-gray-800 mb-4">频率变化图表</h4>
+                                <div class="mb-4">
+                                    <canvas id="bernoulli-frequency-chart" height="250"></canvas>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-blue-50 rounded-lg p-3 text-center">
+                                        <div class="text-sm text-gray-600 mb-1">理论概率</div>
+                                        <div class="text-lg font-bold text-primary">0.5</div>
+                                    </div>
+                                    <div class="bg-green-50 rounded-lg p-3 text-center">
+                                        <div class="text-sm text-gray-600 mb-1">最终频率</div>
+                                        <div class="text-lg font-bold text-success" id="final-frequency">0.0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 列维-林德伯格中心极限定理实验 -->
+                <div id="experiment-levy-lindeberg" class="experiment-content bg-white rounded-xl shadow-card overflow-hidden mb-6">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800">列维-林德伯格中心极限定理实验</h3>
+                    </div>
+                    <div class="p-6">
+                        <!-- 参数设置 -->
+                        <div class="mb-6">
+                            <h4 class="font-medium text-gray-800 mb-3">参数设置</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="levy-experiment-count" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">每次取数个数</label>
+                                    <input type="number" id="numbers-per-experiment" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="30">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">随机数范围</label>
+                                    <div class="flex space-x-2">
+                                        <input type="number" id="number-min" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0">
+                                        <input type="number" id="number-max" class="w-1/2 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 实验操作区 -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                            <!-- 左侧：随机取数模拟 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="font-bold text-gray-800 mb-4">随机取数模拟</h4>
+                                <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                                    <h5 class="font-medium text-gray-800 mb-2">当前取数</h5>
+                                    <div id="current-numbers" class="text-sm text-gray-700">
+                                        <!-- 随机数将在这里动态生成 -->
+                                    </div>
+                                </div>
+                                <div class="flex justify-center">
+                                    <button id="start-levy-experiment" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 flex items-center">
+                                        <i class="fa fa-play mr-2"></i>开始实验
+                                    </button>
+                                </div>
+                                <div class="mt-4 text-center">
+                                    <p class="text-sm text-gray-600 mb-2">当前实验次数：<span id="current-levy-experiment" class="font-medium text-primary">0</span></p>
+                                    <p class="text-sm text-gray-600">当前和：<span id="current-sum" class="font-medium text-primary">0</span></p>
+                                </div>
+                            </div>
+
+                            <!-- 右侧：分布图表 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="font-bold text-gray-800 mb-4">分布图表</h4>
+                                <div class="mb-4">
+                                    <canvas id="levy-distribution-chart" height="250"></canvas>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-blue-50 rounded-lg p-3 text-center">
+                                        <div class="text-sm text-gray-600 mb-1">均值</div>
+                                        <div class="text-lg font-bold text-primary" id="levy-mean">0</div>
+                                    </div>
+                                    <div class="bg-green-50 rounded-lg p-3 text-center">
+                                        <div class="text-sm text-gray-600 mb-1">方差</div>
+                                        <div class="text-lg font-bold text-success" id="levy-variance">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 棣莫弗-拉普拉斯中心极限定理实验 -->
+                <div id="experiment-demoivre-laplace" class="experiment-content bg-white rounded-xl shadow-card overflow-hidden mb-6">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800">棣莫弗-拉普拉斯中心极限定理实验</h3>
+                    </div>
+                    <div class="p-6">
+                        <!-- 参数设置 -->
+                        <div class="mb-6">
+                            <h4 class="font-medium text-gray-800 mb-3">参数设置</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="demoivre-experiment-count" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">每次实验次数(n)</label>
+                                    <input type="number" id="n-per-experiment" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="50">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">成功概率(p)</label>
+                                    <input type="number" id="success-probability" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.5" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 实验操作区 -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                            <!-- 左侧：n重伯努利实验模拟 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="font-bold text-gray-800 mb-4">n重伯努利实验模拟</h4>
+                                <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                                    <h5 class="font-medium text-gray-800 mb-2">实验参数</h5>
+                                    <p class="text-sm text-gray-700 mb-1">n = <span id="current-n" class="font-medium">50</span></p>
+                                    <p class="text-sm text-gray-700">p = <span id="current-p" class="font-medium">0.5</span></p>
+                                </div>
+                                <div class="flex justify-center">
+                                    <button id="start-demoivre-experiment" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 flex items-center">
+                                        <i class="fa fa-play mr-2"></i>开始实验
+                                    </button>
+                                </div>
+                                <div class="mt-4 text-center">
+                                    <p class="text-sm text-gray-600 mb-2">当前实验次数：<span id="current-demoivre-experiment" class="font-medium text-primary">0</span></p>
+                                    <p class="text-sm text-gray-600">当前成功次数：<span id="current-success-count" class="font-medium text-primary">0</span></p>
+                                </div>
+                            </div>
+
+                            <!-- 右侧：分布对比图表 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="font-bold text-gray-800 mb-4">分布对比图表</h4>
+                                <div class="mb-4">
+                                    <canvas id="demoivre-distribution-chart" height="250"></canvas>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-blue-50 rounded-lg p-3 text-center">
+                                        <div class="text-sm text-gray-600 mb-1">理论均值</div>
+                                        <div class="text-lg font-bold text-primary" id="theoretical-mean">0</div>
+                                    </div>
+                                    <div class="bg-green-50 rounded-lg p-3 text-center">
+                                        <div class="text-sm text-gray-600 mb-1">理论方差</div>
+                                        <div class="text-lg font-bold text-success" id="theoretical-variance">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        什么是大数定律？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        中心极限定理有什么应用？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何理解频率趋近于概率？
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 实验数据
+        let experimentData = {};
+        let charts = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 移动端菜单控制
+            document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('hidden');
+            });
+
+            // 点击侧边栏外部关闭侧边栏（移动端）
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+                if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                    sidebar.classList.add('hidden');
+                }
+            });
+
+            // AI助手弹窗控制
+            document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+                const modal = document.getElementById('ai-assistant-modal');
+                modal.classList.toggle('hidden');
+            });
+
+            document.getElementById('close-ai-modal').addEventListener('click', function() {
+                const modal = document.getElementById('ai-assistant-modal');
+                modal.classList.add('hidden');
+            });
+
+            // 点击其他地方关闭AI助手弹窗
+            document.addEventListener('click', function(event) {
+                const aiBtn = document.getElementById('ai-assistant-btn');
+                const aiModal = document.getElementById('ai-assistant-modal');
+                if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                    aiModal.classList.add('hidden');
+                }
+            });
+
+            // 实验卡片点击事件
+            document.querySelectorAll('.experiment-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const experiment = this.getAttribute('data-experiment');
+                    showExperiment(experiment);
+                });
+            });
+
+            // 伯努利大数定律实验
+            document.getElementById('start-bernoulli-experiment').addEventListener('click', function() {
+                startBernoulliExperiment();
+            });
+
+            // 列维-林德伯格中心极限定理实验
+            document.getElementById('start-levy-experiment').addEventListener('click', function() {
+                startLevyExperiment();
+            });
+
+            // 棣莫弗-拉普拉斯中心极限定理实验
+            document.getElementById('start-demoivre-experiment').addEventListener('click', function() {
+                startDemoivreExperiment();
+            });
+
+            // 初始化图表
+            initCharts();
+        });
+
+        // 显示指定实验
+        function showExperiment(experiment) {
+            // 显示实验容器
+            document.querySelector('.experiment-container').classList.remove('hidden');
+            
+            // 隐藏所有实验内容
+            document.querySelectorAll('.experiment-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // 显示选中的实验
+            document.getElementById('experiment-' + experiment).classList.remove('hidden');
+        }
+
+        // 初始化图表
+        function initCharts() {
+            // 伯努利大数定律频率变化图表
+            const ctxBernoulli = document.getElementById('bernoulli-frequency-chart').getContext('2d');
+            charts['bernoulli'] = new Chart(ctxBernoulli, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: '正面频率',
+                            data: [],
+                            borderColor: '#1E40AF',
+                            backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: '理论概率',
+                            data: [],
+                            borderColor: '#10B981',
+                            borderDash: [5, 5],
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.1,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value * 100) + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '实验次数'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 列维-林德伯格中心极限定理分布图表
+            const ctxLevy = document.getElementById('levy-distribution-chart').getContext('2d');
+            charts['levy'] = new Chart(ctxLevy, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '和的分布',
+                        data: [],
+                        backgroundColor: '#3B82F6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '和的值'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 棣莫弗-拉普拉斯中心极限定理分布对比图表
+            const ctxDemoivre = document.getElementById('demoivre-distribution-chart').getContext('2d');
+            charts['demoivre'] = new Chart(ctxDemoivre, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: '实际分布',
+                            data: [],
+                            backgroundColor: '#3B82F6'
+                        },
+                        {
+                            label: '正态近似',
+                            data: [],
+                            backgroundColor: 'rgba(16, 185, 129, 0.6)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '成功次数'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 伯努利大数定律实验
+        function startBernoulliExperiment() {
+            const totalExperiments = parseInt(document.getElementById('bernoulli-experiment-count').value);
+            const coinsPerExperiment = parseInt(document.getElementById('coins-per-experiment').value);
+            
+            let experimentCount = 0;
+            let frequencyData = [];
+            let labels = [];
+            
+            const interval = setInterval(function() {
+                experimentCount++;
+                
+                // 抛硬币
+                let headsCount = 0;
+                for (let i = 0; i < coinsPerExperiment; i++) {
+                    if (Math.random() < 0.5) {
+                        headsCount++;
+                    }
+                }
+                
+                const frequency = headsCount / coinsPerExperiment;
+                frequencyData.push(frequency);
+                labels.push(experimentCount);
+                
+                // 更新UI
+                document.getElementById('current-bernoulli-experiment').textContent = experimentCount;
+                document.getElementById('current-frequency').textContent = (frequency * 100).toFixed(2) + '%';
+                
+                // 更新图表
+                charts['bernoulli'].data.labels = labels;
+                charts['bernoulli'].data.datasets[0].data = frequencyData;
+                charts['bernoulli'].data.datasets[1].data = Array(labels.length).fill(0.5);
+                charts['bernoulli'].update();
+                
+                // 动画效果
+                const coin = document.getElementById('coin');
+                coin.classList.add('coin-flip');
+                setTimeout(() => {
+                    coin.classList.remove('coin-flip');
+                }, 100);
+                
+                if (experimentCount >= totalExperiments) {
+                    clearInterval(interval);
+                    document.getElementById('final-frequency').textContent = (frequency * 100).toFixed(2) + '%';
+                }
+            }, 100);
+        }
+
+        // 列维-林德伯格中心极限定理实验
+        function startLevyExperiment() {
+            const totalExperiments = parseInt(document.getElementById('levy-experiment-count').value);
+            const numbersPerExperiment = parseInt(document.getElementById('numbers-per-experiment').value);
+            const min = parseInt(document.getElementById('number-min').value);
+            const max = parseInt(document.getElementById('number-max').value);
+            
+            let experimentCount = 0;
+            let sumData = {};
+            
+            const interval = setInterval(function() {
+                experimentCount++;
+                
+                // 随机取数
+                let numbers = [];
+                let sum = 0;
+                for (let i = 0; i < numbersPerExperiment; i++) {
+                    const number = Math.floor(Math.random() * (max - min + 1)) + min;
+                    numbers.push(number);
+                    sum += number;
+                }
+                
+                // 统计和的分布
+                if (!sumData[sum]) {
+                    sumData[sum] = 0;
+                }
+                sumData[sum]++;
+                
+                // 更新UI
+                document.getElementById('current-levy-experiment').textContent = experimentCount;
+                document.getElementById('current-sum').textContent = sum;
+                document.getElementById('current-numbers').textContent = numbers.join(', ');
+                
+                // 更新图表
+                const labels = Object.keys(sumData).sort((a, b) => parseInt(a) - parseInt(b));
+                const data = labels.map(label => sumData[label]);
+                
+                charts['levy'].data.labels = labels;
+                charts['levy'].data.datasets[0].data = data;
+                charts['levy'].update();
+                
+                // 计算均值和方差
+                const totalSum = Object.entries(sumData).reduce((acc, [value, count]) => acc + parseInt(value) * count, 0);
+                const mean = totalSum / experimentCount;
+                
+                const variance = Object.entries(sumData).reduce((acc, [value, count]) => {
+                    return acc + Math.pow(parseInt(value) - mean, 2) * count;
+                }, 0) / experimentCount;
+                
+                document.getElementById('levy-mean').textContent = mean.toFixed(2);
+                document.getElementById('levy-variance').textContent = variance.toFixed(2);
+                
+                if (experimentCount >= totalExperiments) {
+                    clearInterval(interval);
+                }
+            }, 100);
+        }
+
+        // 棣莫弗-拉普拉斯中心极限定理实验
+        function startDemoivreExperiment() {
+            const totalExperiments = parseInt(document.getElementById('demoivre-experiment-count').value);
+            const n = parseInt(document.getElementById('n-per-experiment').value);
+            const p = parseFloat(document.getElementById('success-probability').value);
+            
+            let experimentCount = 0;
+            let successCountData = {};
+            
+            // 更新UI
+            document.getElementById('current-n').textContent = n;
+            document.getElementById('current-p').textContent = p;
+            document.getElementById('theoretical-mean').textContent = (n * p).toFixed(2);
+            document.getElementById('theoretical-variance').textContent = (n * p * (1 - p)).toFixed(2);
+            
+            const interval = setInterval(function() {
+                experimentCount++;
+                
+                // n重伯努利实验
+                let successCount = 0;
+                for (let i = 0; i < n; i++) {
+                    if (Math.random() < p) {
+                        successCount++;
+                    }
+                }
+                
+                // 统计成功次数的分布
+                if (!successCountData[successCount]) {
+                    successCountData[successCount] = 0;
+                }
+                successCountData[successCount]++;
+                
+                // 更新UI
+                document.getElementById('current-demoivre-experiment').textContent = experimentCount;
+                document.getElementById('current-success-count').textContent = successCount;
+                
+                // 更新图表
+                const labels = Object.keys(successCountData).sort((a, b) => parseInt(a) - parseInt(b));
+                const data = labels.map(label => successCountData[label]);
+                
+                // 计算正态近似
+                const normalData = labels.map(label => {
+                    const x = parseInt(label);
+                    const mean = n * p;
+                    const variance = n * p * (1 - p);
+                    const stdDev = Math.sqrt(variance);
+                    return (experimentCount / stdDev * Math.sqrt(2 * Math.PI)) * Math.exp(-Math.pow(x - mean, 2) / (2 * variance));
+                });
+                
+                charts['demoivre'].data.labels = labels;
+                charts['demoivre'].data.datasets[0].data = data;
+                charts['demoivre'].data.datasets[1].data = normalData;
+                charts['demoivre'].update();
+                
+                if (experimentCount >= totalExperiments) {
+                    clearInterval(interval);
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>

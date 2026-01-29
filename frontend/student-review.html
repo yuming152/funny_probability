@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识点复习 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部通知栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">知识点复习是巩固学习成果的重要环节，建议定期回顾已学内容。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间知识点复习区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">知识点复习</h2>
+                <p class="text-gray-600">系统梳理概率统计的核心知识点，巩固学习成果。</p>
+            </div>
+
+            <!-- 复习概览 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">复习概览</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-medium text-gray-600">已掌握知识点</h4>
+                            <i class="fa fa-check-circle text-success"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">12/20</div>
+                        <div class="mt-2">
+                            <div class="flex items-center text-xs text-gray-500">
+                                <span>掌握率 60%</span>
+                                <span class="ml-auto">目标：85%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                                <div class="bg-success h-1.5 rounded-full" style="width: 60%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-medium text-gray-600">复习时长</h4>
+                            <i class="fa fa-clock-o text-primary"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">8.5小时</div>
+                        <div class="mt-2">
+                            <div class="flex items-center text-xs text-gray-500">
+                                <span>本周 2.5小时</span>
+                                <span class="ml-auto">日均 0.36小时</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-medium text-gray-600">薄弱知识点</h4>
+                            <i class="fa fa-exclamation-triangle text-warning"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">3个</div>
+                        <div class="mt-2">
+                            <div class="flex items-center text-xs text-gray-500">
+                                <span>需要重点复习</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-medium text-gray-600">复习计划</h4>
+                            <i class="fa fa-calendar-check-o text-secondary"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-gray-800">7/10</div>
+                        <div class="mt-2">
+                            <div class="flex items-center text-xs text-gray-500">
+                                <span>完成率 70%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识点分类 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">知识点分类</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- 古典概型 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800">古典概型</h4>
+                                <p class="text-sm text-gray-600 mt-1">掌握程度：85%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-dice text-primary text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>已掌握</span>
+                                <span>85%</span>
+                            </div>
+                        </div>
+                        <button class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            开始复习
+                        </button>
+                    </div>
+
+                    <!-- 几何概型 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800">几何概型</h4>
+                                <p class="text-sm text-gray-600 mt-1">掌握程度：72%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-map-pin text-success text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                <div class="bg-success h-2 rounded-full" style="width: 72%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>基本掌握</span>
+                                <span>72%</span>
+                            </div>
+                        </div>
+                        <button class="w-full px-4 py-2 bg-success text-white rounded-lg hover:bg-green-700 transition-all-300">
+                            开始复习
+                        </button>
+                    </div>
+
+                    <!-- 条件概率 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800">条件概率</h4>
+                                <p class="text-sm text-gray-600 mt-1">掌握程度：65%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-link text-warning text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                <div class="bg-warning h-2 rounded-full" style="width: 65%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>部分掌握</span>
+                                <span>65%</span>
+                            </div>
+                        </div>
+                        <button class="w-full px-4 py-2 bg-warning text-white rounded-lg hover:bg-yellow-600 transition-all-300">
+                            开始复习
+                        </button>
+                    </div>
+
+                    <!-- 随机变量 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800">随机变量</h4>
+                                <p class="text-sm text-gray-600 mt-1">掌握程度：78%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-random text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                <div class="bg-purple-600 h-2 rounded-full" style="width: 78%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>基本掌握</span>
+                                <span>78%</span>
+                            </div>
+                        </div>
+                        <button class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all-300">
+                            开始复习
+                        </button>
+                    </div>
+
+                    <!-- 数字特征 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800">数字特征</h4>
+                                <p class="text-sm text-gray-600 mt-1">掌握程度：55%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-bar-chart text-danger text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                <div class="bg-danger h-2 rounded-full" style="width: 55%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>需要加强</span>
+                                <span>55%</span>
+                            </div>
+                        </div>
+                        <button class="w-full px-4 py-2 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300">
+                            开始复习
+                        </button>
+                    </div>
+
+                    <!-- 极限定理 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800">极限定理</h4>
+                                <p class="text-sm text-gray-600 mt-1">掌握程度：60%</p>
+                            </div>
+                            <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-line-chart text-teal-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                <div class="bg-teal-600 h-2 rounded-full" style="width: 60%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>部分掌握</span>
+                                <span>60%</span>
+                            </div>
+                        </div>
+                        <button class="w-full px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all-300">
+                            开始复习
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 复习计划 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">复习计划</h3>
+                <div class="bg-white rounded-xl shadow-card p-4">
+                    <div class="mb-6">
+                        <h4 class="text-md font-bold text-gray-800 mb-3">本周复习计划</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <input type="checkbox" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary" checked>
+                                <label class="ml-2 text-gray-700">复习古典概型和几何概型</label>
+                                <span class="ml-auto text-xs text-gray-500">已完成</span>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                                <label class="ml-2 text-gray-700">复习条件概率和独立性</label>
+                                <span class="ml-auto text-xs text-gray-500">今天</span>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                                <label class="ml-2 text-gray-700">复习随机变量及其分布</label>
+                                <span class="ml-auto text-xs text-gray-500">明天</span>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                                <label class="ml-2 text-gray-700">复习数字特征</label>
+                                <span class="ml-auto text-xs text-gray-500">后天</span>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary">
+                                <label class="ml-2 text-gray-700">复习极限定理</label>
+                                <span class="ml-auto text-xs text-gray-500">本周末</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 复习资源 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">复习资源</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 微课视频 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300">
+                        <div class="aspect-w-16 aspect-h-9 mb-4 rounded-lg overflow-hidden bg-gray-100">
+                            <div class="flex items-center justify-center h-full">
+                                <i class="fa fa-play-circle text-4xl text-gray-400"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">概率统计微课</h4>
+                        <p class="text-sm text-gray-600 mb-3">系统讲解概率统计的核心概念</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">20个视频</span>
+                            <button class="text-primary hover:text-secondary transition-all-300">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 复习资料 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300">
+                        <div class="aspect-w-16 aspect-h-9 mb-4 rounded-lg overflow-hidden bg-gray-100">
+                            <div class="flex items-center justify-center h-full">
+                                <i class="fa fa-file-text-o text-4xl text-gray-400"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">复习资料</h4>
+                        <p class="text-sm text-gray-600 mb-3">知识点总结和典型例题</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">15份资料</span>
+                            <button class="text-primary hover:text-secondary transition-all-300">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 习题集 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300">
+                        <div class="aspect-w-16 aspect-h-9 mb-4 rounded-lg overflow-hidden bg-gray-100">
+                            <div class="flex items-center justify-center h-full">
+                                <i class="fa fa-list-alt text-4xl text-gray-400"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">复习习题集</h4>
+                        <p class="text-sm text-gray-600 mb-3">针对性练习巩固知识点</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">100道习题</span>
+                            <button class="text-primary hover:text-secondary transition-all-300">
+                                查看详情
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        讲解条件概率的概念
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何复习极限定理？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        推荐数字特征的学习资源
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示/隐藏AI学习助手弹窗
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        // 关闭AI学习助手弹窗
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭弹窗
+        document.addEventListener('click', function(event) {
+            const btn = document.getElementById('ai-assistant-btn');
+            const modal = document.getElementById('ai-assistant-modal');
+            if (!btn.contains(event.target) && !modal.contains(event.target)) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
