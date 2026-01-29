@@ -394,26 +394,38 @@
         <aside class="w-80 bg-white shadow-md p-4 overflow-y-auto">
             <h3 class="text-lg font-bold text-gray-800 mb-4">快捷操作区</h3>
             
-            <!-- 上传PPT/教案 -->
+            <!-- 上传PPT/视频 -->
             <div class="mb-6">
-                <button class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 mb-2">
+                <input type="file" id="file-upload" class="hidden" accept=".ppt,.pptx,.mp4,.webm,.ogg" />
+                <button id="upload-btn" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
                     <i class="fa fa-upload"></i>
-                    <span>上传PPT/教案</span>
+                    <span>上传PPT/视频</span>
                 </button>
-                <div class="text-xs text-gray-500 text-center mt-1">支持拖拽上传，响应时间≤1秒</div>
-                <div class="mt-3 space-y-2">
-                    <button class="w-full flex items-center space-x-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all-300">
-                        <i class="fa fa-file-powerpoint-o text-orange-500"></i>
-                        <span>上传教案</span>
-                    </button>
-                    <button class="w-full flex items-center space-x-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all-300">
-                        <i class="fa fa-file-video-o text-blue-500"></i>
-                        <span>上传视频</span>
-                    </button>
-                    <button class="w-full flex items-center space-x-2 px-3 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-all-300">
-                        <i class="fa fa-file-text-o text-green-500"></i>
-                        <span>上传案例</span>
-                    </button>
+                <div class="text-xs text-gray-500 text-center mt-2">支持拖拽上传，响应时间≤1秒</div>
+                
+                <!-- 上传进度 -->
+                <div id="upload-progress" class="hidden mt-3">
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div id="progress-bar" class="bg-success h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <div id="progress-text" class="text-xs text-gray-600 text-center mt-1">上传中... 0%</div>
+                </div>
+                
+                <!-- 上传结果 -->
+                <div id="upload-result" class="hidden mt-3 p-3 bg-green-50 rounded-lg">
+                    <div class="flex items-start space-x-2">
+                        <i class="fa fa-check-circle text-success mt-0.5"></i>
+                        <div>
+                            <h4 class="text-sm font-medium text-green-800">上传成功</h4>
+                            <p id="result-message" class="text-xs text-green-600 mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 文件列表 -->
+                <div id="file-list" class="mt-4 hidden">
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">已上传文件</h4>
+                    <div id="files-container" class="space-y-2"></div>
                 </div>
             </div>
 
@@ -578,6 +590,166 @@
                     }
                 }
             });
+        });
+
+        // 文件上传功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileUpload = document.getElementById('file-upload');
+            const uploadBtn = document.getElementById('upload-btn');
+            const uploadProgress = document.getElementById('upload-progress');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const uploadResult = document.getElementById('upload-result');
+            const resultMessage = document.getElementById('result-message');
+            const fileList = document.getElementById('file-list');
+            const filesContainer = document.getElementById('files-container');
+
+            // 点击上传按钮触发文件选择
+            uploadBtn.addEventListener('click', function() {
+                fileUpload.click();
+            });
+
+            // 文件选择事件
+            fileUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    uploadFile(file);
+                }
+            });
+
+            // 上传文件
+            function uploadFile(file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // 显示上传进度
+                uploadProgress.classList.remove('hidden');
+                uploadResult.classList.add('hidden');
+
+                // 创建XMLHttpRequest对象
+                const xhr = new XMLHttpRequest();
+
+                // 监听上传进度
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressBar.style.width = percentComplete + '%';
+                        progressText.textContent = `上传中... ${Math.round(percentComplete)}%`;
+                    }
+                });
+
+                // 上传完成
+                xhr.addEventListener('load', function() {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.code === 200) {
+                            // 显示上传成功
+                            uploadProgress.classList.add('hidden');
+                            uploadResult.classList.remove('hidden');
+                            resultMessage.textContent = `文件 ${response.data.originalname} 上传成功！`;
+                            
+                            // 重置进度条
+                            progressBar.style.width = '0%';
+                            progressText.textContent = '上传中... 0%';
+                            
+                            // 重新获取文件列表
+                            getFiles();
+                        } else {
+                            alert('上传失败: ' + response.message);
+                            uploadProgress.classList.add('hidden');
+                        }
+                    } else {
+                        alert('上传失败: 服务器错误');
+                        uploadProgress.classList.add('hidden');
+                    }
+                });
+
+                // 上传错误
+                xhr.addEventListener('error', function() {
+                    alert('上传失败: 网络错误');
+                    uploadProgress.classList.add('hidden');
+                });
+
+                // 发送请求
+                xhr.open('POST', 'http://localhost:3001/api/upload');
+                xhr.send(formData);
+            }
+
+            // 获取文件列表
+            function getFiles() {
+                fetch('http://localhost:3001/api/files')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code === 200) {
+                            const files = data.data.files;
+                            if (files.length > 0) {
+                                fileList.classList.remove('hidden');
+                                filesContainer.innerHTML = '';
+                                
+                                files.forEach(file => {
+                                    const fileItem = document.createElement('div');
+                                    fileItem.className = 'flex items-center justify-between p-2 bg-gray-50 rounded-lg';
+                                    
+                                    const fileInfo = document.createElement('div');
+                                    fileInfo.className = 'flex items-center space-x-2';
+                                    
+                                    const fileIcon = document.createElement('i');
+                                    if (file.filename.includes('.ppt') || file.filename.includes('.pptx')) {
+                                        fileIcon.className = 'fa fa-file-powerpoint-o text-orange-500';
+                                    } else {
+                                        fileIcon.className = 'fa fa-file-video-o text-blue-500';
+                                    }
+                                    
+                                    const fileName = document.createElement('span');
+                                    fileName.className = 'text-xs text-gray-700 truncate max-w-[150px]';
+                                    fileName.textContent = file.originalname || file.filename;
+                                    
+                                    const fileSize = document.createElement('span');
+                                    fileSize.className = 'text-xs text-gray-500';
+                                    fileSize.textContent = formatFileSize(file.size);
+                                    
+                                    fileInfo.appendChild(fileIcon);
+                                    fileInfo.appendChild(fileName);
+                                    fileInfo.appendChild(fileSize);
+                                    
+                                    const fileActions = document.createElement('div');
+                                    fileActions.className = 'flex items-center space-x-2';
+                                    
+                                    const downloadBtn = document.createElement('a');
+                                    downloadBtn.href = file.url;
+                                    downloadBtn.target = '_blank';
+                                    downloadBtn.className = 'text-xs text-primary hover:text-secondary';
+                                    downloadBtn.innerHTML = '<i class="fa fa-download"></i>';
+                                    
+                                    fileActions.appendChild(downloadBtn);
+                                    
+                                    fileItem.appendChild(fileInfo);
+                                    fileItem.appendChild(fileActions);
+                                    filesContainer.appendChild(fileItem);
+                                });
+                            } else {
+                                fileList.classList.add('hidden');
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取文件列表失败:', error);
+                    });
+            }
+
+            // 格式化文件大小
+            function formatFileSize(bytes) {
+                if (bytes < 1024) {
+                    return bytes + ' B';
+                } else if (bytes < 1048576) {
+                    return (bytes / 1024).toFixed(1) + ' KB';
+                } else {
+                    return (bytes / 1048576).toFixed(1) + ' MB';
+                }
+            }
+
+            // 初始获取文件列表
+            getFiles();
         });
     </script>
 </body>
