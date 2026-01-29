@@ -129,7 +129,7 @@
                     <i class="fa fa-book w-5 text-center"></i>
                     <span>知识库</span>
                 </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                <a href="teacher-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
                     <i class="fa fa-cog w-5 text-center"></i>
                     <span>设置</span>
                 </a>
@@ -431,7 +431,7 @@
 
             <!-- 发起课堂小测 -->
             <div class="mb-6">
-                <button class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                <button id="quiz-btn" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
                     <i class="fa fa-pencil-square-o"></i>
                     <span>发起课堂小测</span>
                 </button>
@@ -452,10 +452,90 @@
                 </div>
             </div>
 
+            <!-- 课堂小测配置模态框 -->
+            <div id="quiz-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <!-- 模态框头部 -->
+                    <div class="border-b border-gray-200 p-4 flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-800">发起课堂小测</h3>
+                        <button id="close-quiz-modal" class="text-gray-400 hover:text-gray-600">
+                            <i class="fa fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 模态框内容 -->
+                    <div class="p-6">
+                        <form id="quiz-form">
+                            <!-- 小测基本信息 -->
+                            <div class="mb-6">
+                                <h4 class="text-lg font-medium text-gray-800 mb-4">基本信息</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">小测标题 <span class="text-danger">*</span></label>
+                                        <input type="text" id="quiz-title" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" placeholder="请输入小测标题">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">小测说明</label>
+                                        <textarea id="quiz-description" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" rows="3" placeholder="请输入小测说明（可选）"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 时间设置 -->
+                            <div class="mb-6">
+                                <h4 class="text-lg font-medium text-gray-800 mb-4">时间设置</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">开始时间 <span class="text-danger">*</span></label>
+                                        <input type="datetime-local" id="start-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">结束时间 <span class="text-danger">*</span></label>
+                                        <input type="datetime-local" id="end-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">持续时长（分钟）</label>
+                                        <input type="number" id="duration" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" min="1" placeholder="自动计算">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 习题图片上传 -->
+                            <div class="mb-6">
+                                <h4 class="text-lg font-medium text-gray-800 mb-4">习题图片</h4>
+                                <div class="mb-4">
+                                    <input type="file" id="image-upload" class="hidden" accept="image/*" multiple>
+                                    <button type="button" id="select-images-btn" class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all-300">
+                                        <i class="fa fa-image"></i>
+                                        <span>选择图片</span>
+                                    </button>
+                                    <p class="text-xs text-gray-500 mt-1">支持上传多张图片作为习题内容</p>
+                                </div>
+                                
+                                <!-- 图片预览区 -->
+                                <div id="image-preview" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                    <!-- 图片预览将在这里动态生成 -->
+                                </div>
+                            </div>
+                            
+                            <!-- 提交按钮 -->
+                            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                                <button type="button" id="cancel-quiz" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                                    取消
+                                </button>
+                                <button type="submit" id="confirm-quiz" class="px-6 py-2 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                                    确认发起
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- 布置作业 -->
             <div class="mb-6">
-                <button class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-success text-white rounded-lg hover:bg-green-700 transition-all-300">
-                    <i class="fa fa-homework"></i>
+                <button id="homework-btn" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-success text-white rounded-lg hover:bg-green-700 transition-all-300">
+                    <i class="fa fa-home"></i>
                     <span>布置作业</span>
                 </button>
                 <div class="mt-3 space-y-2">
@@ -465,6 +545,281 @@
                             <span class="text-xs text-gray-600">概率模型作业</span>
                             <span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">12/30</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作业布置模态框 -->
+            <div id="homework-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+                    <!-- 模态框头部 -->
+                    <div class="border-b border-gray-200 p-4 flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-gray-800">布置作业</h3>
+                        <button id="close-homework-modal" class="text-gray-400 hover:text-gray-600">
+                            <i class="fa fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 模态框内容 -->
+                    <div class="p-6">
+                        <form id="homework-form">
+                            <!-- 基础信息设置区 -->
+                            <div class="mb-8">
+                                <h4 class="text-lg font-medium text-gray-800 mb-4">基础信息</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- 作业标题 -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">作业标题 <span class="text-danger">*</span></label>
+                                        <input type="text" id="homework-title" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent" placeholder="请输入作业标题" maxlength="50">
+                                        <p class="text-xs text-gray-500 mt-1"><span id="title-count">0</span>/50</p>
+                                    </div>
+                                    
+                                    <!-- 课程选择 -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">课程 <span class="text-danger">*</span></label>
+                                        <select id="course-select" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent">
+                                            <option value="">请选择课程</option>
+                                            <option value="1">概率论与数理统计</option>
+                                            <option value="2">统计学</option>
+                                            <option value="3">数学建模</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- 作业类型 -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">作业类型 <span class="text-danger">*</span></label>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label class="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-full cursor-pointer hover:border-success hover:bg-green-50 transition-all-300">
+                                                <input type="radio" name="homework-type" value="after-class" class="hidden">
+                                                <span class="text-sm">课后练习</span>
+                                            </label>
+                                            <label class="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-full cursor-pointer hover:border-success hover:bg-green-50 transition-all-300">
+                                                <input type="radio" name="homework-type" value="unit-test" class="hidden">
+                                                <span class="text-sm">单元测验</span>
+                                            </label>
+                                            <label class="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-full cursor-pointer hover:border-success hover:bg-green-50 transition-all-300">
+                                                <input type="radio" name="homework-type" value="practice" class="hidden">
+                                                <span class="text-sm">实践作业</span>
+                                            </label>
+                                            <label class="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-full cursor-pointer hover:border-success hover:bg-green-50 transition-all-300">
+                                                <input type="radio" name="homework-type" value="other" class="hidden">
+                                                <span class="text-sm">其他</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 作业总分 -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">作业总分 <span class="text-danger">*</span></label>
+                                        <input type="number" id="homework-score" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent" value="100" min="1" max="1000">
+                                    </div>
+                                    
+                                    <!-- 开始时间 -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">开始时间 <span class="text-danger">*</span></label>
+                                        <input type="datetime-local" id="homework-start-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent">
+                                    </div>
+                                    
+                                    <!-- 结束时间 -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">结束时间 <span class="text-danger">*</span></label>
+                                        <input type="datetime-local" id="homework-end-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent">
+                                    </div>
+                                    
+                                    <!-- 预计完成时长 -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">预计完成时长（分钟）</label>
+                                        <input type="number" id="estimated-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent" placeholder="供学生参考" min="1">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 内容编辑区（选项卡） -->
+                            <div class="mb-8">
+                                <h4 class="text-lg font-medium text-gray-800 mb-4">内容编辑</h4>
+                                
+                                <!-- 选项卡导航 -->
+                                <div class="border-b border-gray-200 mb-4">
+                                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="content-tabs" role="tablist">
+                                        <li class="mr-2" role="presentation">
+                                            <button class="inline-block p-4 border-b-2 border-success text-success rounded-t-lg active" id="text-tab" data-tab="text" type="button" role="tab">
+                                                文本说明
+                                            </button>
+                                        </li>
+                                        <li class="mr-2" role="presentation">
+                                            <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg" id="resource-tab" data-tab="resource" type="button" role="tab">
+                                                资源上传
+                                            </button>
+                                        </li>
+                                        <li role="presentation">
+                                            <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg" id="question-tab" data-tab="question" type="button" role="tab">
+                                                题目创建
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- 选项卡内容 -->
+                                <div class="tab-content">
+                                    <!-- 文本说明选项卡 -->
+                                    <div class="tab-pane active" id="text-content">
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">作业说明</label>
+                                            <div class="border border-gray-300 rounded-lg overflow-hidden">
+                                                <!-- 编辑器工具栏 -->
+                                                <div class="flex items-center space-x-1 p-2 bg-gray-50 border-b border-gray-200">
+                                                    <button type="button" class="p-1 hover:bg-gray-200 rounded" title="粗体"><i class="fa fa-bold"></i></button>
+                                                    <button type="button" class="p-1 hover:bg-gray-200 rounded" title="斜体"><i class="fa fa-italic"></i></button>
+                                                    <button type="button" class="p-1 hover:bg-gray-200 rounded" title="下划线"><i class="fa fa-underline"></i></button>
+                                                    <div class="h-6 w-px bg-gray-300"></div>
+                                                    <button type="button" class="p-1 hover:bg-gray-200 rounded" title="无序列表"><i class="fa fa-list-ul"></i></button>
+                                                    <button type="button" class="p-1 hover:bg-gray-200 rounded" title="有序列表"><i class="fa fa-list-ol"></i></button>
+                                                    <div class="h-6 w-px bg-gray-300"></div>
+                                                    <button type="button" class="p-1 hover:bg-gray-200 rounded" title="链接"><i class="fa fa-link"></i></button>
+                                                    <button type="button" class="p-1 hover:bg-gray-200 rounded" title="表格"><i class="fa fa-table"></i></button>
+                                                </div>
+                                                <!-- 编辑器内容区 -->
+                                                <textarea id="homework-content" class="w-full p-3 focus:outline-none" rows="10" placeholder="请输入作业说明..."></textarea>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1"><span id="content-count">0</span>/5000</p>
+                                            <div class="flex items-center mt-2">
+                                                <span class="text-xs text-gray-500 mr-2"><i class="fa fa-save mr-1"></i>草稿已自动保存</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 资源上传选项卡 -->
+                                    <div class="tab-pane hidden" id="resource-content">
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">上传资源</label>
+                                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-success transition-all-300">
+                                                <input type="file" id="resource-upload" class="hidden" multiple accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx">
+                                                <div class="mb-4">
+                                                    <i class="fa fa-cloud-upload text-4xl text-gray-400 mb-2"></i>
+                                                    <h5 class="text-sm font-medium text-gray-700">拖拽文件到此处或点击上传</h5>
+                                                    <p class="text-xs text-gray-500 mt-1">支持图片、PDF、Word、PPT、Excel，最多上传5个文件</p>
+                                                </div>
+                                                <button type="button" id="select-resources-btn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all-300">
+                                                    选择文件
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 文件预览区 -->
+                                        <div id="resource-preview" class="mb-4">
+                                            <!-- 文件预览将在这里动态生成 -->
+                                        </div>
+                                        
+                                        <!-- 资源说明 -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">资源说明</label>
+                                            <textarea id="resource-description" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent" rows="3" placeholder="请对上传资源进行简要描述"></textarea>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 题目创建选项卡 -->
+                                    <div class="tab-pane hidden" id="question-content">
+                                        <!-- 题目列表 -->
+                                        <div id="questions-list" class="space-y-4">
+                                            <!-- 题目将在这里动态生成 -->
+                                        </div>
+                                        
+                                        <!-- 添加题目按钮 -->
+                                        <div class="mt-4">
+                                            <button type="button" id="add-question-btn" class="flex items-center space-x-2 px-4 py-2 bg-success text-white rounded-lg hover:bg-green-700 transition-all-300">
+                                                <i class="fa fa-plus"></i>
+                                                <span>添加题目</span>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- 题目导入导出 -->
+                                        <div class="mt-4 flex space-x-2">
+                                            <button type="button" class="flex items-center space-x-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all-300">
+                                                <i class="fa fa-download"></i>
+                                                <span>导出模板</span>
+                                            </button>
+                                            <button type="button" class="flex items-center space-x-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all-300">
+                                                <i class="fa fa-upload"></i>
+                                                <span>导入题目</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 优化功能模块 -->
+                            <div class="mb-8">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- 作业模板功能 -->
+                                    <div>
+                                        <h4 class="text-lg font-medium text-gray-800 mb-4">作业模板</h4>
+                                        <div class="space-y-3">
+                                            <div class="flex items-center space-x-2">
+                                                <input type="checkbox" id="save-template" class="rounded">
+                                                <label for="save-template" class="text-sm text-gray-700">保存为模板</label>
+                                            </div>
+                                            <div class="border border-gray-200 rounded-lg p-3">
+                                                <h5 class="text-sm font-medium text-gray-700 mb-2">常用模板</h5>
+                                                <div class="space-y-2">
+                                                    <button type="button" class="w-full text-left px-3 py-2 bg-gray-50 rounded hover:bg-gray-100 transition-all-300 text-sm">
+                                                        课后练习模板
+                                                    </button>
+                                                    <button type="button" class="w-full text-left px-3 py-2 bg-gray-50 rounded hover:bg-gray-100 transition-all-300 text-sm">
+                                                        单元测验模板
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 发布设置选项 -->
+                                    <div>
+                                        <h4 class="text-lg font-medium text-gray-800 mb-4">发布设置</h4>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">发布范围</label>
+                                                <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent">
+                                                    <option value="all">全班</option>
+                                                    <option value="group">指定学生组</option>
+                                                    <option value="individual">个别学生</option>
+                                                </select>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <input type="checkbox" id="enable-reminder" class="rounded" checked>
+                                                <label for="enable-reminder" class="text-sm text-gray-700">作业提醒</label>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <input type="checkbox" id="allow-late" class="rounded">
+                                                <label for="allow-late" class="text-sm text-gray-700">允许迟交</label>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">提交方式</label>
+                                                <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent">
+                                                    <option value="online">在线提交</option>
+                                                    <option value="offline">线下提交标记</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 底部操作按钮 -->
+                            <div class="flex flex-wrap justify-end space-x-3 pt-4 border-t border-gray-200">
+                                <button type="button" id="cancel-homework" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                                    取消
+                                </button>
+                                <button type="button" id="save-draft" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all-300">
+                                    保存草稿
+                                </button>
+                                <button type="button" id="preview-homework" class="px-6 py-2 bg-blue-100 text-primary rounded-lg hover:bg-blue-200 transition-all-300">
+                                    预览
+                                </button>
+                                <button type="submit" id="publish-homework" class="px-6 py-2 bg-success text-white rounded-lg hover:bg-green-700 transition-all-300">
+                                    发布作业
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -750,6 +1105,789 @@
 
             // 初始获取文件列表
             getFiles();
+        });
+
+        // 作业布置功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const homeworkBtn = document.getElementById('homework-btn');
+            const homeworkModal = document.getElementById('homework-modal');
+            const closeHomeworkModal = document.getElementById('close-homework-modal');
+            const cancelHomework = document.getElementById('cancel-homework');
+            const saveDraft = document.getElementById('save-draft');
+            const previewHomework = document.getElementById('preview-homework');
+            const publishHomework = document.getElementById('publish-homework');
+            const homeworkForm = document.getElementById('homework-form');
+            const homeworkTitle = document.getElementById('homework-title');
+            const titleCount = document.getElementById('title-count');
+            const homeworkContent = document.getElementById('homework-content');
+            const contentCount = document.getElementById('content-count');
+            
+            // 资源上传功能
+            const resourceUpload = document.getElementById('resource-upload');
+            const selectResourcesBtn = document.getElementById('select-resources-btn');
+            const resourcePreview = document.getElementById('resource-preview');
+            const resourceDescription = document.getElementById('resource-description');
+            
+            // 存储选中的文件
+            let selectedFiles = [];
+            
+            // 题目创建功能
+            const addQuestionBtn = document.getElementById('add-question-btn');
+            const questionsList = document.getElementById('questions-list');
+            
+            // 存储题目数据
+            let questions = [];
+            let questionCounter = 0;
+            
+            // 选项卡切换功能
+            const tabButtons = document.querySelectorAll('#content-tabs button');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 移除所有选项卡的活动状态
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('border-success', 'text-success', 'active');
+                        btn.classList.add('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+                    });
+                    
+                    // 添加当前选项卡的活动状态
+                    this.classList.remove('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+                    this.classList.add('border-success', 'text-success', 'active');
+                    
+                    // 隐藏所有内容面板
+                    tabPanes.forEach(pane => {
+                        pane.classList.add('hidden');
+                        pane.classList.remove('active');
+                    });
+                    
+                    // 显示当前内容面板
+                    const activePane = document.getElementById(`${tabId}-content`);
+                    activePane.classList.remove('hidden');
+                    activePane.classList.add('active');
+                });
+            });
+            
+            // 字数统计功能
+            homeworkTitle.addEventListener('input', function() {
+                const length = this.value.length;
+                titleCount.textContent = length;
+                if (length > 50) {
+                    titleCount.classList.add('text-danger');
+                } else {
+                    titleCount.classList.remove('text-danger');
+                }
+            });
+            
+            homeworkContent.addEventListener('input', function() {
+                const length = this.value.length;
+                contentCount.textContent = length;
+                if (length > 5000) {
+                    contentCount.classList.add('text-danger');
+                } else {
+                    contentCount.classList.remove('text-danger');
+                }
+            });
+            
+            // 作业类型标签选择功能
+            const typeLabels = document.querySelectorAll('input[name="homework-type"]');
+            typeLabels.forEach(label => {
+                label.addEventListener('change', function() {
+                    // 移除所有标签的选中状态
+                    document.querySelectorAll('input[name="homework-type"]').forEach(input => {
+                        const parentLabel = input.closest('label');
+                        parentLabel.classList.remove('border-success', 'bg-green-50');
+                    });
+                    
+                    // 添加当前标签的选中状态
+                    if (this.checked) {
+                        const parentLabel = this.closest('label');
+                        parentLabel.classList.add('border-success', 'bg-green-50');
+                    }
+                });
+            });
+            
+            // 打开作业模态框
+            homeworkBtn.addEventListener('click', function() {
+                homeworkModal.classList.remove('hidden');
+                // 设置默认时间为当前时间
+                const now = new Date();
+                const formattedNow = now.toISOString().slice(0, 16);
+                document.getElementById('homework-start-time').value = formattedNow;
+                
+                // 设置默认结束时间为24小时后
+                const end = new Date(now.getTime() + 24 * 60 * 60000);
+                const formattedEnd = end.toISOString().slice(0, 16);
+                document.getElementById('homework-end-time').value = formattedEnd;
+            });
+            
+            // 关闭作业模态框
+            function closeHomeworkModalFunc() {
+                homeworkModal.classList.add('hidden');
+            }
+            
+            closeHomeworkModal.addEventListener('click', closeHomeworkModalFunc);
+            cancelHomework.addEventListener('click', closeHomeworkModalFunc);
+            
+            // 点击模态框外部关闭
+            homeworkModal.addEventListener('click', function(event) {
+                if (event.target === homeworkModal) {
+                    closeHomeworkModalFunc();
+                }
+            });
+            
+            // 保存草稿
+            saveDraft.addEventListener('click', function() {
+                alert('草稿已保存！');
+            });
+            
+            // 资源上传功能
+            // 点击选择文件
+            selectResourcesBtn.addEventListener('click', function() {
+                resourceUpload.click();
+            });
+            
+            // 文件选择事件
+            resourceUpload.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                handleFiles(files);
+                // 清空文件输入，允许重复选择同一文件
+                resourceUpload.value = '';
+            });
+            
+            // 拖拽上传功能
+            const dropZone = document.querySelector('.border-dashed');
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropZone.classList.add('border-success');
+            });
+            
+            dropZone.addEventListener('dragleave', function() {
+                dropZone.classList.remove('border-success');
+            });
+            
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('border-success');
+                const files = Array.from(e.dataTransfer.files);
+                handleFiles(files);
+            });
+            
+            // 处理文件
+            function handleFiles(files) {
+                if (files.length === 0) return;
+                
+                // 检查文件数量限制
+                if (selectedFiles.length + files.length > 5) {
+                    alert('最多只能上传5个文件');
+                    return;
+                }
+                
+                files.forEach(file => {
+                    // 检查文件大小
+                    if (file.type.startsWith('image/')) {
+                        if (file.size > 10 * 1024 * 1024) { // 10MB
+                            alert(`图片文件 ${file.name} 超过10MB限制`);
+                            return;
+                        }
+                    } else {
+                        if (file.size > 50 * 1024 * 1024) { // 50MB
+                            alert(`文档文件 ${file.name} 超过50MB限制`);
+                            return;
+                        }
+                    }
+                    
+                    // 检查文件类型
+                    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+                    if (!validTypes.includes(file.type)) {
+                        alert(`文件类型 ${file.type} 不支持`);
+                        return;
+                    }
+                    
+                    selectedFiles.push(file);
+                    previewFile(file);
+                });
+            }
+            
+            // 预览文件
+            function previewFile(file) {
+                const fileContainer = document.createElement('div');
+                fileContainer.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg mb-2';
+                fileContainer.dataset.index = selectedFiles.length - 1;
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'flex items-center space-x-3';
+                
+                // 文件图标
+                const fileIcon = document.createElement('i');
+                if (file.type.startsWith('image/')) {
+                    fileIcon.className = 'fa fa-file-image-o text-success text-xl';
+                } else if (file.type.includes('pdf')) {
+                    fileIcon.className = 'fa fa-file-pdf-o text-danger text-xl';
+                } else if (file.type.includes('word')) {
+                    fileIcon.className = 'fa fa-file-word-o text-blue-500 text-xl';
+                } else if (file.type.includes('powerpoint')) {
+                    fileIcon.className = 'fa fa-file-powerpoint-o text-orange-500 text-xl';
+                } else if (file.type.includes('excel')) {
+                    fileIcon.className = 'fa fa-file-excel-o text-green-600 text-xl';
+                } else {
+                    fileIcon.className = 'fa fa-file-o text-gray-500 text-xl';
+                }
+                
+                // 文件信息
+                const fileDetails = document.createElement('div');
+                const fileName = document.createElement('div');
+                fileName.className = 'text-sm font-medium text-gray-700 truncate max-w-[200px]';
+                fileName.textContent = file.name;
+                
+                const fileMeta = document.createElement('div');
+                fileMeta.className = 'text-xs text-gray-500';
+                fileMeta.textContent = `${(file.size / 1024 / 1024).toFixed(1)} MB`;
+                
+                fileDetails.appendChild(fileName);
+                fileDetails.appendChild(fileMeta);
+                
+                fileInfo.appendChild(fileIcon);
+                fileInfo.appendChild(fileDetails);
+                
+                // 文件操作
+                const fileActions = document.createElement('div');
+                fileActions.className = 'flex items-center space-x-2';
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'text-danger hover:text-red-700';
+                deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
+                deleteBtn.addEventListener('click', function() {
+                    const index = parseInt(fileContainer.dataset.index);
+                    selectedFiles.splice(index, 1);
+                    // 更新剩余文件的索引
+                    updateFileIndices();
+                    fileContainer.remove();
+                });
+                
+                fileActions.appendChild(deleteBtn);
+                
+                fileContainer.appendChild(fileInfo);
+                fileContainer.appendChild(fileActions);
+                resourcePreview.appendChild(fileContainer);
+            }
+            
+            // 更新文件索引
+            function updateFileIndices() {
+                const fileContainers = resourcePreview.querySelectorAll('.flex.items-center.justify-between');
+                fileContainers.forEach((container, index) => {
+                    container.dataset.index = index;
+                });
+            }
+            
+            // 题目创建功能
+            // 添加新题
+            addQuestionBtn.addEventListener('click', function() {
+                addNewQuestion();
+            });
+            
+            // 添加新题目
+            function addNewQuestion() {
+                const questionId = ++questionCounter;
+                const question = {
+                    id: questionId,
+                    type: 'multiple-choice',
+                    content: '',
+                    options: ['', ''],
+                    correctAnswer: 0,
+                    score: 5
+                };
+                
+                questions.push(question);
+                renderQuestion(question);
+            }
+            
+            // 渲染题目
+            function renderQuestion(question) {
+                const questionContainer = document.createElement('div');
+                questionContainer.className = 'border border-gray-200 rounded-lg p-4 mb-4';
+                questionContainer.dataset.id = question.id;
+                
+                // 题目头部
+                const questionHeader = document.createElement('div');
+                questionHeader.className = 'flex justify-between items-center mb-4 pb-2 border-b border-gray-100';
+                
+                const questionTitle = document.createElement('h5');
+                questionTitle.className = 'font-medium text-gray-800';
+                questionTitle.textContent = `题目 ${question.id}`;
+                
+                const questionActions = document.createElement('div');
+                questionActions.className = 'flex items-center space-x-2';
+                
+                // 题目类型选择
+                const typeSelect = document.createElement('select');
+                typeSelect.className = 'border border-gray-300 rounded-lg px-2 py-1 text-sm';
+                typeSelect.innerHTML = `
+                    <option value="multiple-choice" ${question.type === 'multiple-choice' ? 'selected' : ''}>选择题</option>
+                    <option value="true-false" ${question.type === 'true-false' ? 'selected' : ''}>判断题</option>
+                `;
+                typeSelect.addEventListener('change', function() {
+                    question.type = this.value;
+                    // 重新渲染题目以更新选项
+                    renderQuestionOptions(question, questionContainer);
+                });
+                
+                // 题目分值设置
+                const scoreInput = document.createElement('input');
+                scoreInput.type = 'number';
+                scoreInput.className = 'border border-gray-300 rounded-lg px-2 py-1 text-sm w-16';
+                scoreInput.value = question.score;
+                scoreInput.min = 1;
+                scoreInput.addEventListener('input', function() {
+                    question.score = parseInt(this.value) || 5;
+                });
+                
+                // 删除题目按钮
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'text-danger hover:text-red-700';
+                deleteBtn.innerHTML = '<i class="fa fa-trash"></i>';
+                deleteBtn.addEventListener('click', function() {
+                    // 从数组中删除题目
+                    questions = questions.filter(q => q.id !== question.id);
+                    // 从DOM中删除题目
+                    questionContainer.remove();
+                });
+                
+                questionActions.appendChild(typeSelect);
+                questionActions.appendChild(document.createTextNode(' 分值: '));
+                questionActions.appendChild(scoreInput);
+                questionActions.appendChild(document.createTextNode(' 分 '));
+                questionActions.appendChild(deleteBtn);
+                
+                questionHeader.appendChild(questionTitle);
+                questionHeader.appendChild(questionActions);
+                
+                // 题目内容编辑器
+                const questionContentContainer = document.createElement('div');
+                questionContentContainer.className = 'mb-4';
+                
+                const contentLabel = document.createElement('label');
+                contentLabel.className = 'block text-sm font-medium text-gray-700 mb-1';
+                contentLabel.textContent = '题目内容';
+                
+                const contentEditor = document.createElement('textarea');
+                contentEditor.className = 'w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent';
+                contentEditor.rows = 3;
+                contentEditor.placeholder = '请输入题目内容...';
+                contentEditor.value = question.content;
+                contentEditor.addEventListener('input', function() {
+                    question.content = this.value;
+                });
+                
+                questionContentContainer.appendChild(contentLabel);
+                questionContentContainer.appendChild(contentEditor);
+                
+                // 选项容器
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = 'mb-4';
+                optionsContainer.id = `options-container-${question.id}`;
+                
+                questionContainer.appendChild(questionHeader);
+                questionContainer.appendChild(questionContentContainer);
+                questionContainer.appendChild(optionsContainer);
+                
+                questionsList.appendChild(questionContainer);
+                
+                // 渲染选项
+                renderQuestionOptions(question, questionContainer);
+            }
+            
+            // 渲染题目选项
+            function renderQuestionOptions(question, questionContainer) {
+                const optionsContainer = document.getElementById(`options-container-${question.id}`);
+                optionsContainer.innerHTML = '';
+                
+                const optionsLabel = document.createElement('label');
+                optionsLabel.className = 'block text-sm font-medium text-gray-700 mb-2';
+                optionsLabel.textContent = '选项';
+                
+                optionsContainer.appendChild(optionsLabel);
+                
+                // 根据题目类型设置选项数量
+                let optionCount = question.type === 'multiple-choice' ? 4 : 2;
+                
+                // 确保选项数组长度正确
+                while (question.options.length < optionCount) {
+                    question.options.push('');
+                }
+                while (question.options.length > optionCount) {
+                    question.options.pop();
+                }
+                
+                question.options.forEach((option, index) => {
+                    const optionContainer = document.createElement('div');
+                    optionContainer.className = 'flex items-center space-x-2 mb-2';
+                    
+                    // 选项字母
+                    const optionLetter = document.createElement('div');
+                    optionLetter.className = 'w-6 h-6 flex items-center justify-center bg-gray-100 rounded text-sm font-medium text-gray-700';
+                    optionLetter.textContent = String.fromCharCode(65 + index);
+                    
+                    // 选项输入框
+                    const optionInput = document.createElement('input');
+                    optionInput.type = 'text';
+                    optionInput.className = 'flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent';
+                    optionInput.placeholder = `选项 ${String.fromCharCode(65 + index)}`;
+                    optionInput.value = option;
+                    optionInput.addEventListener('input', function() {
+                        question.options[index] = this.value;
+                    });
+                    
+                    // 正确答案复选框
+                    const correctCheckbox = document.createElement('input');
+                    correctCheckbox.type = 'radio';
+                    correctCheckbox.name = `correct-${question.id}`;
+                    correctCheckbox.className = 'rounded';
+                    correctCheckbox.checked = question.correctAnswer === index;
+                    correctCheckbox.addEventListener('change', function() {
+                        question.correctAnswer = index;
+                    });
+                    
+                    // 正确答案标签
+                    const correctLabel = document.createElement('label');
+                    correctLabel.className = 'text-sm text-gray-700';
+                    correctLabel.textContent = '正确答案';
+                    
+                    optionContainer.appendChild(optionLetter);
+                    optionContainer.appendChild(optionInput);
+                    optionContainer.appendChild(correctCheckbox);
+                    optionContainer.appendChild(correctLabel);
+                    
+                    optionsContainer.appendChild(optionContainer);
+                });
+                
+                // 如果是选择题，添加/删除选项按钮
+                if (question.type === 'multiple-choice') {
+                    const optionActions = document.createElement('div');
+                    optionActions.className = 'flex space-x-2 mt-2';
+                    
+                    const addOptionBtn = document.createElement('button');
+                    addOptionBtn.type = 'button';
+                    addOptionBtn.className = 'flex items-center space-x-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all-300 text-sm';
+                    addOptionBtn.innerHTML = '<i class="fa fa-plus"></i><span>添加选项</span>';
+                    addOptionBtn.addEventListener('click', function() {
+                        if (question.options.length < 5) {
+                            question.options.push('');
+                            renderQuestionOptions(question, questionContainer);
+                        } else {
+                            alert('选择题最多只能有5个选项');
+                        }
+                    });
+                    
+                    const removeOptionBtn = document.createElement('button');
+                    removeOptionBtn.type = 'button';
+                    removeOptionBtn.className = 'flex items-center space-x-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all-300 text-sm';
+                    removeOptionBtn.innerHTML = '<i class="fa fa-minus"></i><span>删除选项</span>';
+                    removeOptionBtn.addEventListener('click', function() {
+                        if (question.options.length > 2) {
+                            question.options.pop();
+                            // 如果删除的是正确答案，重新设置正确答案
+                            if (question.correctAnswer >= question.options.length) {
+                                question.correctAnswer = question.options.length - 1;
+                            }
+                            renderQuestionOptions(question, questionContainer);
+                        } else {
+                            alert('选择题至少需要2个选项');
+                        }
+                    });
+                    
+                    optionActions.appendChild(addOptionBtn);
+                    optionActions.appendChild(removeOptionBtn);
+                    
+                    optionsContainer.appendChild(optionActions);
+                }
+            }
+            
+            // 题目导入导出功能
+            const importExportBtns = document.querySelectorAll('.mt-4.flex.space-x-2 button');
+            importExportBtns.forEach((btn, index) => {
+                if (index === 0) {
+                    // 导出模板按钮
+                    btn.addEventListener('click', function() {
+                        alert('导出模板功能开发中...');
+                    });
+                } else if (index === 1) {
+                    // 导入题目按钮
+                    btn.addEventListener('click', function() {
+                        alert('导入题目功能开发中...');
+                    });
+                }
+            });
+            
+            // 预览作业
+            previewHomework.addEventListener('click', function() {
+                alert('预览功能开发中...');
+            });
+            
+            // 发布作业
+            publishHomework.addEventListener('click', function() {
+                // 表单验证
+                if (!validateHomeworkForm()) {
+                    return;
+                }
+                
+                // 显示加载状态
+                publishHomework.disabled = true;
+                publishHomework.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>发布中...';
+                
+                // 模拟API请求
+                setTimeout(function() {
+                    // 恢复按钮状态
+                    publishHomework.disabled = false;
+                    publishHomework.innerHTML = '发布作业';
+                    
+                    // 显示成功消息
+                    alert('作业发布成功！');
+                    
+                    // 关闭模态框
+                    closeHomeworkModalFunc();
+                }, 1500);
+            });
+            
+            // 表单验证
+            function validateHomeworkForm() {
+                const title = homeworkTitle.value.trim();
+                const course = document.getElementById('course-select').value;
+                const type = document.querySelector('input[name="homework-type"]:checked');
+                const startTime = document.getElementById('homework-start-time').value;
+                const endTime = document.getElementById('homework-end-time').value;
+                const score = document.getElementById('homework-score').value;
+                
+                if (!title) {
+                    alert('请输入作业标题');
+                    return false;
+                }
+                
+                if (title.length > 50) {
+                    alert('作业标题不能超过50字');
+                    return false;
+                }
+                
+                if (!course) {
+                    alert('请选择课程');
+                    return false;
+                }
+                
+                if (!type) {
+                    alert('请选择作业类型');
+                    return false;
+                }
+                
+                if (!startTime) {
+                    alert('请设置开始时间');
+                    return false;
+                }
+                
+                if (!endTime) {
+                    alert('请设置结束时间');
+                    return false;
+                }
+                
+                if (new Date(startTime) >= new Date(endTime)) {
+                    alert('结束时间必须晚于开始时间');
+                    return false;
+                }
+                
+                if (!score || score <= 0) {
+                    alert('请设置有效的作业总分');
+                    return false;
+                }
+                
+                return true;
+            }
+        });
+
+        // 课堂小测功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const quizBtn = document.getElementById('quiz-btn');
+            const quizModal = document.getElementById('quiz-modal');
+            const closeQuizModal = document.getElementById('close-quiz-modal');
+            const cancelQuiz = document.getElementById('cancel-quiz');
+            const quizForm = document.getElementById('quiz-form');
+            const startTime = document.getElementById('start-time');
+            const endTime = document.getElementById('end-time');
+            const duration = document.getElementById('duration');
+            const imageUpload = document.getElementById('image-upload');
+            const selectImagesBtn = document.getElementById('select-images-btn');
+            const imagePreview = document.getElementById('image-preview');
+            const confirmQuiz = document.getElementById('confirm-quiz');
+
+            // 存储选中的图片
+            let selectedImages = [];
+
+            // 打开小测模态框
+            quizBtn.addEventListener('click', function() {
+                quizModal.classList.remove('hidden');
+                // 设置默认时间为当前时间
+                const now = new Date();
+                const formattedNow = now.toISOString().slice(0, 16);
+                startTime.value = formattedNow;
+                
+                // 设置默认结束时间为30分钟后
+                const end = new Date(now.getTime() + 30 * 60000);
+                const formattedEnd = end.toISOString().slice(0, 16);
+                endTime.value = formattedEnd;
+                
+                // 计算默认时长
+                calculateDuration();
+            });
+
+            // 关闭小测模态框
+            function closeModal() {
+                quizModal.classList.add('hidden');
+                // 重置表单
+                quizForm.reset();
+                selectedImages = [];
+                imagePreview.innerHTML = '';
+            }
+
+            closeQuizModal.addEventListener('click', closeModal);
+            cancelQuiz.addEventListener('click', closeModal);
+
+            // 点击模态框外部关闭
+            quizModal.addEventListener('click', function(event) {
+                if (event.target === quizModal) {
+                    closeModal();
+                }
+            });
+
+            // 时间变化时计算持续时长
+            startTime.addEventListener('change', calculateDuration);
+            endTime.addEventListener('change', calculateDuration);
+
+            function calculateDuration() {
+                if (startTime.value && endTime.value) {
+                    const start = new Date(startTime.value);
+                    const end = new Date(endTime.value);
+                    const diffMinutes = Math.round((end - start) / (1000 * 60));
+                    if (diffMinutes > 0) {
+                        duration.value = diffMinutes;
+                    }
+                }
+            }
+
+            // 点击选择图片按钮
+            selectImagesBtn.addEventListener('click', function() {
+                imageUpload.click();
+            });
+
+            // 图片选择事件
+            imageUpload.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                if (files.length > 0) {
+                    files.forEach(file => {
+                        if (file.type.startsWith('image/')) {
+                            selectedImages.push(file);
+                            previewImage(file);
+                        }
+                    });
+                    // 清空文件输入，允许重复选择同一文件
+                    imageUpload.value = '';
+                }
+            });
+
+            // 预览图片
+            function previewImage(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'relative';
+                    imageContainer.dataset.index = selectedImages.length - 1;
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-40 object-cover rounded-lg';
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'absolute top-2 right-2 bg-danger text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-all-300';
+                    deleteBtn.innerHTML = '<i class="fa fa-times"></i>';
+                    deleteBtn.addEventListener('click', function() {
+                        const index = parseInt(imageContainer.dataset.index);
+                        selectedImages.splice(index, 1);
+                        // 更新剩余图片的索引
+                        updateImageIndices();
+                        imageContainer.remove();
+                    });
+                    
+                    imageContainer.appendChild(img);
+                    imageContainer.appendChild(deleteBtn);
+                    imagePreview.appendChild(imageContainer);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // 更新图片索引
+            function updateImageIndices() {
+                const imageContainers = imagePreview.querySelectorAll('.relative');
+                imageContainers.forEach((container, index) => {
+                    container.dataset.index = index;
+                });
+            }
+
+            // 表单提交
+            quizForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // 表单验证
+                const quizTitle = document.getElementById('quiz-title').value.trim();
+                
+                if (!quizTitle) {
+                    alert('请输入小测标题');
+                    return;
+                }
+                
+                if (!startTime.value) {
+                    alert('请设置开始时间');
+                    return;
+                }
+                
+                if (!endTime.value) {
+                    alert('请设置结束时间');
+                    return;
+                }
+                
+                if (new Date(startTime.value) >= new Date(endTime.value)) {
+                    alert('结束时间必须晚于开始时间');
+                    return;
+                }
+                
+                // 显示加载状态
+                confirmQuiz.disabled = true;
+                confirmQuiz.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>发起中...';
+                
+                // 准备表单数据
+                const formData = new FormData();
+                formData.append('title', quizTitle);
+                formData.append('description', document.getElementById('quiz-description').value.trim());
+                formData.append('startTime', startTime.value);
+                formData.append('endTime', endTime.value);
+                formData.append('duration', duration.value);
+                
+                // 添加图片文件
+                selectedImages.forEach((image, index) => {
+                    formData.append(`images[${index}]`, image);
+                });
+                
+                // 模拟API请求
+                setTimeout(function() {
+                    // 恢复按钮状态
+                    confirmQuiz.disabled = false;
+                    confirmQuiz.innerHTML = '确认发起';
+                    
+                    // 显示成功消息
+                    alert('小测发起成功！');
+                    
+                    // 关闭模态框
+                    closeModal();
+                }, 1500);
+            });
         });
     </script>
 </body>
