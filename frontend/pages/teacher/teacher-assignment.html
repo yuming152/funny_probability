@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作业与小测管理 - 教师端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+
+        /* 深色模式样式 */
+        .dark {
+            background-color: #121212;
+            color: #f9fafb;
+        }
+
+        .dark body {
+            background-color: #121212;
+            color: #f9fafb;
+        }
+
+        .dark .bg-white {
+            background-color: #1e1e1e;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #121212;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #2d2d2d;
+        }
+
+        .dark .bg-gray-200 {
+            background-color: #3d3d3d;
+        }
+
+        .dark .bg-gray-300 {
+            background-color: #4d4d4d;
+        }
+
+        .dark .text-gray-500 {
+            color: #a3a3a3;
+        }
+
+        .dark .text-gray-600 {
+            color: #d1d5db;
+        }
+
+        .dark .text-gray-700 {
+            color: #e5e7eb;
+        }
+
+        .dark .text-gray-800 {
+            color: #f3f4f6;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #374151;
+        }
+
+        .dark .border-gray-300 {
+            border-color: #4b5563;
+        }
+
+        .dark .shadow-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark .sidebar-active {
+            background-color: rgba(30, 64, 175, 0.2);
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 教师端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button id="ai-assistant-btn" class="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300">
+                        <i class="fa fa-magic"></i>
+                        <span>AI备课助手</span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                            <i class="fa fa-bell text-gray-600"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-primary font-medium">张</span>
+                        </div>
+                        <span class="text-gray-700 font-medium">张老师</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="teacher.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-dashboard w-5 text-center"></i>
+                    <span>教学决策中枢</span>
+                </a>
+                <a href="teacher-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验管理</span>
+                </a>
+                <a href="teacher-report.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-bar-chart w-5 text-center"></i>
+                    <span>学情分析报告</span>
+                </a>
+                <a href="teacher-assignment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-file-text w-5 text-center"></i>
+                    <span>作业与小测</span>
+                </a>
+                <a href="teacher-class.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>班级管理</span>
+                </a>
+                <a href="teacher-knowledge.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识库</span>
+                </a>
+                <a href="teacher-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">点击题目卡片可编辑题目内容，支持多种题型的创建与管理。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间内容区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">作业与小测管理</h2>
+                <p class="text-gray-600">创建、编辑、发布和管理各类作业与小测试题。</p>
+            </div>
+
+            <!-- 操作按钮区 -->
+            <div class="mb-6 flex flex-wrap gap-4">
+                <button id="create-assignment-btn" class="flex items-center space-x-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                    <i class="fa fa-plus"></i>
+                    <span>创建作业</span>
+                </button>
+                <button id="create-quiz-btn" class="flex items-center space-x-2 px-6 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                    <i class="fa fa-plus"></i>
+                    <span>创建小测</span>
+                </button>
+                <div class="ml-auto">
+                    <div class="relative">
+                        <input type="text" placeholder="搜索作业/小测" class="border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 作业与小测标签页 -->
+            <div class="mb-8">
+                <div class="border-b border-gray-200">
+                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="assignment-tabs" role="tablist">
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 border-primary text-primary rounded-t-lg active" id="all-tab" data-tab="all" type="button" role="tab">
+                                全部
+                            </button>
+                        </li>
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg" id="homework-tab" data-tab="homework" type="button" role="tab">
+                                作业
+                            </button>
+                        </li>
+                        <li class="mr-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg" id="quiz-tab" data-tab="quiz" type="button" role="tab">
+                                小测
+                            </button>
+                        </li>
+                        <li role="presentation">
+                            <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg" id="draft-tab" data-tab="draft" type="button" role="tab">
+                                草稿
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 标签页内容 -->
+                <div class="tab-content">
+                    <!-- 全部作业与小测 -->
+                    <div class="tab-pane active" id="all-content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- 作业卡片 1 -->
+                            <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                                <div class="p-4 border-b border-gray-200">
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="text-lg font-bold text-gray-800">概率模型作业</h3>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">作业</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600 mt-2">
+                                        <i class="fa fa-calendar-o mr-2"></i>
+                                        <span>截止时间：2024-01-20 23:59</span>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div>
+                                            <span class="text-sm text-gray-600">总分</span>
+                                            <div class="text-xl font-bold text-primary">100分</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm text-gray-600">已提交</span>
+                                            <div class="text-xl font-bold text-success">12/30</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm text-gray-600">平均得分</span>
+                                            <div class="text-xl font-bold text-secondary">78分</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 text-sm">
+                                            <i class="fa fa-eye mr-1"></i> 查看
+                                        </button>
+                                        <button class="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 text-sm">
+                                            <i class="fa fa-edit mr-1"></i> 编辑
+                                        </button>
+                                        <button class="flex-1 px-3 py-2 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 text-sm">
+                                            <i class="fa fa-trash mr-1"></i> 删除
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 小测卡片 1 -->
+                            <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                                <div class="p-4 border-b border-gray-200">
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="text-lg font-bold text-gray-800">正态分布小测</h3>
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">小测</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600 mt-2">
+                                        <i class="fa fa-calendar-o mr-2"></i>
+                                        <span>截止时间：2024-01-19 14:00</span>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div>
+                                            <span class="text-sm text-gray-600">总分</span>
+                                            <div class="text-xl font-bold text-primary">50分</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm text-gray-600">已提交</span>
+                                            <div class="text-xl font-bold text-success">28/30</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm text-gray-600">平均得分</span>
+                                            <div class="text-xl font-bold text-secondary">36分</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 text-sm">
+                                            <i class="fa fa-eye mr-1"></i> 查看
+                                        </button>
+                                        <button class="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 text-sm">
+                                            <i class="fa fa-edit mr-1"></i> 编辑
+                                        </button>
+                                        <button class="flex-1 px-3 py-2 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 text-sm">
+                                            <i class="fa fa-trash mr-1"></i> 删除
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 草稿卡片 1 -->
+                            <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                                <div class="p-4 border-b border-gray-200">
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="text-lg font-bold text-gray-800">古典概型作业</h3>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">草稿</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600 mt-2">
+                                        <i class="fa fa-calendar-o mr-2"></i>
+                                        <span>未设置截止时间</span>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div>
+                                            <span class="text-sm text-gray-600">总分</span>
+                                            <div class="text-xl font-bold text-primary">80分</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm text-gray-600">题目数</span>
+                                            <div class="text-xl font-bold text-secondary">5题</div>
+                                        </div>
+                                        <div>
+                                            <span class="text-sm text-gray-600">状态</span>
+                                            <div class="text-xl font-bold text-warning">未发布</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 text-sm">
+                                            <i class="fa fa-edit mr-1"></i> 编辑
+                                        </button>
+                                        <button class="flex-1 px-3 py-2 bg-success text-white rounded-lg hover:bg-green-700 transition-all-300 text-sm">
+                                            <i class="fa fa-paper-plane mr-1"></i> 发布
+                                        </button>
+                                        <button class="flex-1 px-3 py-2 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 text-sm">
+                                            <i class="fa fa-trash mr-1"></i> 删除
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据统计 -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-4">作业与小测数据统计</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 提交情况统计 -->
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4">提交情况统计</h4>
+                        <div class="h-80">
+                            <canvas id="submission-chart"></canvas>
+                        </div>
+                    </div>
+                    <!-- 得分分布统计 -->
+                    <div class="bg-white rounded-xl shadow-card p-4">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4">得分分布统计</h4>
+                        <div class="h-80">
+                            <canvas id="score-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 创建作业模态框 -->
+    <div id="create-assignment-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <!-- 模态框头部 -->
+            <div class="border-b border-gray-200 p-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">创建作业</h3>
+                <button id="close-assignment-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 模态框内容 -->
+            <div class="p-6">
+                <form id="assignment-form">
+                    <!-- 作业基本信息 -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-800 mb-4">基本信息</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- 作业标题 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">作业标题 <span class="text-danger">*</span></label>
+                                <input type="text" id="assignment-title" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入作业标题" maxlength="50">
+                                <p class="text-xs text-gray-500 mt-1"><span id="assignment-title-count">0</span>/50</p>
+                            </div>
+                            
+                            <!-- 课程选择 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">课程 <span class="text-danger">*</span></label>
+                                <select id="assignment-course" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <option value="">请选择课程</option>
+                                    <option value="1">概率论与数理统计</option>
+                                    <option value="2">统计学</option>
+                                    <option value="3">数学建模</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 作业类型 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">作业类型 <span class="text-danger">*</span></label>
+                                <div class="flex flex-wrap gap-2">
+                                    <label class="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-full cursor-pointer hover:border-primary hover:bg-blue-50 transition-all-300">
+                                        <input type="radio" name="assignment-type" value="after-class" class="hidden">
+                                        <span class="text-sm">课后练习</span>
+                                    </label>
+                                    <label class="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-full cursor-pointer hover:border-primary hover:bg-blue-50 transition-all-300">
+                                        <input type="radio" name="assignment-type" value="unit-test" class="hidden">
+                                        <span class="text-sm">单元测验</span>
+                                    </label>
+                                    <label class="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-full cursor-pointer hover:border-primary hover:bg-blue-50 transition-all-300">
+                                        <input type="radio" name="assignment-type" value="practice" class="hidden">
+                                        <span class="text-sm">实践作业</span>
+                                    </label>
+                                    <label class="flex items-center space-x-1 px-3 py-1 border border-gray-300 rounded-full cursor-pointer hover:border-primary hover:bg-blue-50 transition-all-300">
+                                        <input type="radio" name="assignment-type" value="other" class="hidden">
+                                        <span class="text-sm">其他</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- 作业总分 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">作业总分 <span class="text-danger">*</span></label>
+                                <input type="number" id="assignment-score" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="100" min="1" max="1000">
+                            </div>
+                            
+                            <!-- 开始时间 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">开始时间 <span class="text-danger">*</span></label>
+                                <input type="datetime-local" id="assignment-start-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            
+                            <!-- 结束时间 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">结束时间 <span class="text-danger">*</span></label>
+                                <input type="datetime-local" id="assignment-end-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            
+                            <!-- 预计完成时长 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">预计完成时长（分钟）</label>
+                                <input type="number" id="assignment-estimated-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="供学生参考" min="1">
+                            </div>
+                            
+                            <!-- 班级选择 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">发布班级 <span class="text-danger">*</span></label>
+                                <select id="assignment-class" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" multiple>
+                                    <option value="1">概率论与数理统计（1班）</option>
+                                    <option value="2">概率论与数理统计（2班）</option>
+                                    <option value="3">概率论与数理统计（3班）</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 题目管理 -->
+                    <div class="mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-medium text-gray-800">题目管理</h4>
+                            <button type="button" id="add-question-btn" class="flex items-center space-x-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                                <i class="fa fa-plus"></i>
+                                <span>添加题目</span>
+                            </button>
+                        </div>
+                        
+                        <!-- 题目列表 -->
+                        <div id="questions-container" class="space-y-6">
+                            <!-- 题目 1 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <span class="text-sm font-medium text-gray-700">题目 1</span>
+                                        <select class="ml-2 border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            <option value="single-choice">单选题</option>
+                                            <option value="multiple-choice">多选题</option>
+                                            <option value="fill-blank">填空题</option>
+                                            <option value="short-answer">简答题</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 text-sm">
+                                            <i class="fa fa-arrow-up"></i>
+                                        </button>
+                                        <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 text-sm">
+                                            <i class="fa fa-arrow-down"></i>
+                                        </button>
+                                        <button class="px-3 py-1 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 text-sm">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">题目内容 <span class="text-danger">*</span></label>
+                                    <textarea class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="请输入题目内容"></textarea>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">选项</label>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center space-x-2">
+                                            <input type="radio" name="option-1" value="A" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
+                                            <input type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="选项 A">
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="radio" name="option-1" value="B" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
+                                            <input type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="选项 B">
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="radio" name="option-1" value="C" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
+                                            <input type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="选项 C">
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="radio" name="option-1" value="D" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
+                                            <input type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="选项 D">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">正确答案 <span class="text-danger">*</span></label>
+                                        <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="例如：A">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">分值 <span class="text-danger">*</span></label>
+                                        <input type="number" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" min="1" value="20">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <button type="button" id="save-draft-btn" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                            保存草稿
+                        </button>
+                        <button type="button" id="preview-assignment-btn" class="px-6 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                            <i class="fa fa-eye mr-2"></i>预览
+                        </button>
+                        <button type="submit" id="publish-assignment-btn" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                                    <i class="fa fa-paper-plane mr-2"></i>发布
+                                </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建小测模态框 -->
+    <div id="create-quiz-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <!-- 模态框头部 -->
+            <div class="border-b border-gray-200 p-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">创建小测</h3>
+                <button id="close-quiz-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 模态框内容 -->
+            <div class="p-6">
+                <form id="quiz-form">
+                    <!-- 小测基本信息 -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-800 mb-4">基本信息</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">小测标题 <span class="text-danger">*</span></label>
+                                <input type="text" id="quiz-title" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" placeholder="请输入小测标题">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">小测说明</label>
+                                <textarea id="quiz-description" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" rows="3" placeholder="请输入小测说明（可选）"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 时间设置 -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-medium text-gray-800 mb-4">时间设置</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">开始时间 <span class="text-danger">*</span></label>
+                                <input type="datetime-local" id="quiz-start-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">结束时间 <span class="text-danger">*</span></label>
+                                <input type="datetime-local" id="quiz-end-time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">持续时长（分钟）</label>
+                                <input type="number" id="quiz-duration" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" min="1" placeholder="自动计算">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 题目管理 -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-medium text-gray-800">题目管理</h4>
+                            <button type="button" id="add-quiz-question-btn" class="flex items-center space-x-2 px-4 py-2 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                                <i class="fa fa-plus"></i>
+                                <span>添加题目</span>
+                            </button>
+                        </div>
+                        
+                        <!-- 题目列表 -->
+                        <div id="quiz-questions-container" class="space-y-4">
+                            <!-- 题目 1 -->
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <span class="text-sm font-medium text-gray-700">题目 1</span>
+                                    </div>
+                                    <button class="px-3 py-1 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 text-sm">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">题目内容 <span class="text-danger">*</span></label>
+                                    <textarea class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" rows="2" placeholder="请输入题目内容"></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">分值 <span class="text-danger">*</span></label>
+                                        <input type="number" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" min="1" value="10">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">题型 <span class="text-danger">*</span></label>
+                                        <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                                            <option value="single-choice">单选题</option>
+                                            <option value="multiple-choice">多选题</option>
+                                            <option value="fill-blank">填空题</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <button type="button" id="save-quiz-draft-btn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                            保存草稿
+                        </button>
+                        <button type="submit" id="publish-quiz-btn" class="px-6 py-2 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300">
+                            确认发起
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签页切换
+        document.addEventListener('DOMContentLoaded', function() {
+            // 作业与小测标签页
+            const tabs = document.querySelectorAll('#assignment-tabs button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有标签页的活动状态
+                    tabs.forEach(t => {
+                        t.classList.remove('border-primary', 'text-primary');
+                        t.classList.add('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+                    });
+                    // 添加当前标签页的活动状态
+                    this.classList.remove('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+                    this.classList.add('border-primary', 'text-primary');
+                });
+            });
+
+            // 初始化图表
+            initCharts();
+
+            // 作业标题字数统计
+            const assignmentTitle = document.getElementById('assignment-title');
+            const assignmentTitleCount = document.getElementById('assignment-title-count');
+            if (assignmentTitle && assignmentTitleCount) {
+                assignmentTitle.addEventListener('input', function() {
+                    assignmentTitleCount.textContent = this.value.length;
+                });
+            }
+
+            // 模态框控制
+            const createAssignmentBtn = document.getElementById('create-assignment-btn');
+            const createQuizBtn = document.getElementById('create-quiz-btn');
+            const createAssignmentModal = document.getElementById('create-assignment-modal');
+            const createQuizModal = document.getElementById('create-quiz-modal');
+            const closeAssignmentModal = document.getElementById('close-assignment-modal');
+            const closeQuizModal = document.getElementById('close-quiz-modal');
+
+            if (createAssignmentBtn && createAssignmentModal) {
+                createAssignmentBtn.addEventListener('click', function() {
+                    createAssignmentModal.classList.remove('hidden');
+                });
+            }
+
+            if (createQuizBtn && createQuizModal) {
+                createQuizBtn.addEventListener('click', function() {
+                    createQuizModal.classList.remove('hidden');
+                });
+            }
+
+            if (closeAssignmentModal && createAssignmentModal) {
+                closeAssignmentModal.addEventListener('click', function() {
+                    createAssignmentModal.classList.add('hidden');
+                });
+            }
+
+            if (closeQuizModal && createQuizModal) {
+                closeQuizModal.addEventListener('click', function() {
+                    createQuizModal.classList.add('hidden');
+                });
+            }
+
+            // 点击模态框外部关闭
+            if (createAssignmentModal) {
+                createAssignmentModal.addEventListener('click', function(e) {
+                    if (e.target === createAssignmentModal) {
+                        createAssignmentModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (createQuizModal) {
+                createQuizModal.addEventListener('click', function(e) {
+                    if (e.target === createQuizModal) {
+                        createQuizModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            // 添加题目按钮
+            const addQuestionBtn = document.getElementById('add-question-btn');
+            const questionsContainer = document.getElementById('questions-container');
+            if (addQuestionBtn && questionsContainer) {
+                addQuestionBtn.addEventListener('click', function() {
+                    const questionCount = questionsContainer.children.length + 1;
+                    const questionHTML = `
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <span class="text-sm font-medium text-gray-700">题目 ${questionCount}</span>
+                                    <select class="ml-2 border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="single-choice">单选题</option>
+                                        <option value="multiple-choice">多选题</option>
+                                        <option value="fill-blank">填空题</option>
+                                        <option value="short-answer">简答题</option>
+                                    </select>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 text-sm">
+                                        <i class="fa fa-arrow-up"></i>
+                                    </button>
+                                    <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 text-sm">
+                                        <i class="fa fa-arrow-down"></i>
+                                    </button>
+                                    <button class="px-3 py-1 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 text-sm">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">题目内容 <span class="text-danger">*</span></label>
+                                <textarea class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="请输入题目内容"></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">选项</label>
+                                <div class="space-y-2">
+                                    <div class="flex items-center space-x-2">
+                                        <input type="radio" name="option-${questionCount}" value="A" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
+                                        <input type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="选项 A">
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="radio" name="option-${questionCount}" value="B" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
+                                        <input type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="选项 B">
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="radio" name="option-${questionCount}" value="C" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
+                                        <input type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="选项 C">
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="radio" name="option-${questionCount}" value="D" class="w-4 h-4 text-primary focus:ring-primary border-gray-300">
+                                        <input type="text" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="选项 D">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">正确答案 <span class="text-danger">*</span></label>
+                                    <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="例如：A">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">分值 <span class="text-danger">*</span></label>
+                                    <input type="number" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" min="1" value="20">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    questionsContainer.insertAdjacentHTML('beforeend', questionHTML);
+                });
+            }
+
+            // 保存草稿按钮
+            const saveDraftBtn = document.getElementById('save-draft-btn');
+            if (saveDraftBtn) {
+                saveDraftBtn.addEventListener('click', function() {
+                    alert('草稿已保存');
+                    createAssignmentModal.classList.add('hidden');
+                });
+            }
+
+            // 预览作业按钮
+            const previewAssignmentBtn = document.getElementById('preview-assignment-btn');
+            if (previewAssignmentBtn) {
+                previewAssignmentBtn.addEventListener('click', function() {
+                    alert('作业预览功能');
+                });
+            }
+
+            // 发布作业按钮
+            const publishAssignmentBtn = document.getElementById('publish-assignment-btn');
+            if (publishAssignmentBtn) {
+                publishAssignmentBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('作业已发布');
+                    createAssignmentModal.classList.add('hidden');
+                });
+            }
+
+            // 作业卡片按钮事件
+            const viewButtons = document.querySelectorAll('button:has(.fa-eye)');
+            viewButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    alert('查看作业详情');
+                });
+            });
+
+            const editButtons = document.querySelectorAll('button:has(.fa-edit)');
+            editButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    alert('编辑作业');
+                });
+            });
+
+            const deleteButtons = document.querySelectorAll('button:has(.fa-trash)');
+            deleteButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (confirm('确定要删除这个作业吗？')) {
+                        alert('作业已删除');
+                    }
+                });
+            });
+
+            // 标签页切换功能
+            const tabs = document.querySelectorAll('#assignment-tabs button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有标签页的活动状态
+                    tabs.forEach(t => {
+                        t.classList.remove('border-primary', 'text-primary');
+                        t.classList.add('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+                    });
+                    // 添加当前标签页的活动状态
+                    this.classList.remove('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+                    this.classList.add('border-primary', 'text-primary');
+                    
+                    // 这里可以添加实际的内容切换逻辑
+                    const tabId = this.getAttribute('data-tab');
+                    console.log('切换到标签页:', tabId);
+                });
+            });
+        });
+
+        // 初始化图表
+        function initCharts() {
+            // 提交情况统计图表
+            const submissionCtx = document.getElementById('submission-chart');
+            if (submissionCtx) {
+                new Chart(submissionCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['概率模型作业', '正态分布小测', '古典概型作业', '几何概型小测', '二项分布作业'],
+                        datasets: [
+                            {
+                                label: '已提交',
+                                data: [12, 28, 0, 25, 0],
+                                backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: '未提交',
+                                data: [18, 2, 30, 5, 30],
+                                backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: '人数'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 得分分布统计图表
+            const scoreDistributionCtx = document.getElementById('score-distribution-chart');
+            if (scoreDistributionCtx) {
+                new Chart(scoreDistributionCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['90-100分', '80-89分', '70-79分', '60-69分', '60分以下'],
+                        datasets: [
+                            {
+                                data: [3, 4, 3, 1, 1],
+                                backgroundColor: [
+                                    'rgba(16, 185, 129, 0.7)',
+                                    'rgba(59, 130, 246, 0.7)',
+                                    'rgba(245, 158, 11, 0.7)',
+                                    'rgba(249, 115, 22, 0.7)',
+                                    'rgba(239, 68, 68, 0.7)'
+                                ],
+                                borderColor: [
+                                    'rgba(16, 185, 129, 1)',
+                                    'rgba(59, 130, 246, 1)',
+                                    'rgba(245, 158, 11, 1)',
+                                    'rgba(249, 115, 22, 1)',
+                                    'rgba(239, 68, 68, 1)'
+                                ],
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

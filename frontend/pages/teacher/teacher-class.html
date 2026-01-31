@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级管理 - 教师端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+
+        /* 深色模式样式 */
+        .dark {
+            background-color: #121212;
+            color: #f9fafb;
+        }
+
+        .dark body {
+            background-color: #121212;
+            color: #f9fafb;
+        }
+
+        .dark .bg-white {
+            background-color: #1e1e1e;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #121212;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #2d2d2d;
+        }
+
+        .dark .bg-gray-200 {
+            background-color: #3d3d3d;
+        }
+
+        .dark .text-gray-500 {
+            color: #a3a3a3;
+        }
+
+        .dark .text-gray-600 {
+            color: #d1d5db;
+        }
+
+        .dark .text-gray-700 {
+            color: #e5e7eb;
+        }
+
+        .dark .text-gray-800 {
+            color: #f3f4f6;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #374151;
+        }
+
+        .dark .border-gray-300 {
+            border-color: #4b5563;
+        }
+
+        .dark .shadow-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark .sidebar-active {
+            background-color: rgba(30, 64, 175, 0.2);
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 教师端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button id="ai-assistant-btn" class="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300">
+                        <i class="fa fa-magic"></i>
+                        <span>AI备课助手</span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                            <i class="fa fa-bell text-gray-600"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-primary font-medium">张</span>
+                        </div>
+                        <span class="text-gray-700 font-medium">张老师</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="teacher.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-dashboard w-5 text-center"></i>
+                    <span>教学决策中枢</span>
+                </a>
+                <a href="teacher-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验管理</span>
+                </a>
+                <a href="teacher-report.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-bar-chart w-5 text-center"></i>
+                    <span>学情分析报告</span>
+                </a>
+                <a href="teacher-assignment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-file-text w-5 text-center"></i>
+                    <span>作业与小测</span>
+                </a>
+                <a href="teacher-class.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>班级管理</span>
+                </a>
+                <a href="teacher-knowledge.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识库</span>
+                </a>
+                <a href="teacher-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">点击班级卡片可查看班级详情，支持创建、编辑和删除班级操作。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间内容区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">班级管理</h2>
+                <p class="text-gray-600">创建、编辑和管理您的班级信息。</p>
+            </div>
+
+            <!-- 操作按钮区 -->
+            <div class="mb-6 flex flex-wrap gap-4">
+                <button id="create-class-btn" class="flex items-center space-x-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                    <i class="fa fa-plus"></i>
+                    <span>创建班级</span>
+                </button>
+                <div class="ml-auto flex items-center space-x-4">
+                    <!-- 年级筛选 -->
+                    <div class="relative">
+                        <select id="grade-filter" class="border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="">全部年级</option>
+                            <option value="1">一年级</option>
+                            <option value="2">二年级</option>
+                            <option value="3">三年级</option>
+                            <option value="4">四年级</option>
+                            <option value="5">五年级</option>
+                            <option value="6">六年级</option>
+                        </select>
+                        <i class="fa fa-filter absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <!-- 搜索框 -->
+                    <div class="relative">
+                        <input type="text" id="class-search" placeholder="搜索班级" class="border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 班级列表 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">班级列表</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="class-list">
+                    <!-- 班级卡片 1 -->
+                    <div class="bg-white rounded-xl shadow-card overflow-hidden hover:shadow-lg transition-all-300">
+                        <div class="p-4 border-b border-gray-200">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-bold text-gray-800">概率论与数理统计（1班）</h3>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">三年级</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 mt-2">
+                                <i class="fa fa-calendar-o mr-2"></i>
+                                <span>创建时间：2024-01-10</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <span class="text-sm text-gray-600">学生数量</span>
+                                    <div class="text-xl font-bold text-primary">30人</div>
+                                </div>
+                                <div>
+                                    <span class="text-sm text-gray-600">课程数量</span>
+                                    <div class="text-xl font-bold text-secondary">2门</div>
+                                </div>
+                                <div>
+                                    <span class="text-sm text-gray-600">作业数量</span>
+                                    <div class="text-xl font-bold text-success">8个</div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 text-sm">
+                                    <i class="fa fa-eye mr-1"></i> 查看
+                                </button>
+                                <button class="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 text-sm edit-class-btn" data-id="1">
+                                    <i class="fa fa-edit mr-1"></i> 编辑
+                                </button>
+                                <button class="flex-1 px-3 py-2 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 text-sm delete-class-btn" data-id="1">
+                                    <i class="fa fa-trash mr-1"></i> 删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 班级卡片 2 -->
+                    <div class="bg-white rounded-xl shadow-card overflow-hidden hover:shadow-lg transition-all-300">
+                        <div class="p-4 border-b border-gray-200">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-bold text-gray-800">概率论与数理统计（2班）</h3>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">三年级</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 mt-2">
+                                <i class="fa fa-calendar-o mr-2"></i>
+                                <span>创建时间：2024-01-10</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <span class="text-sm text-gray-600">学生数量</span>
+                                    <div class="text-xl font-bold text-primary">28人</div>
+                                </div>
+                                <div>
+                                    <span class="text-sm text-gray-600">课程数量</span>
+                                    <div class="text-xl font-bold text-secondary">2门</div>
+                                </div>
+                                <div>
+                                    <span class="text-sm text-gray-600">作业数量</span>
+                                    <div class="text-xl font-bold text-success">6个</div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 text-sm">
+                                    <i class="fa fa-eye mr-1"></i> 查看
+                                </button>
+                                <button class="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 text-sm edit-class-btn" data-id="2">
+                                    <i class="fa fa-edit mr-1"></i> 编辑
+                                </button>
+                                <button class="flex-1 px-3 py-2 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 text-sm delete-class-btn" data-id="2">
+                                    <i class="fa fa-trash mr-1"></i> 删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 班级卡片 3 -->
+                    <div class="bg-white rounded-xl shadow-card overflow-hidden hover:shadow-lg transition-all-300">
+                        <div class="p-4 border-b border-gray-200">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-bold text-gray-800">统计学（1班）</h3>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">四年级</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 mt-2">
+                                <i class="fa fa-calendar-o mr-2"></i>
+                                <span>创建时间：2024-01-15</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <span class="text-sm text-gray-600">学生数量</span>
+                                    <div class="text-xl font-bold text-primary">25人</div>
+                                </div>
+                                <div>
+                                    <span class="text-sm text-gray-600">课程数量</span>
+                                    <div class="text-xl font-bold text-secondary">1门</div>
+                                </div>
+                                <div>
+                                    <span class="text-sm text-gray-600">作业数量</span>
+                                    <div class="text-xl font-bold text-success">4个</div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 text-sm">
+                                    <i class="fa fa-eye mr-1"></i> 查看
+                                </button>
+                                <button class="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 text-sm edit-class-btn" data-id="3">
+                                    <i class="fa fa-edit mr-1"></i> 编辑
+                                </button>
+                                <button class="flex-1 px-3 py-2 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300 text-sm delete-class-btn" data-id="3">
+                                    <i class="fa fa-trash mr-1"></i> 删除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 创建班级模态框 -->
+    <div id="create-class-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <!-- 模态框头部 -->
+            <div class="border-b border-gray-200 p-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">创建班级</h3>
+                <button id="close-create-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 模态框内容 -->
+            <div class="p-6">
+                <form id="create-class-form">
+                    <!-- 班级基本信息 -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-800 mb-4">基本信息</h4>
+                        <div class="space-y-4">
+                            <!-- 班级名称 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">班级名称 <span class="text-danger">*</span></label>
+                                <input type="text" id="class-name" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入班级名称" maxlength="50">
+                                <p class="text-xs text-gray-500 mt-1"><span id="class-name-count">0</span>/50</p>
+                            </div>
+                            
+                            <!-- 年级选择 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">年级 <span class="text-danger">*</span></label>
+                                <select id="class-grade" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <option value="">请选择年级</option>
+                                    <option value="1">一年级</option>
+                                    <option value="2">二年级</option>
+                                    <option value="3">三年级</option>
+                                    <option value="4">四年级</option>
+                                    <option value="5">五年级</option>
+                                    <option value="6">六年级</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 班级描述 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">班级描述</label>
+                                <textarea id="class-description" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="请输入班级描述（可选）" maxlength="200"></textarea>
+                                <p class="text-xs text-gray-500 mt-1"><span id="class-description-count">0</span>/200</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <button type="button" id="cancel-create-btn" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                            取消
+                        </button>
+                        <button type="submit" id="submit-create-btn" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            创建
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑班级模态框 -->
+    <div id="edit-class-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <!-- 模态框头部 -->
+            <div class="border-b border-gray-200 p-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800">编辑班级</h3>
+                <button id="close-edit-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 模态框内容 -->
+            <div class="p-6">
+                <form id="edit-class-form">
+                    <input type="hidden" id="edit-class-id">
+                    <!-- 班级基本信息 -->
+                    <div class="mb-8">
+                        <h4 class="text-lg font-medium text-gray-800 mb-4">基本信息</h4>
+                        <div class="space-y-4">
+                            <!-- 班级名称 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">班级名称 <span class="text-danger">*</span></label>
+                                <input type="text" id="edit-class-name" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入班级名称" maxlength="50">
+                                <p class="text-xs text-gray-500 mt-1"><span id="edit-class-name-count">0</span>/50</p>
+                            </div>
+                            
+                            <!-- 年级选择 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">年级 <span class="text-danger">*</span></label>
+                                <select id="edit-class-grade" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <option value="">请选择年级</option>
+                                    <option value="1">一年级</option>
+                                    <option value="2">二年级</option>
+                                    <option value="3">三年级</option>
+                                    <option value="4">四年级</option>
+                                    <option value="5">五年级</option>
+                                    <option value="6">六年级</option>
+                                </select>
+                            </div>
+                            
+                            <!-- 班级描述 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">班级描述</label>
+                                <textarea id="edit-class-description" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="请输入班级描述（可选）" maxlength="200"></textarea>
+                                <p class="text-xs text-gray-500 mt-1"><span id="edit-class-description-count">0</span>/200</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 提交按钮 -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <button type="button" id="cancel-edit-btn" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                            取消
+                        </button>
+                        <button type="submit" id="submit-edit-btn" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除班级确认模态框 -->
+    <div id="delete-class-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md">
+            <!-- 模态框头部 -->
+            <div class="border-b border-gray-200 p-4">
+                <h3 class="text-xl font-bold text-gray-800">确认删除</h3>
+            </div>
+            
+            <!-- 模态框内容 -->
+            <div class="p-6">
+                <p class="text-gray-700 mb-6">您确定要删除这个班级吗？此操作不可撤销，删除后班级相关的所有数据将被清除。</p>
+                <div class="flex justify-end space-x-3">
+                    <button id="cancel-delete-btn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">
+                        取消
+                    </button>
+                    <button id="confirm-delete-btn" class="px-6 py-2 bg-danger text-white rounded-lg hover:bg-red-700 transition-all-300">
+                        确认删除
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    <div id="message-toast" class="fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full z-50">
+        <div class="flex items-center space-x-3">
+            <i id="toast-icon" class="fa fa-check-circle text-xl"></i>
+            <span id="toast-message" class="font-medium"></span>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 移动菜单按钮
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            if (mobileMenuBtn && sidebar) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('hidden');
+                });
+            }
+
+            // 班级名称字数统计
+            const className = document.getElementById('class-name');
+            const classNameCount = document.getElementById('class-name-count');
+            if (className && classNameCount) {
+                className.addEventListener('input', function() {
+                    classNameCount.textContent = this.value.length;
+                });
+            }
+
+            // 班级描述字数统计
+            const classDescription = document.getElementById('class-description');
+            const classDescriptionCount = document.getElementById('class-description-count');
+            if (classDescription && classDescriptionCount) {
+                classDescription.addEventListener('input', function() {
+                    classDescriptionCount.textContent = this.value.length;
+                });
+            }
+
+            // 编辑班级名称字数统计
+            const editClassName = document.getElementById('edit-class-name');
+            const editClassNameCount = document.getElementById('edit-class-name-count');
+            if (editClassName && editClassNameCount) {
+                editClassName.addEventListener('input', function() {
+                    editClassNameCount.textContent = this.value.length;
+                });
+            }
+
+            // 编辑班级描述字数统计
+            const editClassDescription = document.getElementById('edit-class-description');
+            const editClassDescriptionCount = document.getElementById('edit-class-description-count');
+            if (editClassDescription && editClassDescriptionCount) {
+                editClassDescription.addEventListener('input', function() {
+                    editClassDescriptionCount.textContent = this.value.length;
+                });
+            }
+
+            // 模态框控制
+            const createClassBtn = document.getElementById('create-class-btn');
+            const createClassModal = document.getElementById('create-class-modal');
+            const closeCreateModal = document.getElementById('close-create-modal');
+            const cancelCreateBtn = document.getElementById('cancel-create-btn');
+
+            const editClassModal = document.getElementById('edit-class-modal');
+            const closeEditModal = document.getElementById('close-edit-modal');
+            const cancelEditBtn = document.getElementById('cancel-edit-btn');
+
+            const deleteClassModal = document.getElementById('delete-class-modal');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
+            // 创建班级模态框
+            if (createClassBtn && createClassModal) {
+                createClassBtn.addEventListener('click', function() {
+                    createClassModal.classList.remove('hidden');
+                });
+            }
+
+            if (closeCreateModal && createClassModal) {
+                closeCreateModal.addEventListener('click', function() {
+                    createClassModal.classList.add('hidden');
+                });
+            }
+
+            if (cancelCreateBtn && createClassModal) {
+                cancelCreateBtn.addEventListener('click', function() {
+                    createClassModal.classList.add('hidden');
+                });
+            }
+
+            // 点击模态框外部关闭
+            if (createClassModal) {
+                createClassModal.addEventListener('click', function(e) {
+                    if (e.target === createClassModal) {
+                        createClassModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (editClassModal) {
+                editClassModal.addEventListener('click', function(e) {
+                    if (e.target === editClassModal) {
+                        editClassModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (deleteClassModal) {
+                deleteClassModal.addEventListener('click', function(e) {
+                    if (e.target === deleteClassModal) {
+                        deleteClassModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            // 编辑班级按钮
+            const editClassBtns = document.querySelectorAll('.edit-class-btn');
+            editClassBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const classId = this.getAttribute('data-id');
+                    // 这里可以根据classId获取班级详情并填充到表单
+                    document.getElementById('edit-class-id').value = classId;
+                    // 模拟填充数据
+                    document.getElementById('edit-class-name').value = `概率论与数理统计（${classId}班）`;
+                    document.getElementById('edit-class-grade').value = classId <= 2 ? '3' : '4';
+                    document.getElementById('edit-class-description').value = `这是概率论与数理统计课程的第${classId}个班级`;
+                    // 更新字数统计
+                    document.getElementById('edit-class-name-count').textContent = document.getElementById('edit-class-name').value.length;
+                    document.getElementById('edit-class-description-count').textContent = document.getElementById('edit-class-description').value.length;
+                    // 显示编辑模态框
+                    editClassModal.classList.remove('hidden');
+                });
+            });
+
+            // 关闭编辑模态框
+            if (closeEditModal && editClassModal) {
+                closeEditModal.addEventListener('click', function() {
+                    editClassModal.classList.add('hidden');
+                });
+            }
+
+            if (cancelEditBtn && editClassModal) {
+                cancelEditBtn.addEventListener('click', function() {
+                    editClassModal.classList.add('hidden');
+                });
+            }
+
+            // 删除班级按钮
+            const deleteClassBtns = document.querySelectorAll('.delete-class-btn');
+            let currentDeleteId = null;
+
+            deleteClassBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentDeleteId = this.getAttribute('data-id');
+                    deleteClassModal.classList.remove('hidden');
+                });
+            });
+
+            // 关闭删除模态框
+            if (cancelDeleteBtn && deleteClassModal) {
+                cancelDeleteBtn.addEventListener('click', function() {
+                    deleteClassModal.classList.add('hidden');
+                    currentDeleteId = null;
+                });
+            }
+
+            // 确认删除
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', function() {
+                    // 这里可以调用API删除班级
+                    console.log('删除班级ID:', currentDeleteId);
+                    // 显示成功消息
+                    showToast('班级删除成功', 'success');
+                    // 关闭模态框
+                    deleteClassModal.classList.add('hidden');
+                    currentDeleteId = null;
+                    // 这里可以刷新班级列表
+                });
+            }
+
+            // 创建班级表单提交
+            const createClassForm = document.getElementById('create-class-form');
+            if (createClassForm) {
+                createClassForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // 表单验证
+                    const className = document.getElementById('class-name').value;
+                    const classGrade = document.getElementById('class-grade').value;
+                    if (!className) {
+                        showToast('请输入班级名称', 'error');
+                        return;
+                    }
+                    if (!classGrade) {
+                        showToast('请选择年级', 'error');
+                        return;
+                    }
+                    // 这里可以调用API创建班级
+                    console.log('创建班级:', {
+                        name: className,
+                        grade: classGrade,
+                        description: document.getElementById('class-description').value
+                    });
+                    // 显示成功消息
+                    showToast('班级创建成功', 'success');
+                    // 关闭模态框
+                    createClassModal.classList.add('hidden');
+                    // 重置表单
+                    createClassForm.reset();
+                    document.getElementById('class-name-count').textContent = '0';
+                    document.getElementById('class-description-count').textContent = '0';
+                    // 这里可以刷新班级列表
+                });
+            }
+
+            // 编辑班级表单提交
+            const editClassForm = document.getElementById('edit-class-form');
+            if (editClassForm) {
+                editClassForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // 表单验证
+                    const className = document.getElementById('edit-class-name').value;
+                    const classGrade = document.getElementById('edit-class-grade').value;
+                    if (!className) {
+                        showToast('请输入班级名称', 'error');
+                        return;
+                    }
+                    if (!classGrade) {
+                        showToast('请选择年级', 'error');
+                        return;
+                    }
+                    // 这里可以调用API更新班级
+                    console.log('更新班级:', {
+                        id: document.getElementById('edit-class-id').value,
+                        name: className,
+                        grade: classGrade,
+                        description: document.getElementById('edit-class-description').value
+                    });
+                    // 显示成功消息
+                    showToast('班级更新成功', 'success');
+                    // 关闭模态框
+                    editClassModal.classList.add('hidden');
+                    // 这里可以刷新班级列表
+                });
+            }
+
+            // 年级筛选
+            const gradeFilter = document.getElementById('grade-filter');
+            if (gradeFilter) {
+                gradeFilter.addEventListener('change', function() {
+                    const grade = this.value;
+                    console.log('筛选年级:', grade);
+                    // 这里可以调用API筛选班级
+                });
+            }
+
+            // 班级搜索
+            const classSearch = document.getElementById('class-search');
+            if (classSearch) {
+                classSearch.addEventListener('input', function() {
+                    const searchTerm = this.value;
+                    console.log('搜索班级:', searchTerm);
+                    // 这里可以调用API搜索班级
+                });
+            }
+
+            // 显示消息提示
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('message-toast');
+                const toastIcon = document.getElementById('toast-icon');
+                const toastMessage = document.getElementById('toast-message');
+                
+                if (toast && toastIcon && toastMessage) {
+                    // 设置消息内容
+                    toastMessage.textContent = message;
+                    
+                    // 设置样式
+                    if (type === 'success') {
+                        toast.classList.remove('bg-red-100', 'bg-yellow-100');
+                        toast.classList.add('bg-green-100');
+                        toastIcon.classList.remove('fa-exclamation-circle', 'fa-times-circle');
+                        toastIcon.classList.add('fa-check-circle');
+                        toastIcon.classList.remove('text-danger', 'text-warning');
+                        toastIcon.classList.add('text-success');
+                    } else if (type === 'error') {
+                        toast.classList.remove('bg-green-100', 'bg-yellow-100');
+                        toast.classList.add('bg-red-100');
+                        toastIcon.classList.remove('fa-check-circle', 'fa-exclamation-circle');
+                        toastIcon.classList.add('fa-times-circle');
+                        toastIcon.classList.remove('text-success', 'text-warning');
+                        toastIcon.classList.add('text-danger');
+                    } else if (type === 'warning') {
+                        toast.classList.remove('bg-green-100', 'bg-red-100');
+                        toast.classList.add('bg-yellow-100');
+                        toastIcon.classList.remove('fa-check-circle', 'fa-times-circle');
+                        toastIcon.classList.add('fa-exclamation-circle');
+                        toastIcon.classList.remove('text-success', 'text-danger');
+                        toastIcon.classList.add('text-warning');
+                    }
+                    
+                    // 显示消息
+                    toast.classList.remove('translate-x-full');
+                    
+                    // 3秒后隐藏
+                    setTimeout(function() {
+                        toast.classList.add('translate-x-full');
+                    }, 3000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+
+        /* 深色模式样式 */
+        .dark {
+            background-color: #121212;
+            color: #f9fafb;
+        }
+
+        .dark body {
+            background-color: #121212;
+            color: #f9fafb;
+        }
+
+        .dark .bg-white {
+            background-color: #1e1e1e;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #121212;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #2d2d2d;
+        }
+
+        .dark .bg-gray-200 {
+            background-color: #3d3d3d;
+        }
+
+        .dark .bg-gray-300 {
+            background-color: #4d4d4d;
+        }
+
+        .dark .text-gray-500 {
+            color: #a3a3a3;
+        }
+
+        .dark .text-gray-600 {
+            color: #d1d5db;
+        }
+
+        .dark .text-gray-700 {
+            color: #e5e7eb;
+        }
+
+        .dark .text-gray-800 {
+            color: #f3f4f6;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #374151;
+        }
+
+        .dark .border-gray-300 {
+            border-color: #4b5563;
+        }
+
+        .dark .border-gray-400 {
+            border-color: #6b7280;
+        }
+
+        .dark .border-gray-500 {
+            border-color: #9ca3af;
+        }
+
+        .dark .shadow-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark .sidebar-active {
+            background-color: rgba(30, 64, 175, 0.2);
+            color: #93c5fd;
+        }
+
+        .dark .bg-blue-100 {
+            background-color: #1e3a8a;
+        }
+
+        .dark .bg-blue-50 {
+            background-color: #1e3a8a;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #121212;
+        }
+
+        .dark .bg-gray-500 {
+            background-color: #6b7280;
+        }
+
+        .dark .bg-gray-600 {
+            background-color: #4b5563;
+        }
+
+        .dark .bg-gray-700 {
+            background-color: #374151;
+        }
+
+        .dark .bg-gray-800 {
+            background-color: #1f2937;
+        }
+
+        .dark .bg-gray-900 {
+            background-color: #111827;
+        }
+
+        .dark .text-white {
+            color: #ffffff;
+        }
+
+        .dark .text-gray-300 {
+            color: #d1d5db;
+        }
+
+        .dark .text-gray-400 {
+            color: #9ca3af;
+        }
+
+        .dark .text-gray-900 {
+            color: #f3f4f6;
+        }
+
+        .dark .border-white {
+            border-color: #374151;
+        }
+
+        .dark .border-gray-100 {
+            border-color: #374151;
+        }
+
+        .dark .bg-blue-50 {
+            background-color: #1e3a8a;
+        }
+
+        .dark .bg-green-50 {
+            background-color: #065f46;
+        }
+
+        .dark .bg-yellow-50 {
+            background-color: #92400e;
+        }
+
+        .dark .bg-red-50 {
+            background-color: #7f1d1d;
+        }
+
+        .dark .bg-purple-50 {
+            background-color: #5b21b6;
+        }
+
+        .dark .bg-pink-50 {
+            background-color: #9d174d;
+        }
+
+        .dark .bg-orange-50 {
+            background-color: #9a3412;
+        }
+
+        .dark .bg-teal-50 {
+            background-color: #0d9488;
+        }
+
+        .dark .bg-indigo-50 {
+            background-color: #4338ca;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #121212;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #1e1e1e;
+        }
+
+        .dark .bg-gray-200 {
+            background-color: #2d2d2d;
+        }
+
+        .dark .bg-gray-300 {
+            background-color: #3d3d3d;
+        }
+
+        .dark .bg-gray-400 {
+            background-color: #4d4d4d;
+        }
+
+        .dark .bg-gray-500 {
+            background-color: #6b7280;
+        }
+
+        .dark .bg-gray-600 {
+            background-color: #4b5563;
+        }
+
+        .dark .bg-gray-700 {
+            background-color: #374151;
+        }
+
+        .dark .bg-gray-800 {
+            background-color: #1f2937;
+        }
+
+        .dark .bg-gray-900 {
+            background-color: #111827;
+        }
+
+        .dark .text-gray-100 {
+            color: #f3f4f6;
+        }
+
+        .dark .text-gray-200 {
+            color: #e5e7eb;
+        }
+
+        .dark .text-gray-300 {
+            color: #d1d5db;
+        }
+
+        .dark .text-gray-400 {
+            color: #9ca3af;
+        }
+
+        .dark .text-gray-500 {
+            color: #6b7280;
+        }
+
+        .dark .text-gray-600 {
+            color: #4b5563;
+        }
+
+        .dark .text-gray-700 {
+            color: #374151;
+        }
+
+        .dark .text-gray-800 {
+            color: #1f2937;
+        }
+
+        .dark .text-gray-900 {
+            color: #111827;
+        }
+
+        .dark .border-gray-100 {
+            border-color: #374151;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #4b5563;
+        }
+
+        .dark .border-gray-300 {
+            border-color: #6b7280;
+        }
+
+        .dark .border-gray-400 {
+            border-color: #9ca3af;
+        }
+
+        .dark .border-gray-500 {
+            border-color: #d1d5db;
+        }
+
+        .dark .border-gray-600 {
+            border-color: #e5e7eb;
+        }
+
+        .dark .border-gray-700 {
+            border-color: #f3f4f6;
+        }
+
+        .dark .border-gray-800 {
+            border-color: #ffffff;
+        }
+
+        .dark .border-gray-900 {
+            border-color: #ffffff;
+        }
+
+        .dark .shadow-sm {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .dark .shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        .dark .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+        }
+
+        .dark .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+        }
+
+        .dark .shadow-xl {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .dark .shadow-2xl {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .dark .shadow-inner {
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .dark .shadow-none {
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部通知栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">在这里可以个性化设置你的学习环境和账号信息。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间设置区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">设置</h2>
+                <p class="text-gray-600">个性化你的学习环境和账号信息。</p>
+            </div>
+
+            <!-- 设置选项卡 -->
+            <div class="mb-8">
+                <div class="border-b border-gray-200">
+                    <nav class="flex -mb-px space-x-8">
+                        <a href="#profile" class="border-primary text-primary whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" aria-current="page">个人信息</a>
+                        <a href="#notification" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">通知设置</a>
+                        <a href="#learning" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">学习设置</a>
+                        <a href="#privacy" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">隐私设置</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- 个人信息设置 -->
+            <div id="profile" class="mb-8">
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">个人信息</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">姓名</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="李明">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">学号</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="2023001" disabled>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                                <input type="email" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="liming@example.com">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">手机号码</label>
+                                <input type="tel" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="13800138000">
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">年级</label>
+                                <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <option>2023级</option>
+                                    <option>2022级</option>
+                                    <option>2021级</option>
+                                    <option>2020级</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">专业</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="统计学">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">班级</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="统计1班">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">修改密码</label>
+                                <button class="w-full border border-primary text-primary rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent hover:bg-primary hover:text-white transition-all-300">
+                                    点击修改
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-end">
+                        <button class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            保存更改
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 通知设置 -->
+            <div id="notification" class="mb-8">
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">通知设置</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">实验提醒</h4>
+                                <p class="text-sm text-gray-600">接收实验截止日期和重要更新的通知</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="experiment-notification" class="sr-only" checked>
+                                <label for="experiment-notification" class="block w-12 h-6 rounded-full bg-gray-200 cursor-pointer transition-all-300"></label>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all-300 transform translate-x-6"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">习题提醒</h4>
+                                <p class="text-sm text-gray-600">接收习题截止日期和成绩更新的通知</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="exercise-notification" class="sr-only" checked>
+                                <label for="exercise-notification" class="block w-12 h-6 rounded-full bg-gray-200 cursor-pointer transition-all-300"></label>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all-300 transform translate-x-6"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">系统通知</h4>
+                                <p class="text-sm text-gray-600">接收系统更新和重要公告的通知</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="system-notification" class="sr-only" checked>
+                                <label for="system-notification" class="block w-12 h-6 rounded-full bg-gray-200 cursor-pointer transition-all-300"></label>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all-300 transform translate-x-6"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">邮件通知</h4>
+                                <p class="text-sm text-gray-600">通过邮件接收重要通知</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="email-notification" class="sr-only">
+                                <label for="email-notification" class="block w-12 h-6 rounded-full bg-gray-200 cursor-pointer transition-all-300"></label>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all-300"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">短信通知</h4>
+                                <p class="text-sm text-gray-600">通过短信接收紧急通知</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="sms-notification" class="sr-only">
+                                <label for="sms-notification" class="block w-12 h-6 rounded-full bg-gray-200 cursor-pointer transition-all-300"></label>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all-300"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-end">
+                        <button class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            保存更改
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习设置 -->
+            <div id="learning" class="mb-8">
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">学习设置</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-3">学习模式</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="border border-gray-200 rounded-lg p-4 hover:border-primary hover:bg-blue-50 transition-all-300 cursor-pointer">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h5 class="font-medium text-gray-800">标准模式</h5>
+                                        <input type="radio" name="learning-mode" checked>
+                                    </div>
+                                    <p class="text-sm text-gray-600">适合大多数学生的学习模式</p>
+                                </div>
+                                <div class="border border-gray-200 rounded-lg p-4 hover:border-primary hover:bg-blue-50 transition-all-300 cursor-pointer">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h5 class="font-medium text-gray-800">强化模式</h5>
+                                        <input type="radio" name="learning-mode">
+                                    </div>
+                                    <p class="text-sm text-gray-600">提供更多练习和挑战</p>
+                                </div>
+                                <div class="border border-gray-200 rounded-lg p-4 hover:border-primary hover:bg-blue-50 transition-all-300 cursor-pointer">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h5 class="font-medium text-gray-800">自适应模式</h5>
+                                        <input type="radio" name="learning-mode">
+                                    </div>
+                                    <p class="text-sm text-gray-600">根据你的学习情况自动调整</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-3">实验默认设置</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">默认实验次数</label>
+                                    <input type="number" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">默认图表类型</label>
+                                    <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option>柱状图</option>
+                                        <option>折线图</option>
+                                        <option>饼图</option>
+                                        <option>散点图</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800 mb-3">界面设置</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">深色模式</label>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600">启用深色模式以提升夜间使用体验</span>
+                                    <div class="relative">
+                                        <input type="checkbox" id="dark-mode-toggle" class="sr-only">
+                                        <label for="dark-mode-toggle" class="block w-12 h-6 rounded-full bg-gray-200 cursor-pointer transition-all-300"></label>
+                                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all-300"></div>
+                                    </div>
+                                </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">语言</label>
+                                    <select class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option>简体中文</option>
+                                        <option>English</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-end">
+                        <button class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            保存更改
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 隐私设置 -->
+            <div id="privacy" class="mb-8">
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">隐私设置</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">分享学习数据</h4>
+                                <p class="text-sm text-gray-600">允许分享你的学习数据以改进系统</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="share-data" class="sr-only" checked>
+                                <label for="share-data" class="block w-12 h-6 rounded-full bg-gray-200 cursor-pointer transition-all-300"></label>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all-300 transform translate-x-6"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">允许教师查看学习进度</h4>
+                                <p class="text-sm text-gray-600">你的教师可以查看你的学习进度和成绩</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="teacher-access" class="sr-only" checked>
+                                <label for="teacher-access" class="block w-12 h-6 rounded-full bg-gray-200 cursor-pointer transition-all-300"></label>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all-300 transform translate-x-6"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">允许同学查看成就</h4>
+                                <p class="text-sm text-gray-600">你的同学可以查看你的学习成就和徽章</p>
+                            </div>
+                            <div class="relative">
+                                <input type="checkbox" id="peer-access" class="sr-only">
+                                <label for="peer-access" class="block w-12 h-6 rounded-full bg-gray-200 cursor-pointer transition-all-300"></label>
+                                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all-300"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">数据导出</h4>
+                                <p class="text-sm text-gray-600">导出你的学习数据</p>
+                            </div>
+                            <button class="px-4 py-2 border border-primary text-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent hover:bg-primary hover:text-white transition-all-300">
+                                导出数据
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-medium text-gray-800">数据删除</h4>
+                                <p class="text-sm text-gray-600">删除你的学习数据</p>
+                            </div>
+                            <button class="px-4 py-2 border border-danger text-danger rounded-lg focus:outline-none focus:ring-2 focus:ring-danger focus:border-transparent hover:bg-danger hover:text-white transition-all-300">
+                                删除数据
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-end">
+                        <button class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">
+                            保存更改
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何修改个人信息？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何设置通知偏好？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何导出我的学习数据？
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示/隐藏AI学习助手弹窗
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        // 关闭AI学习助手弹窗
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭弹窗
+        document.addEventListener('click', function(event) {
+            const btn = document.getElementById('ai-assistant-btn');
+            const modal = document.getElementById('ai-assistant-modal');
+            if (!btn.contains(event.target) && !modal.contains(event.target)) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // 通知开关切换
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const label = this.nextElementSibling;
+                const dot = label.nextElementSibling;
+                if (this.checked) {
+                    label.classList.add('bg-primary');
+                    label.classList.remove('bg-gray-200');
+                    dot.classList.add('translate-x-6');
+                } else {
+                    label.classList.remove('bg-primary');
+                    label.classList.add('bg-gray-200');
+                    dot.classList.remove('translate-x-6');
+                }
+            });
+        });
+
+        // 深色模式切换逻辑
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const htmlElement = document.documentElement;
+
+        // 从本地存储加载主题设置
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                htmlElement.classList.add('dark');
+                if (darkModeToggle) {
+                    darkModeToggle.checked = true;
+                    const label = darkModeToggle.nextElementSibling;
+                    const dot = label.nextElementSibling;
+                    label.classList.add('bg-primary');
+                    label.classList.remove('bg-gray-200');
+                    dot.classList.add('translate-x-6');
+                }
+            } else {
+                htmlElement.classList.remove('dark');
+                if (darkModeToggle) {
+                    darkModeToggle.checked = false;
+                    const label = darkModeToggle.nextElementSibling;
+                    const dot = label.nextElementSibling;
+                    label.classList.remove('bg-primary');
+                    label.classList.add('bg-gray-200');
+                    dot.classList.remove('translate-x-6');
+                }
+            }
+        }
+
+        // 保存主题设置到本地存储
+        function saveTheme(theme) {
+            localStorage.setItem('theme', theme);
+        }
+
+        // 切换主题
+        function toggleTheme() {
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                saveTheme('light');
+            } else {
+                htmlElement.classList.add('dark');
+                saveTheme('dark');
+            }
+        }
+
+        // 为深色模式切换开关添加事件监听器
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('change', function() {
+                const label = this.nextElementSibling;
+                const dot = label.nextElementSibling;
+                if (this.checked) {
+                    label.classList.add('bg-primary');
+                    label.classList.remove('bg-gray-200');
+                    dot.classList.add('translate-x-6');
+                    htmlElement.classList.add('dark');
+                    saveTheme('dark');
+                } else {
+                    label.classList.remove('bg-primary');
+                    label.classList.add('bg-gray-200');
+                    dot.classList.remove('translate-x-6');
+                    htmlElement.classList.remove('dark');
+                    saveTheme('light');
+                }
+            });
+        }
+
+        // 页面加载时加载主题设置
+        window.addEventListener('DOMContentLoaded', loadTheme);
+    </script>
+</body>
+</html>

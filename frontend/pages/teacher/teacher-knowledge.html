@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库 - 教师端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+    </style>
+    <style>
+        /* 自定义动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+        .delay-400 {
+            animation-delay: 0.4s;
+        }
+        .delay-500 {
+            animation-delay: 0.5s;
+        }
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* 卡片悬停效果 */
+        .knowledge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 10px 10px -5px rgba(59, 130, 246, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 教师端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button id="ai-assistant-btn" class="flex items-center space-x-2 px-4 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300">
+                        <i class="fa fa-magic"></i>
+                        <span>AI备课助手</span>
+                    </button>
+                    <!-- AI备课助手弹窗 -->
+                    <div id="ai-assistant-modal" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+                        <h3 class="text-lg font-bold mb-3 text-gray-800">AI备课助手</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">请输入需求</label>
+                            <textarea class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="例如：生成古典概型3道分层练习题"></textarea>
+                        </div>
+                        <div class="flex justify-end space-x-2">
+                            <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300">取消</button>
+                            <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300">生成</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                            <i class="fa fa-bell text-gray-600"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span class="text-primary font-medium">张</span>
+                        </div>
+                        <span class="text-gray-700 font-medium">张老师</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="teacher.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-dashboard w-5 text-center"></i>
+                    <span>教学决策中枢</span>
+                </a>
+                <a href="teacher-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验管理</span>
+                </a>
+                <a href="teacher-report.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-bar-chart w-5 text-center"></i>
+                    <span>学情分析报告</span>
+                </a>
+                <a href="teacher-assignment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-file-text w-5 text-center"></i>
+                    <span>作业与小测</span>
+                </a>
+                <a href="teacher-class.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>班级管理</span>
+                </a>
+                <a href="teacher-knowledge.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识库</span>
+                </a>
+                <a href="teacher-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">点击知识卡片可查看详细内容，支持多种学科分类。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间数据看板 -->
+        <main class="flex-1 overflow-y-auto p-6">
+        <!-- 页面标题 -->
+        <div class="mb-8 fade-in">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 text-shadow">知识库管理</h1>
+            <p class="mt-2 text-gray-600">管理和浏览教学相关知识内容</p>
+        </div>
+
+        <!-- 搜索和筛选区 -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-6 fade-in delay-100">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- 搜索框 -->
+                <div class="flex-grow">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" id="search-input" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all-300" placeholder="搜索知识内容...">
+                    </div>
+                </div>
+                <!-- 筛选器 -->
+                <div class="flex flex-wrap gap-3">
+                    <select id="category-filter" class="px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all-300">
+                        <option value="all">全部分类</option>
+                        <option value="probability">概率论</option>
+                        <option value="statistics">数理统计</option>
+                        <option value="stochastic">随机过程</option>
+                    </select>
+                    <select id="sort-filter" class="px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all-300">
+                        <option value="latest">最新发布</option>
+                        <option value="popular">最受欢迎</option>
+                        <option value="alphabetical">按字母排序</option>
+                    </select>
+                    <button id="filter-button" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all-300">
+                        <i class="fa fa-filter mr-2"></i>筛选
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- 操作按钮区 -->
+        <div class="flex flex-wrap gap-3 mb-6 fade-in delay-300">
+            <button id="add-knowledge-btn" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all-300">
+                <i class="fa fa-plus mr-2"></i>新建知识
+            </button>
+            <button id="import-btn" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all-300">
+                <i class="fa fa-upload mr-2"></i>导入
+            </button>
+            <button id="export-btn" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all-300">
+                <i class="fa fa-download mr-2"></i>导出
+            </button>
+            <button id="batch-delete-btn" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all-300">
+                <i class="fa fa-trash mr-2"></i>批量删除
+            </button>
+        </div>
+
+        <!-- 知识库内容展示区 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- 知识卡片 1 -->
+            <div class="knowledge-card bg-white rounded-lg shadow-sm overflow-hidden transition-all-300 fade-in delay-100">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">概率论</span>
+                        <div class="flex gap-2">
+                            <button class="text-gray-400 hover:text-primary transition-all-300">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-danger transition-all-300">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2 hover:text-primary transition-all-300">概率基础知识详解</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">本文详细介绍了概率的基本概念、计算方法和应用场景，包括古典概型、几何概型、条件概率等核心内容。适合教师用于课堂教学参考。</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-user mr-1"></i>
+                            <span>张老师</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-calendar mr-1"></i>
+                            <span>2024-01-15</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fa fa-eye mr-1"></i>
+                            <span>128</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识卡片 2 -->
+            <div class="knowledge-card bg-white rounded-lg shadow-sm overflow-hidden transition-all-300 fade-in delay-200">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">数理统计</span>
+                        <div class="flex gap-2">
+                            <button class="text-gray-400 hover:text-primary transition-all-300">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-danger transition-all-300">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2 hover:text-primary transition-all-300">牛顿运动定律教学指南</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">本指南提供了牛顿三大运动定律的详细教学方法和实验设计，帮助教师更有效地向学生解释这些核心物理概念。</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-user mr-1"></i>
+                            <span>李老师</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i>
+                            <span>2024-01-10</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-eye mr-1"></i>
+                            <span>95</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识卡片 3 -->
+            <div class="knowledge-card bg-white rounded-lg shadow-sm overflow-hidden transition-all-300 fade-in delay-300">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">随机过程</span>
+                        <div class="flex gap-2">
+                            <button class="text-gray-400 hover:text-primary transition-all-300">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-danger transition-all-300">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2 hover:text-primary transition-all-300">化学反应速率实验设计</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">本文介绍了多种化学反应速率的测定方法和实验设计，包括影响反应速率的因素探究实验，适合高中化学教学使用。</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-user mr-1"></i>
+                            <span>王老师</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i>
+                            <span>2024-01-08</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-eye mr-1"></i>
+                            <span>76</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识卡片 4 -->
+            <div class="knowledge-card bg-white rounded-lg shadow-sm overflow-hidden transition-all-300 fade-in delay-400">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">概率论</span>
+                        <div class="flex gap-2">
+                            <button class="text-gray-400 hover:text-primary transition-all-300">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-danger transition-all-300">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2 hover:text-primary transition-all-300">DNA结构与复制教学资源</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">本资源包包含了DNA双螺旋结构的发现历史、结构特点和复制过程的详细讲解，以及相关的教学课件和实验设计。</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-user mr-1"></i>
+                            <span>刘老师</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i>
+                            <span>2024-01-05</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-eye mr-1"></i>
+                            <span>102</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识卡片 5 -->
+            <div class="knowledge-card bg-white rounded-lg shadow-sm overflow-hidden transition-all-300 fade-in delay-500">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">数理统计</span>
+                        <div class="flex gap-2">
+                            <button class="text-gray-400 hover:text-primary transition-all-300">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-danger transition-all-300">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2 hover:text-primary transition-all-300">高中英语阅读策略指导</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">本文介绍了多种有效的英语阅读策略，包括 skimming、scanning、inferring 等技巧，帮助学生提高阅读理解能力。</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-user mr-1"></i>
+                            <span>陈老师</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i>
+                            <span>2024-01-01</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-eye mr-1"></i>
+                            <span>88</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 知识卡片 6 -->
+            <div class="knowledge-card bg-white rounded-lg shadow-sm overflow-hidden transition-all-300 fade-in">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">随机过程</span>
+                        <div class="flex gap-2">
+                            <button class="text-gray-400 hover:text-primary transition-all-300">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="text-gray-400 hover:text-danger transition-all-300">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2 hover:text-primary transition-all-300">现代教育技术应用指南</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">本指南介绍了如何在教学中有效应用现代教育技术，包括多媒体教学、在线学习平台、教育APP等工具的使用方法。</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-user mr-1"></i>
+                            <span>赵老师</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-calendar-alt mr-1"></i>
+                            <span>2023-12-28</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-eye mr-1"></i>
+                            <span>145</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分页控件 -->
+        <div class="mt-8 flex justify-center fade-in delay-500">
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all-300">
+                    <span class="sr-only">上一页</span>
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white">1</a>
+                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all-300">2</a>
+                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all-300">3</a>
+                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
+                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all-300">8</a>
+                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all-300">
+                    <span class="sr-only">下一页</span>
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+            </nav>
+        </div>
+        </main>
+    </div>
+
+    <!-- 新建知识模态框 -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden" id="add-knowledge-modal">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 transform transition-all-300 scale-95 opacity-0" id="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">新建知识内容</h2>
+                <button type="button" class="text-gray-400 hover:text-gray-500 focus:outline-none" id="close-modal-btn">
+                    <span class="sr-only">关闭</span>
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label for="knowledge-title" class="block text-sm font-medium text-gray-700 mb-1">标题</label>
+                    <input type="text" id="knowledge-title" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary transition-all-300" placeholder="请输入知识标题">
+                </div>
+                <div>
+                    <label for="knowledge-category" class="block text-sm font-medium text-gray-700 mb-1">分类</label>
+                    <select id="knowledge-category" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary transition-all-300">
+                        <option value="">请选择分类</option>
+                        <option value="probability">概率论</option>
+                        <option value="statistics">数理统计</option>
+                        <option value="stochastic">随机过程</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="knowledge-content" class="block text-sm font-medium text-gray-700 mb-1">内容</label>
+                    <textarea id="knowledge-content" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary transition-all-300" placeholder="请输入知识内容"></textarea>
+                </div>
+                <div>
+                    <label for="knowledge-tags" class="block text-sm font-medium text-gray-700 mb-1">标签</label>
+                    <input type="text" id="knowledge-tags" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary transition-all-300" placeholder="请输入标签，用逗号分隔">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">附件</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <i class="fa fa-cloud-upload text-gray-400 text-3xl"></i>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="knowledge-attachment" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-blue-600 focus-within:outline-none transition-all-300">
+                                    <span>上传文件</span>
+                                    <input id="knowledge-attachment" name="knowledge-attachment" type="file" class="sr-only">
+                                </label>
+                                <p class="pl-1">或拖放文件</p>
+                            </div>
+                            <p class="text-xs text-gray-500">PNG, JPG, PDF, DOCX (最大 10MB)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all-300" id="cancel-btn">
+                    取消
+                </button>
+                <button type="button" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all-300" id="save-btn">
+                    保存
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div class="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 max-w-sm transform translate-y-20 opacity-0 transition-all-300 z-50" id="notification">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fa fa-check-circle text-green-500"></i>
+            </div>
+            <div class="ml-3 flex-1">
+                <p class="text-sm font-medium text-gray-900" id="notification-title">操作成功</p>
+                <p class="mt-1 text-sm text-gray-500" id="notification-message">知识内容已保存</p>
+            </div>
+            <div class="ml-4 flex-shrink-0">
+                <button type="button" class="text-gray-400 hover:text-gray-500 focus:outline-none" id="close-notification-btn">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM 加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 移动端菜单切换
+            const mobileMenuButton = document.getElementById('mobile-menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', function() {
+                    sidebar.classList.toggle('hidden');
+                    sidebar.classList.toggle('md:block');
+                });
+            }
+
+            // AI备课助手弹窗
+            const aiAssistantBtn = document.getElementById('ai-assistant-btn');
+            const aiAssistantModal = document.getElementById('ai-assistant-modal');
+            
+            if (aiAssistantBtn) {
+                aiAssistantBtn.addEventListener('click', function() {
+                    aiAssistantModal.classList.toggle('hidden');
+                });
+            }
+
+            // 点击页面其他地方关闭AI助手弹窗
+            document.addEventListener('click', function(e) {
+                if (aiAssistantModal && !aiAssistantBtn.contains(e.target) && !aiAssistantModal.contains(e.target)) {
+                    aiAssistantModal.classList.add('hidden');
+                }
+            });
+
+
+
+            // 新建知识按钮点击事件
+            const addKnowledgeBtn = document.getElementById('add-knowledge-btn');
+            const addKnowledgeModal = document.getElementById('add-knowledge-modal');
+            const modalContent = document.getElementById('modal-content');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            const saveBtn = document.getElementById('save-btn');
+            
+            function openModal() {
+                addKnowledgeModal.classList.remove('hidden');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+            
+            function closeModal() {
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    addKnowledgeModal.classList.add('hidden');
+                }, 300);
+            }
+            
+            if (addKnowledgeBtn) {
+                addKnowledgeBtn.addEventListener('click', openModal);
+            }
+            
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', closeModal);
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', closeModal);
+            }
+            
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    // 模拟保存操作
+                    showNotification('操作成功', '知识内容已保存');
+                    closeModal();
+                });
+            }
+
+            // 搜索功能
+            const searchInput = document.getElementById('search-input');
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    // 这里可以添加搜索逻辑
+                    console.log('搜索:', searchTerm);
+                });
+            }
+
+            // 筛选功能
+            const categoryFilter = document.getElementById('category-filter');
+            const sortFilter = document.getElementById('sort-filter');
+            const filterButton = document.getElementById('filter-button');
+            
+            if (filterButton) {
+                filterButton.addEventListener('click', function() {
+                    const category = categoryFilter.value;
+                    const sort = sortFilter.value;
+                    // 这里可以添加筛选逻辑
+                    console.log('筛选:', { category, sort });
+                    showNotification('筛选完成', `已筛选分类: ${category}, 排序: ${sort}`);
+                });
+            }
+
+            // 导入导出按钮
+            const importBtn = document.getElementById('import-btn');
+            const exportBtn = document.getElementById('export-btn');
+            const batchDeleteBtn = document.getElementById('batch-delete-btn');
+            
+            if (importBtn) {
+                importBtn.addEventListener('click', function() {
+                    showNotification('操作提示', '导入功能已触发');
+                });
+            }
+            
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    showNotification('操作提示', '导出功能已触发');
+                });
+            }
+            
+            if (batchDeleteBtn) {
+                batchDeleteBtn.addEventListener('click', function() {
+                    showNotification('操作提示', '批量删除功能已触发');
+                });
+            }
+
+            // 知识卡片点击事件
+            const knowledgeCards = document.querySelectorAll('.knowledge-card');
+            
+            knowledgeCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // 避免点击编辑/删除按钮时触发卡片点击
+                    if (!e.target.closest('button')) {
+                        const title = this.querySelector('h3').textContent;
+                        showNotification('查看知识', `正在查看: ${title}`);
+                    }
+                });
+            });
+
+            // 通知提示函数
+            function showNotification(title, message) {
+                const notification = document.getElementById('notification');
+                const notificationTitle = document.getElementById('notification-title');
+                const notificationMessage = document.getElementById('notification-message');
+                const closeNotificationBtn = document.getElementById('close-notification-btn');
+                
+                notificationTitle.textContent = title;
+                notificationMessage.textContent = message;
+                
+                notification.classList.remove('translate-y-20', 'opacity-0');
+                notification.classList.add('translate-y-0', 'opacity-100');
+                
+                setTimeout(() => {
+                    notification.classList.remove('translate-y-0', 'opacity-100');
+                    notification.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+                
+                if (closeNotificationBtn) {
+                    closeNotificationBtn.addEventListener('click', function() {
+                        notification.classList.remove('translate-y-0', 'opacity-100');
+                        notification.classList.add('translate-y-20', 'opacity-0');
+                    });
+                }
+            }
+
+            // 页面加载动画
+            const fadeElements = document.querySelectorAll('.fade-in');
+            
+            fadeElements.forEach(element => {
+                element.style.opacity = '0';
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            element.style.animationPlayState = 'running';
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    threshold: 0.1
+                });
+                
+                observer.observe(element);
+            });
+        });
+    </script>
+</body>
+</html>
