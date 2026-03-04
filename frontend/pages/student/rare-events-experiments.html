@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>稀有事件与小概率事件的复合实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .bg-gradient-danger {
+                background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">探索稀有事件与小概率事件的复合实验，理解低概率事件的计算方法。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">稀有事件与小概率事件的复合实验</h2>
+                    <a href="advanced-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回进阶实验
+                    </a>
+                </div>
+                <p class="text-gray-600">通过稀有事件与小概率事件的复合实验，学习如何处理和计算低概率事件的复合概率，包括罕见疾病筛查、保险理赔复合和航天系统可靠性等场景。</p>
+            </div>
+
+            <!-- 实验卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- 1. 罕见疾病筛查 -->
+                <div class="experiment-card bg-white rounded-xl shadow-card overflow-hidden card-border">
+                    <div class="bg-gradient-primary h-32 flex items-center justify-center">
+                        <i class="fa fa-heartbeat text-white text-5xl"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">罕见疾病筛查</h3>
+                        <p class="text-gray-600 mb-4">疾病发病率 0.01%，检测准确率 99.9%，计算 "检测阳性且真患病" 的概率。</p>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">低概率事件</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">贝叶斯定理应用</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">条件概率计算</span>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <a href="rare-disease-screening.html" class="block w-full bg-primary text-white py-3 rounded-lg text-center hover:bg-blue-700 transition-all-300 font-medium">
+                                开始实验
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 保险理赔复合 -->
+                <div class="experiment-card bg-white rounded-xl shadow-card overflow-hidden card-border">
+                    <div class="bg-gradient-secondary h-32 flex items-center justify-center">
+                        <i class="fa fa-shield text-white text-5xl"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">保险理赔复合</h3>
+                        <p class="text-gray-600 mb-4">一年内多次小事故与一次重大事故的复合概率模型，计算总赔付额超过阈值的概率。</p>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">复合概率模型</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">赔付额分布</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">风险评估</span>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <a href="insurance-claim-composite.html" class="block w-full bg-secondary text-white py-3 rounded-lg text-center hover:bg-orange-600 transition-all-300 font-medium">
+                                开始实验
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 航天系统可靠性 -->
+                <div class="experiment-card bg-white rounded-xl shadow-card overflow-hidden card-border">
+                    <div class="bg-gradient-danger h-32 flex items-center justify-center">
+                        <i class="fa fa-rocket text-white text-5xl"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">航天系统可靠性</h3>
+                        <p class="text-gray-600 mb-4">由 100 个独立部件组成，每个部件失效概率 0.001，计算系统失效（至少 1 个部件失效）的概率。</p>
+                        <div class="space-y-3">
+                            <div class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">系统可靠性</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">独立事件概率</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">互补概率计算</span>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <a href="space-system-reliability.html" class="block w-full bg-danger text-white py-3 rounded-lg text-center hover:bg-red-600 transition-all-300 font-medium">
+                                开始实验
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验流程 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验流程</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="flex flex-col items-center text-center p-4 rounded-lg bg-blue-50">
+                        <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-cogs text-white text-2xl"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 mb-2">设置参数</h4>
+                        <p class="text-sm text-gray-600">根据实验要求设置相关参数，如疾病发病率、部件失效概率等。</p>
+                    </div>
+                    <div class="flex flex-col items-center text-center p-4 rounded-lg bg-blue-50">
+                        <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-play text-white text-2xl"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 mb-2">执行实验</h4>
+                        <p class="text-sm text-gray-600">运行实验模拟，生成稀有事件的复合概率数据。</p>
+                    </div>
+                    <div class="flex flex-col items-center text-center p-4 rounded-lg bg-blue-50">
+                        <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-bar-chart text-white text-2xl"></i>
+                        </div>
+                        <h4 class="font-bold text-gray-800 mb-2">分析结果</h4>
+                        <p class="text-sm text-gray-600">查看实验结果，分析稀有事件的复合概率特性。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习目标 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">学习目标</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <i class="fa fa-star text-warning mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="font-medium text-gray-800">理解稀有事件的概率计算</h4>
+                            <p class="text-sm text-gray-600">掌握低概率事件的计算方法，包括贝叶斯定理和条件概率的应用。</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-star text-warning mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="font-medium text-gray-800">分析复合小概率事件</h4>
+                            <p class="text-sm text-gray-600">学习如何分析和计算多个小概率事件的复合概率，如保险理赔和系统可靠性。</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-star text-warning mt-1 mr-3"></i>
+                        <div>
+                            <h4 class="font-medium text-gray-800">应用稀有事件概率模型</h4>
+                            <p class="text-sm text-gray-600">将稀有事件概率模型应用到实际场景中，如医疗诊断、保险精算和系统工程等。</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        罕见疾病筛查的概率计算
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        保险理赔的复合概率模型
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        系统可靠性的概率分析
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验卡片悬停效果
+        document.querySelectorAll('.experiment-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('shadow-card-hover');
+            });
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('shadow-card-hover');
+            });
+        });
+    </script>
+</body>
+</html>

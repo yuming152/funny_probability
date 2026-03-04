@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票涨跌序列 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-warning {
+                background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .stock-day {
+                transition: all 0.3s ease;
+            }
+            .stock-day:hover {
+                transform: scale(1.05);
+            }
+            .stock-day.up {
+                background-color: #D1FAE5;
+            }
+            .stock-day.down {
+                background-color: #FEE2E2;
+            }
+            .transition-matrix {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            .transition-matrix th,
+            .transition-matrix td {
+                border: 1px solid #E5E7EB;
+                padding: 8px;
+                text-align: center;
+            }
+            .transition-matrix th {
+                background-color: #F3F4F6;
+                font-weight: 600;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="non-independent-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-line-chart w-5 text-center"></i>
+                    <span>非独立重复实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">调整状态转移概率，观察股票涨跌序列，计算连续上涨的概率。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">股票涨跌序列</h2>
+                    <a href="non-independent-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">每日涨跌概率受前一日涨跌影响，构造非独立马尔可夫链，计算连续 3 日上涨的概率。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">上涨后继续上涨概率 (%)</label>
+                        <input type="number" id="up-up-prob" min="1" max="99" value="60" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">上涨后下跌概率 (%)</label>
+                        <input type="number" id="up-down-prob" min="1" max="99" value="40" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">下跌后上涨概率 (%)</label>
+                        <input type="number" id="down-up-prob" min="1" max="99" value="50" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">下跌后继续下跌概率 (%)</label>
+                        <input type="number" id="down-down-prob" min="1" max="99" value="50" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">初始状态</label>
+                        <select id="initial-state" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent">
+                            <option value="up">上涨</option>
+                            <option value="down">下跌</option>
+                            <option value="random">随机</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟天数</label>
+                        <input type="number" id="simulation-days" min="3" max="100" value="30" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟次数</label>
+                        <input type="number" id="simulation-count" min="100" max="10000" value="1000" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="run-simulation" class="w-full px-6 py-3 bg-warning text-white rounded-lg hover:bg-yellow-600 transition-all-300 font-medium flex items-center justify-center">
+                            <i class="fa fa-play mr-2"></i> 运行模拟
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模拟结果 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- 股票涨跌序列可视化 -->
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">股票涨跌序列可视化</h3>
+                    <div class="flex flex-wrap gap-2 mb-6" id="stock-sequence-visualization">
+                        <!-- 每日涨跌将在这里动态生成 -->
+                    </div>
+                    <div class="flex space-x-4">
+                        <button id="generate-sequence" class="px-4 py-2 bg-warning text-white rounded-lg hover:bg-yellow-600 transition-all-300 font-medium flex items-center">
+                            <i class="fa fa-refresh mr-2"></i> 生成序列
+                        </button>
+                        <button id="reset-simulation" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                            <i class="fa fa-undo mr-2"></i> 重置
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 状态转移矩阵 -->
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">状态转移矩阵</h3>
+                    <div class="overflow-x-auto">
+                        <table class="transition-matrix">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>上涨</th>
+                                    <th>下跌</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>上涨</td>
+                                    <td id="up-up-cell">60%</td>
+                                    <td id="up-down-cell">40%</td>
+                                </tr>
+                                <tr>
+                                    <td>下跌</td>
+                                    <td id="down-up-cell">50%</td>
+                                    <td id="down-down-cell">50%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6">
+                        <h4 class="font-bold text-gray-800 mb-2">连续3日上涨的概率</h4>
+                        <div class="text-2xl font-bold text-warning mb-2" id="three-up-probability">0%</div>
+                        <p class="text-sm text-gray-600">基于马尔可夫链计算的理论概率</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 统计结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">统计结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-warning" id="theoretical-three-up">0%</div>
+                        <div class="text-sm text-gray-600">理论连续3日上涨概率</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-primary" id="simulated-three-up">0%</div>
+                        <div class="text-sm text-gray-600">模拟连续3日上涨概率</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-success" id="average-up-days">0</div>
+                        <div class="text-sm text-gray-600">平均上涨天数</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-purple-600" id="max-consecutive-up">0</div>
+                        <div class="text-sm text-gray-600">最大连续上涨天数</div>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <h4 class="font-bold text-gray-800 mb-2">涨跌分布</h4>
+                    <div class="h-40">
+                        <canvas id="distribution-chart"></canvas>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <h4 class="font-bold text-gray-800 mb-2">连续上涨天数分布</h4>
+                    <div class="h-40">
+                        <canvas id="consecutive-up-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">马尔可夫链模型</h4>
+                        <p class="text-gray-600">本实验使用马尔可夫链模型模拟股票涨跌序列，其中每日的涨跌概率仅依赖于前一日的状态，体现了股票市场的短期记忆性。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">状态转移</h4>
+                        <p class="text-gray-600">状态转移矩阵描述了从一个状态到另一个状态的概率，通过矩阵运算可以计算出多步转移的概率，从而得到连续事件的概率。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">连续事件概率</h4>
+                        <p class="text-gray-600">连续3日上涨的概率可以通过状态转移矩阵的幂运算得到，也可以通过模拟实验进行估计。</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        马尔可夫链在股票分析中的应用
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算连续上涨的概率
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        状态转移矩阵的计算方法
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验逻辑
+        let distributionChart = null;
+        let consecutiveUpChart = null;
+
+        // 更新状态转移矩阵
+        function updateTransitionMatrix() {
+            const upUpProb = document.getElementById('up-up-prob').value;
+            const upDownProb = document.getElementById('up-down-prob').value;
+            const downUpProb = document.getElementById('down-up-prob').value;
+            const downDownProb = document.getElementById('down-down-prob').value;
+
+            document.getElementById('up-up-cell').textContent = upUpProb + '%';
+            document.getElementById('up-down-cell').textContent = upDownProb + '%';
+            document.getElementById('down-up-cell').textContent = downUpProb + '%';
+            document.getElementById('down-down-cell').textContent = downDownProb + '%';
+        }
+
+        // 计算连续3日上涨的理论概率
+        function calculateThreeUpProbability() {
+            const upUpProb = parseInt(document.getElementById('up-up-prob').value) / 100;
+            const upDownProb = parseInt(document.getElementById('up-down-prob').value) / 100;
+            const downUpProb = parseInt(document.getElementById('down-up-prob').value) / 100;
+            const downDownProb = parseInt(document.getElementById('down-down-prob').value) / 100;
+            const initialState = document.getElementById('initial-state').value;
+
+            // 计算从初始状态开始连续3日上涨的概率
+            let probability = 0;
+
+            if (initialState === 'up') {
+                // 初始状态为上涨
+                probability = upUpProb * upUpProb * upUpProb;
+            } else if (initialState === 'down') {
+                // 初始状态为下跌
+                probability = downUpProb * upUpProb * upUpProb;
+            } else {
+                // 初始状态随机（50%上涨，50%下跌）
+                probability = 0.5 * upUpProb * upUpProb * upUpProb + 0.5 * downUpProb * upUpProb * upUpProb;
+            }
+
+            return probability;
+        }
+
+        // 生成股票涨跌序列
+        function generateStockSequence() {
+            const upUpProb = parseInt(document.getElementById('up-up-prob').value) / 100;
+            const upDownProb = parseInt(document.getElementById('up-down-prob').value) / 100;
+            const downUpProb = parseInt(document.getElementById('down-up-prob').value) / 100;
+            const downDownProb = parseInt(document.getElementById('down-down-prob').value) / 100;
+            const simulationDays = parseInt(document.getElementById('simulation-days').value);
+            const initialState = document.getElementById('initial-state').value;
+
+            const visualization = document.getElementById('stock-sequence-visualization');
+            visualization.innerHTML = '';
+
+            let currentState = initialState === 'random' ? (Math.random() > 0.5 ? 'up' : 'down') : initialState;
+            const sequence = [currentState];
+
+            for (let i = 0; i < simulationDays; i++) {
+                const day = document.createElement('div');
+                day.className = `stock-day w-12 h-12 rounded-lg flex items-center justify-center ${currentState}`;
+                day.innerHTML = currentState === 'up' ? '<i class="fa fa-arrow-up text-success text-xl"></i>' : '<i class="fa fa-arrow-down text-danger text-xl"></i>';
+
+                const label = document.createElement('div');
+                label.className = 'text-center text-xs text-gray-600 mt-1';
+                label.textContent = `第${i+1}天`;
+
+                const dayContainer = document.createElement('div');
+                dayContainer.className = 'flex flex-col items-center';
+                dayContainer.appendChild(day);
+                dayContainer.appendChild(label);
+
+                visualization.appendChild(dayContainer);
+
+                // 生成下一天的状态
+                if (currentState === 'up') {
+                    currentState = Math.random() < upUpProb ? 'up' : 'down';
+                } else {
+                    currentState = Math.random() < downUpProb ? 'up' : 'down';
+                }
+                sequence.push(currentState);
+            }
+
+            return sequence;
+        }
+
+        // 运行模拟
+        function runSimulation() {
+            updateTransitionMatrix();
+
+            const upUpProb = parseInt(document.getElementById('up-up-prob').value) / 100;
+            const upDownProb = parseInt(document.getElementById('up-down-prob').value) / 100;
+            const downUpProb = parseInt(document.getElementById('down-up-prob').value) / 100;
+            const downDownProb = parseInt(document.getElementById('down-down-prob').value) / 100;
+            const simulationDays = parseInt(document.getElementById('simulation-days').value);
+            const simulationCount = parseInt(document.getElementById('simulation-count').value);
+            const initialState = document.getElementById('initial-state').value;
+
+            let threeUpCount = 0;
+            let totalUpDays = 0;
+            let maxConsecutiveUp = 0;
+            const consecutiveUpDistribution = {};
+
+            for (let i = 0; i < simulationCount; i++) {
+                let currentState = initialState === 'random' ? (Math.random() > 0.5 ? 'up' : 'down') : initialState;
+                let consecutiveUp = currentState === 'up' ? 1 : 0;
+                let hasThreeUp = false;
+
+                for (let j = 0; j < simulationDays - 1; j++) {
+                    if (currentState === 'up') {
+                        currentState = Math.random() < upUpProb ? 'up' : 'down';
+                    } else {
+                        currentState = Math.random() < downUpProb ? 'up' : 'down';
+                    }
+
+                    if (currentState === 'up') {
+                        consecutiveUp++;
+                        if (consecutiveUp >= 3 && !hasThreeUp) {
+                            threeUpCount++;
+                            hasThreeUp = true;
+                        }
+                        maxConsecutiveUp = Math.max(maxConsecutiveUp, consecutiveUp);
+                    } else {
+                        if (consecutiveUp > 0) {
+                            consecutiveUpDistribution[consecutiveUp] = (consecutiveUpDistribution[consecutiveUp] || 0) + 1;
+                        }
+                        consecutiveUp = 0;
+                    }
+                }
+
+                // 统计最后一段连续上涨
+                if (consecutiveUp > 0) {
+                    consecutiveUpDistribution[consecutiveUp] = (consecutiveUpDistribution[consecutiveUp] || 0) + 1;
+                }
+
+                // 统计总上涨天数
+                totalUpDays += consecutiveUp;
+            }
+
+            // 计算概率
+            const theoreticalProb = calculateThreeUpProbability();
+            const simulatedProb = threeUpCount / simulationCount;
+            const averageUpDays = totalUpDays / simulationCount;
+
+            // 更新统计结果
+            document.getElementById('theoretical-three-up').textContent = (theoreticalProb * 100).toFixed(2) + '%';
+            document.getElementById('simulated-three-up').textContent = (simulatedProb * 100).toFixed(2) + '%';
+            document.getElementById('average-up-days').textContent = averageUpDays.toFixed(2);
+            document.getElementById('max-consecutive-up').textContent = maxConsecutiveUp;
+            document.getElementById('three-up-probability').textContent = (theoreticalProb * 100).toFixed(2) + '%';
+
+            // 生成股票序列可视化
+            generateStockSequence();
+
+            // 更新图表
+            updateCharts(consecutiveUpDistribution, simulationCount);
+        }
+
+        // 更新图表
+        function updateCharts(consecutiveUpDistribution, simulationCount) {
+            // 涨跌分布图表
+            const distributionCtx = document.getElementById('distribution-chart').getContext('2d');
+            if (distributionChart) {
+                distributionChart.destroy();
+            }
+
+            distributionChart = new Chart(distributionCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['上涨', '下跌'],
+                    datasets: [{
+                        data: [document.getElementById('simulated-three-up').textContent,
+                               (100 - parseFloat(document.getElementById('simulated-three-up').textContent)).toFixed(2)],
+                        backgroundColor: ['#10B981', '#EF4444'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // 连续上涨天数分布图表
+            const consecutiveUpCtx = document.getElementById('consecutive-up-chart').getContext('2d');
+            if (consecutiveUpChart) {
+                consecutiveUpChart.destroy();
+            }
+
+            const maxConsecutive = Math.max(...Object.keys(consecutiveUpDistribution).map(Number), 0);
+            const labels = Array.from({length: maxConsecutive}, (_, i) => i + 1);
+            const data = labels.map(label => (consecutiveUpDistribution[label] || 0) / simulationCount * 100);
+
+            consecutiveUpChart = new Chart(consecutiveUpCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '概率 (%)',
+                        data: data,
+                        backgroundColor: '#F59E0B',
+                        borderColor: '#F59E0B',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '概率 (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '连续上涨天数'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 运行模拟按钮点击事件
+        document.getElementById('run-simulation').addEventListener('click', runSimulation);
+
+        // 生成序列按钮点击事件
+        document.getElementById('generate-sequence').addEventListener('click', generateStockSequence);
+
+        // 重置按钮点击事件
+        document.getElementById('reset-simulation').addEventListener('click', function() {
+            document.getElementById('stock-sequence-visualization').innerHTML = '';
+            if (distributionChart) {
+                distributionChart.destroy();
+            }
+            if (consecutiveUpChart) {
+                consecutiveUpChart.destroy();
+            }
+            document.getElementById('theoretical-three-up').textContent = '0%';
+            document.getElementById('simulated-three-up').textContent = '0%';
+            document.getElementById('average-up-days').textContent = '0';
+            document.getElementById('max-consecutive-up').textContent = '0';
+            document.getElementById('three-up-probability').textContent = '0%';
+        });
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            updateTransitionMatrix();
+            generateStockSequence();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贝叶斯垃圾邮件分类 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .bg-gradient-accent {
+                background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .keyword-tag {
+                transition: all 0.3s ease;
+            }
+            .keyword-tag:hover {
+                transform: scale(1.05);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">通过贝叶斯垃圾邮件分类实验，学习如何应用贝叶斯定理进行邮件分类，理解先验概率和后验概率的计算。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">贝叶斯垃圾邮件分类</h2>
+                    <a href="bayesian-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回贝叶斯实验
+                    </a>
+                </div>
+                <p class="text-gray-600">基于贝叶斯定理，根据邮件中的关键词出现频率，计算邮件为垃圾邮件的后验概率。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">垃圾邮件先验概率</label>
+                            <input type="number" id="spam-prior" min="0" max="1" step="0.01" value="0.3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">正常邮件先验概率</label>
+                            <input type="number" id="ham-prior" min="0" max="1" step="0.01" value="0.7" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">邮件内容</label>
+                            <textarea id="email-content" rows="4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="请输入邮件内容...">恭喜您获得10000元奖金，请点击链接领取：http://example.com</textarea>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="mb-4">
+                                <i class="fa fa-envelope text-primary text-6xl"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-gray-800 mb-2">贝叶斯垃圾邮件分类</h4>
+                            <p class="text-gray-600">基于关键词频率和贝叶斯定理，判断邮件是否为垃圾邮件。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button id="classify-email" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-search mr-2"></i> 分类邮件
+                    </button>
+                    <button id="reset-experiment" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 实验结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">分类结果</h4>
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <div class="flex items-center mb-2">
+                                <div id="classification-result" class="text-2xl font-bold text-primary">垃圾邮件</div>
+                                <div id="confidence-score" class="ml-3 px-3 py-1 bg-primary text-white rounded-full text-sm">95%</div>
+                            </div>
+                            <div class="text-sm text-gray-600">基于贝叶斯定理计算的后验概率</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">概率分析</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">垃圾邮件概率:</span>
+                                <span id="spam-probability" class="font-medium">95.00%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">正常邮件概率:</span>
+                                <span id="ham-probability" class="font-medium">5.00%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">垃圾邮件先验概率:</span>
+                                <span id="spam-prior-value" class="font-medium">30.00%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">正常邮件先验概率:</span>
+                                <span id="ham-prior-value" class="font-medium">70.00%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 关键词分析 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">关键词分析</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="text-sm font-medium text-gray-700 mb-2">垃圾邮件关键词</h5>
+                            <div id="spam-keywords" class="flex flex-wrap gap-2">
+                                <span class="keyword-tag bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">奖金</span>
+                                <span class="keyword-tag bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">领取</span>
+                                <span class="keyword-tag bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">链接</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-medium text-gray-700 mb-2">正常邮件关键词</h5>
+                            <div id="ham-keywords" class="flex flex-wrap gap-2">
+                                <span class="keyword-tag bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">请</span>
+                                <span class="keyword-tag bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">输入</span>
+                                <span class="keyword-tag bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">邮件</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 概率计算过程 -->
+                <div>
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">概率计算过程</h4>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="space-y-2 text-sm">
+                            <div><strong>1. 提取关键词:</strong> 恭喜, 您, 获得, 10000元, 奖金, 请, 点击, 链接, 领取, http://example.com</div>
+                            <div><strong>2. 计算似然度:</strong></div>
+                            <div class="pl-4">P(关键词|垃圾邮件) = 0.85</div>
+                            <div class="pl-4">P(关键词|正常邮件) = 0.15</div>
+                            <div><strong>3. 应用贝叶斯定理:</strong></div>
+                            <div class="pl-4">P(垃圾邮件|关键词) = [P(关键词|垃圾邮件) * P(垃圾邮件)] / P(关键词)</div>
+                            <div class="pl-4">P(垃圾邮件|关键词) = [0.85 * 0.3] / [0.85*0.3 + 0.15*0.7] = 0.95</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">贝叶斯定理</h4>
+                        <p class="text-gray-600">贝叶斯定理是一种基于先验概率和似然度计算后验概率的方法，公式为：</p>
+                        <div class="bg-gray-50 p-3 rounded-lg mt-2">
+                            P(A|B) = [P(B|A) * P(A)] / P(B)
+                        </div>
+                        <p class="text-gray-600 mt-2">其中，P(A|B)是在B发生的条件下A发生的概率，P(B|A)是在A发生的条件下B发生的概率，P(A)是A的先验概率，P(B)是B的概率。</p>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">垃圾邮件分类原理</h4>
+                        <p class="text-gray-600">垃圾邮件分类的基本原理是：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>收集大量垃圾邮件和正常邮件作为训练数据</li>
+                            <li>统计每个关键词在垃圾邮件和正常邮件中出现的频率</li>
+                            <li>对于新邮件，提取其关键词</li>
+                            <li>使用贝叶斯定理计算该邮件是垃圾邮件的后验概率</li>
+                            <li>根据后验概率判断邮件类型</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">优势与局限性</h4>
+                        <p class="text-gray-600">贝叶斯垃圾邮件分类的优势：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>计算简单，效率高</li>
+                            <li>可以处理高维特征</li>
+                            <li>可以通过学习不断改进</li>
+                        </ul>
+                        <p class="text-gray-600 mt-2">局限性：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>假设特征之间相互独立（朴素贝叶斯假设）</li>
+                            <li>对新出现的关键词处理能力有限</li>
+                            <li>需要大量训练数据</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        贝叶斯定理的应用
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        垃圾邮件分类的原理
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何提高分类准确率
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验逻辑
+        // 垃圾邮件关键词列表
+        const spamKeywords = ['奖金', '领取', '链接', '免费', '中奖', '优惠', '促销', '点击', '汇款', '账号', '密码', '银行', '转账', '支付', '投资', '理财', '股票', '彩票', '赌博', '色情'];
+        // 正常邮件关键词列表
+        const hamKeywords = ['请', '输入', '邮件', '内容', '您好', '谢谢', '再见', '工作', '会议', '项目', '报告', '文档', '附件', '信息', '通知', '提醒', '邀请', '活动', '计划'];
+
+        // 计算邮件分类
+        function classifyEmail() {
+            const spamPrior = parseFloat(document.getElementById('spam-prior').value);
+            const hamPrior = parseFloat(document.getElementById('ham-prior').value);
+            const emailContent = document.getElementById('email-content').value;
+
+            // 提取关键词
+            const words = emailContent.split(/\s+/);
+            
+            // 计算垃圾邮件和正常邮件的似然度
+            let spamLikelihood = 1;
+            let hamLikelihood = 1;
+            
+            // 统计垃圾邮件和正常邮件关键词出现次数
+            let spamKeywordCount = 0;
+            let hamKeywordCount = 0;
+            
+            words.forEach(word => {
+                if (spamKeywords.includes(word)) {
+                    spamLikelihood *= 0.8; // 垃圾邮件中关键词出现的概率
+                    spamKeywordCount++;
+                } else {
+                    spamLikelihood *= 0.2; // 垃圾邮件中非关键词出现的概率
+                }
+                
+                if (hamKeywords.includes(word)) {
+                    hamLikelihood *= 0.8; // 正常邮件中关键词出现的概率
+                    hamKeywordCount++;
+                } else {
+                    hamLikelihood *= 0.2; // 正常邮件中非关键词出现的概率
+                }
+            });
+
+            // 计算后验概率
+            const totalLikelihood = spamLikelihood * spamPrior + hamLikelihood * hamPrior;
+            const spamProbability = (spamLikelihood * spamPrior) / totalLikelihood;
+            const hamProbability = (hamLikelihood * hamPrior) / totalLikelihood;
+
+            // 更新结果
+            document.getElementById('spam-probability').textContent = (spamProbability * 100).toFixed(2) + '%';
+            document.getElementById('ham-probability').textContent = (hamProbability * 100).toFixed(2) + '%';
+            document.getElementById('spam-prior-value').textContent = (spamPrior * 100).toFixed(2) + '%';
+            document.getElementById('ham-prior-value').textContent = (hamPrior * 100).toFixed(2) + '%';
+
+            // 更新分类结果
+            if (spamProbability > 0.5) {
+                document.getElementById('classification-result').textContent = '垃圾邮件';
+                document.getElementById('confidence-score').textContent = (spamProbability * 100).toFixed(0) + '%';
+                document.getElementById('confidence-score').className = 'ml-3 px-3 py-1 bg-danger text-white rounded-full text-sm';
+            } else {
+                document.getElementById('classification-result').textContent = '正常邮件';
+                document.getElementById('confidence-score').textContent = (hamProbability * 100).toFixed(0) + '%';
+                document.getElementById('confidence-score').className = 'ml-3 px-3 py-1 bg-success text-white rounded-full text-sm';
+            }
+
+            // 更新关键词分析
+            updateKeywordAnalysis(words);
+        }
+
+        // 更新关键词分析
+        function updateKeywordAnalysis(words) {
+            const spamKeywordsContainer = document.getElementById('spam-keywords');
+            const hamKeywordsContainer = document.getElementById('ham-keywords');
+            
+            // 清空容器
+            spamKeywordsContainer.innerHTML = '';
+            hamKeywordsContainer.innerHTML = '';
+            
+            // 统计关键词
+            const foundSpamKeywords = new Set();
+            const foundHamKeywords = new Set();
+            
+            words.forEach(word => {
+                if (spamKeywords.includes(word)) {
+                    foundSpamKeywords.add(word);
+                }
+                if (hamKeywords.includes(word)) {
+                    foundHamKeywords.add(word);
+                }
+            });
+            
+            // 添加垃圾邮件关键词
+            foundSpamKeywords.forEach(keyword => {
+                const span = document.createElement('span');
+                span.className = 'keyword-tag bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm';
+                span.textContent = keyword;
+                spamKeywordsContainer.appendChild(span);
+            });
+            
+            // 添加正常邮件关键词
+            foundHamKeywords.forEach(keyword => {
+                const span = document.createElement('span');
+                span.className = 'keyword-tag bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm';
+                span.textContent = keyword;
+                hamKeywordsContainer.appendChild(span);
+            });
+        }
+
+        // 重置实验
+        function resetExperiment() {
+            document.getElementById('spam-prior').value = '0.3';
+            document.getElementById('ham-prior').value = '0.7';
+            document.getElementById('email-content').value = '恭喜您获得10000元奖金，请点击链接领取：http://example.com';
+            document.getElementById('spam-probability').textContent = '95.00%';
+            document.getElementById('ham-probability').textContent = '5.00%';
+            document.getElementById('spam-prior-value').textContent = '30.00%';
+            document.getElementById('ham-prior-value').textContent = '70.00%';
+            document.getElementById('classification-result').textContent = '垃圾邮件';
+            document.getElementById('confidence-score').textContent = '95%';
+            document.getElementById('confidence-score').className = 'ml-3 px-3 py-1 bg-danger text-white rounded-full text-sm';
+            
+            // 重置关键词分析
+            const spamKeywordsContainer = document.getElementById('spam-keywords');
+            const hamKeywordsContainer = document.getElementById('ham-keywords');
+            spamKeywordsContainer.innerHTML = '';
+            hamKeywordsContainer.innerHTML = '';
+            
+            const spamTags = ['奖金', '领取', '链接'];
+            const hamTags = ['请', '输入', '邮件'];
+            
+            spamTags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'keyword-tag bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm';
+                span.textContent = tag;
+                spamKeywordsContainer.appendChild(span);
+            });
+            
+            hamTags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'keyword-tag bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm';
+                span.textContent = tag;
+                hamKeywordsContainer.appendChild(span);
+            });
+        }
+
+        // 事件监听器
+        document.getElementById('classify-email').addEventListener('click', classifyEmail);
+        document.getElementById('reset-experiment').addEventListener('click', resetExperiment);
+    </script>
+</body>
+</html>

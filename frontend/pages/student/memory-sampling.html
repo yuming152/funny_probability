@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆性抽检 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .product-item {
+                transition: all 0.3s ease;
+            }
+            .product-item:hover {
+                transform: scale(1.05);
+            }
+            .product-item.good {
+                background-color: #D1FAE5;
+            }
+            .product-item.bad {
+                background-color: #FEE2E2;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="non-independent-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-search w-5 text-center"></i>
+                    <span>非独立重复实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">调整参数，观察记忆性抽检过程，计算首次抽到次品的概率。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">记忆性抽检</h2>
+                    <a href="non-independent-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">连续抽检产品，若前一次为次品，本次次品率提升，计算第 k 次首次抽到次品的概率。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">基础次品率 (%)</label>
+                        <input type="number" id="base-defect-rate" min="1" max="50" value="5" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">次品率提升系数</label>
+                        <input type="number" id="defect-increase-factor" min="1.1" max="5" step="0.1" value="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">最大抽检次数</label>
+                        <input type="number" id="max-sampling-times" min="1" max="20" value="10" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟次数</label>
+                        <input type="number" id="simulation-count" min="100" max="10000" value="1000" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">目标抽检次数 k</label>
+                        <input type="number" id="target-k" min="1" max="20" value="5" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div class="flex items-end">
+                        <button id="calculate-probability" class="w-full px-6 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300 font-medium flex items-center justify-center">
+                            <i class="fa fa-calculator mr-2"></i> 计算概率
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模拟结果 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- 抽检过程可视化 -->
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">抽检过程可视化</h3>
+                    <div class="flex flex-wrap gap-4 mb-6" id="sampling-visualization">
+                        <!-- 产品将在这里动态生成 -->
+                    </div>
+                    <div class="flex space-x-4">
+                        <button id="run-simulation" class="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300 font-medium flex items-center">
+                            <i class="fa fa-play mr-2"></i> 运行模拟
+                        </button>
+                        <button id="reset-simulation" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                            <i class="fa fa-refresh mr-2"></i> 重置
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 概率分布 -->
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">首次抽到次品的概率分布</h3>
+                    <div class="h-64">
+                        <canvas id="probability-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 统计结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">统计结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-orange-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-secondary" id="theoretical-probability">0%</div>
+                        <div class="text-sm text-gray-600">理论概率</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-primary" id="simulated-probability">0%</div>
+                        <div class="text-sm text-gray-600">模拟概率</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-success" id="average-sampling-times">0</div>
+                        <div class="text-sm text-gray-600">平均抽检次数</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-purple-600" id="max-defect-rate">0%</div>
+                        <div class="text-sm text-gray-600">最大次品率</div>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <h4 class="font-bold text-gray-800 mb-2">次品率变化趋势</h4>
+                    <div class="h-40">
+                        <canvas id="defect-rate-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">记忆性概率模型</h4>
+                        <p class="text-gray-600">本实验模拟了具有记忆性的抽检过程，其中次品率会根据前一次的结果动态调整，体现了现实中生产过程的相关性。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">条件概率计算</h4>
+                        <p class="text-gray-600">第 k 次首次抽到次品的概率计算公式：P(k) = (1-p1) * (1-p2) * ... * (1-pk-1) * pk，其中 pi 是第 i 次抽检的次品率。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">首次次品概率</h4>
+                        <p class="text-gray-600">通过理论计算和模拟实验，可以分析首次抽到次品的概率分布，了解记忆性对概率计算的影响。</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        记忆性抽检的概率计算方法
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算首次抽到次品的概率
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        次品率提升对概率的影响
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验逻辑
+        let probabilityChart = null;
+        let defectRateChart = null;
+        let samplingResults = [];
+        let defectRateData = [];
+
+        // 计算理论概率
+        function calculateTheoreticalProbability() {
+            const baseDefectRate = parseInt(document.getElementById('base-defect-rate').value) / 100;
+            const defectIncreaseFactor = parseFloat(document.getElementById('defect-increase-factor').value);
+            const targetK = parseInt(document.getElementById('target-k').value);
+            
+            let probability = 1;
+            let currentDefectRate = baseDefectRate;
+            
+            for (let i = 1; i < targetK; i++) {
+                probability *= (1 - currentDefectRate);
+                currentDefectRate = Math.min(baseDefectRate * Math.pow(defectIncreaseFactor, i), 0.99);
+            }
+            
+            probability *= currentDefectRate;
+            return probability;
+        }
+
+        // 运行模拟
+        function runSimulation() {
+            const baseDefectRate = parseInt(document.getElementById('base-defect-rate').value) / 100;
+            const defectIncreaseFactor = parseFloat(document.getElementById('defect-increase-factor').value);
+            const maxSamplingTimes = parseInt(document.getElementById('max-sampling-times').value);
+            const simulationCount = parseInt(document.getElementById('simulation-count').value);
+            
+            let firstDefectAt = new Array(maxSamplingTimes + 1).fill(0);
+            let totalSamplingTimes = 0;
+            
+            for (let i = 0; i < simulationCount; i++) {
+                let currentDefectRate = baseDefectRate;
+                let foundDefect = false;
+                
+                for (let k = 1; k <= maxSamplingTimes; k++) {
+                    if (Math.random() < currentDefectRate) {
+                        firstDefectAt[k]++;
+                        totalSamplingTimes += k;
+                        foundDefect = true;
+                        break;
+                    } else {
+                        currentDefectRate = Math.min(baseDefectRate * Math.pow(defectIncreaseFactor, k), 0.99);
+                    }
+                }
+                
+                if (!foundDefect) {
+                    firstDefectAt[0]++;
+                    totalSamplingTimes += maxSamplingTimes;
+                }
+            }
+            
+            // 计算概率分布
+            const probabilityDistribution = firstDefectAt.map(count => (count / simulationCount) * 100);
+            
+            // 更新图表
+            updateProbabilityChart(probabilityDistribution, maxSamplingTimes);
+            
+            // 计算统计数据
+            const targetK = parseInt(document.getElementById('target-k').value);
+            const simulatedProbability = probabilityDistribution[targetK];
+            const averageSamplingTime = totalSamplingTimes / simulationCount;
+            
+            // 更新统计结果
+            document.getElementById('theoretical-probability').textContent = (calculateTheoreticalProbability() * 100).toFixed(2) + '%';
+            document.getElementById('simulated-probability').textContent = simulatedProbability.toFixed(2) + '%';
+            document.getElementById('average-sampling-times').textContent = averageSamplingTime.toFixed(2);
+            
+            // 计算最大次品率
+            const maxDefectRate = Math.min(baseDefectRate * Math.pow(defectIncreaseFactor, maxSamplingTimes - 1), 0.99) * 100;
+            document.getElementById('max-defect-rate').textContent = maxDefectRate.toFixed(2) + '%';
+            
+            // 生成抽检过程可视化
+            generateSamplingVisualization();
+        }
+
+        // 生成抽检过程可视化
+        function generateSamplingVisualization() {
+            const visualization = document.getElementById('sampling-visualization');
+            const maxSamplingTimes = parseInt(document.getElementById('max-sampling-times').value);
+            const baseDefectRate = parseInt(document.getElementById('base-defect-rate').value) / 100;
+            const defectIncreaseFactor = parseFloat(document.getElementById('defect-increase-factor').value);
+            
+            visualization.innerHTML = '';
+            
+            let currentDefectRate = baseDefectRate;
+            let foundDefect = false;
+            
+            for (let i = 1; i <= maxSamplingTimes; i++) {
+                const product = document.createElement('div');
+                product.className = 'product-item w-16 h-16 rounded-lg flex items-center justify-center';
+                
+                let isDefect = false;
+                if (!foundDefect && Math.random() < currentDefectRate) {
+                    isDefect = true;
+                    foundDefect = true;
+                    product.classList.add('bad');
+                    product.innerHTML = '<i class="fa fa-times text-danger text-2xl"></i>';
+                } else {
+                    product.classList.add('good');
+                    product.innerHTML = '<i class="fa fa-check text-success text-2xl"></i>';
+                }
+                
+                const label = document.createElement('div');
+                label.className = 'text-center text-xs text-gray-600 mt-1';
+                label.textContent = `第${i}次`;
+                
+                const productContainer = document.createElement('div');
+                productContainer.className = 'flex flex-col items-center';
+                productContainer.appendChild(product);
+                productContainer.appendChild(label);
+                
+                visualization.appendChild(productContainer);
+                
+                if (!foundDefect) {
+                    currentDefectRate = Math.min(baseDefectRate * Math.pow(defectIncreaseFactor, i), 0.99);
+                }
+            }
+        }
+
+        // 更新概率分布图表
+        function updateProbabilityChart(probabilityDistribution, maxSamplingTimes) {
+            const ctx = document.getElementById('probability-chart').getContext('2d');
+            
+            if (probabilityChart) {
+                probabilityChart.destroy();
+            }
+            
+            const labels = Array.from({length: maxSamplingTimes + 1}, (_, i) => i === 0 ? '未抽到' : `第${i}次`);
+            
+            probabilityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '概率 (%)',
+                        data: probabilityDistribution,
+                        backgroundColor: '#F97316',
+                        borderColor: '#F97316',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '概率 (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '抽检次数'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 计算概率按钮点击事件
+        document.getElementById('calculate-probability').addEventListener('click', runSimulation);
+
+        // 运行模拟按钮点击事件
+        document.getElementById('run-simulation').addEventListener('click', runSimulation);
+
+        // 重置按钮点击事件
+        document.getElementById('reset-simulation').addEventListener('click', function() {
+            document.getElementById('sampling-visualization').innerHTML = '';
+            if (probabilityChart) {
+                probabilityChart.destroy();
+            }
+            if (defectRateChart) {
+                defectRateChart.destroy();
+            }
+            document.getElementById('theoretical-probability').textContent = '0%';
+            document.getElementById('simulated-probability').textContent = '0%';
+            document.getElementById('average-sampling-times').textContent = '0';
+            document.getElementById('max-defect-rate').textContent = '0%';
+        });
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            // 初始生成一次抽检过程
+            generateSamplingVisualization();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多产品质量指标 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .product-item {
+                transition: all 0.3s ease;
+            }
+            .product-item:hover {
+                transform: translateY(-2px);
+            }
+            .product-item.pass {
+                border-color: #10B981;
+                background-color: rgba(16, 185, 129, 0.05);
+            }
+            .product-item.fail {
+                border-color: #EF4444;
+                background-color: rgba(239, 68, 68, 0.05);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-secondary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="high-dimensional-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-industry w-5 text-center"></i>
+                    <span>高维随机变量联合实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">调整参数，观察多产品质量指标的联合分布，计算满足条件的概率。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">多产品质量指标</h2>
+                    <a href="high-dimensional-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">同时记录 3 件产品的寿命、强度、合格率，构建三维联合分布，计算 "寿命> 5 且强度 > 10" 的概率。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟产品数量</label>
+                        <input type="number" id="product-count" min="100" max="10000" value="1000" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">寿命均值</label>
+                        <input type="number" id="life-mean" min="1" max="20" step="0.1" value="10" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">寿命标准差</label>
+                        <input type="number" id="life-std" min="0.1" max="5" step="0.1" value="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">强度均值</label>
+                        <input type="number" id="strength-mean" min="5" max="30" step="0.1" value="15" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">强度标准差</label>
+                        <input type="number" id="strength-std" min="0.1" max="5" step="0.1" value="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">合格率 (%)</label>
+                        <input type="number" id="pass-rate" min="1" max="100" value="80" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button id="start-simulation" class="px-6 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-play mr-2"></i> 开始模拟
+                    </button>
+                    <button id="reset-simulation" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 模拟结果 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- 产品质量指标可视化 -->
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">产品质量指标可视化</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4" id="product-visualization">
+                        <!-- 产品将在这里动态生成 -->
+                    </div>
+                    <div class="flex justify-center space-x-4">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-success rounded-full mr-2"></div>
+                            <span class="text-sm text-gray-600">合格</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-danger rounded-full mr-2"></div>
+                            <span class="text-sm text-gray-600">不合格</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 二维散点图 -->
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">寿命 vs 强度</h3>
+                    <div class="h-64">
+                        <canvas id="scatter-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 统计结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">统计结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-orange-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-secondary" id="total-products">0</div>
+                        <div class="text-sm text-gray-600">总产品数</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-success" id="pass-products">0</div>
+                        <div class="text-sm text-gray-600">合格产品数</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-primary" id="condition-products">0</div>
+                        <div class="text-sm text-gray-600">寿命>5且强度>10的产品数</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-purple-600" id="condition-probability">0%</div>
+                        <div class="text-sm text-gray-600">满足条件的概率</div>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <h4 class="font-bold text-gray-800 mb-2">质量指标分布</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="h-40">
+                            <canvas id="life-chart"></canvas>
+                        </div>
+                        <div class="h-40">
+                            <canvas id="strength-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">多维质量指标</h4>
+                        <p class="text-gray-600">本实验模拟了产品的三个质量指标：寿命、强度和合格率。其中寿命和强度服从正态分布，合格率服从二项分布。通过联合分布分析，可以计算满足多个质量条件的概率。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">联合概率计算</h4>
+                        <p class="text-gray-600">对于连续型随机变量（寿命和强度），可以通过积分计算联合概率；对于离散型随机变量（合格率），可以通过概率乘法计算。在实际应用中，通常使用模拟方法来估计联合概率。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">质量控制应用</h4>
+                        <p class="text-gray-600">通过分析多产品质量指标的联合分布，可以制定更合理的质量控制标准，提高产品质量和生产效率。同时，联合分布分析也可以帮助识别质量指标之间的相关性，为产品设计和改进提供依据。</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        多产品质量指标的联合分布计算
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        正态分布在质量控制中的应用
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算满足多个条件的概率
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验逻辑
+        let scatterChart = null;
+        let lifeChart = null;
+        let strengthChart = null;
+
+        // 生成正态分布随机数
+        function generateNormal(mean, std) {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return mean + std * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+        }
+
+        // 运行模拟
+        function runSimulation() {
+            const productCount = parseInt(document.getElementById('product-count').value);
+            const lifeMean = parseFloat(document.getElementById('life-mean').value);
+            const lifeStd = parseFloat(document.getElementById('life-std').value);
+            const strengthMean = parseFloat(document.getElementById('strength-mean').value);
+            const strengthStd = parseFloat(document.getElementById('strength-std').value);
+            const passRate = parseInt(document.getElementById('pass-rate').value) / 100;
+            
+            let passCount = 0;
+            let conditionCount = 0;
+            const products = [];
+            const lifeData = [];
+            const strengthData = [];
+            const scatterDataPass = [];
+            const scatterDataFail = [];
+            
+            for (let i = 0; i < productCount; i++) {
+                // 生成质量指标
+                const life = Math.max(0, generateNormal(lifeMean, lifeStd));
+                const strength = Math.max(0, generateNormal(strengthMean, strengthStd));
+                const pass = Math.random() < passRate;
+                
+                lifeData.push(life);
+                strengthData.push(strength);
+                
+                if (pass) {
+                    passCount++;
+                    scatterDataPass.push({x: life, y: strength});
+                } else {
+                    scatterDataFail.push({x: life, y: strength});
+                }
+                
+                // 检查条件
+                if (life > 5 && strength > 10) {
+                    conditionCount++;
+                }
+                
+                products.push({life, strength, pass});
+            }
+            
+            // 计算概率
+            const conditionProbability = conditionCount / productCount;
+            
+            // 更新统计结果
+            document.getElementById('total-products').textContent = productCount;
+            document.getElementById('pass-products').textContent = passCount;
+            document.getElementById('condition-products').textContent = conditionCount;
+            document.getElementById('condition-probability').textContent = (conditionProbability * 100).toFixed(4) + '%';
+            
+            // 生成产品可视化
+            generateProductVisualization(products.slice(0, 8)); // 只显示前8个产品
+            
+            // 更新图表
+            updateCharts(lifeData, strengthData, scatterDataPass, scatterDataFail);
+        }
+
+        // 生成产品可视化
+        function generateProductVisualization(products) {
+            const visualization = document.getElementById('product-visualization');
+            visualization.innerHTML = '';
+            
+            products.forEach((product, index) => {
+                const productElement = document.createElement('div');
+                productElement.className = `product-item border rounded-lg p-4 ${product.pass ? 'pass' : 'fail'}`;
+                
+                productElement.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="font-medium">产品 ${index + 1}</h4>
+                        <span class="px-2 py-1 rounded-full text-xs ${product.pass ? 'bg-success text-white' : 'bg-danger text-white'}">
+                            ${product.pass ? '合格' : '不合格'}
+                        </span>
+                    </div>
+                    <div class="space-y-2">
+                        <div>
+                            <span class="text-sm text-gray-600">寿命:</span>
+                            <span class="font-medium">${product.life.toFixed(2)}</span>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">强度:</span>
+                            <span class="font-medium">${product.strength.toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+                
+                visualization.appendChild(productElement);
+            });
+        }
+
+        // 更新图表
+        function updateCharts(lifeData, strengthData, scatterDataPass, scatterDataFail) {
+            // 散点图
+            const scatterCtx = document.getElementById('scatter-chart').getContext('2d');
+            if (scatterChart) {
+                scatterChart.destroy();
+            }
+            
+            scatterChart = new Chart(scatterCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: '合格产品',
+                            data: scatterDataPass,
+                            backgroundColor: '#10B981',
+                            pointRadius: 3
+                        },
+                        {
+                            label: '不合格产品',
+                            data: scatterDataFail,
+                            backgroundColor: '#EF4444',
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '寿命'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '强度'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 寿命分布图表
+            const lifeCtx = document.getElementById('life-chart').getContext('2d');
+            if (lifeChart) {
+                lifeChart.destroy();
+            }
+            
+            // 生成寿命直方图数据
+            const lifeBinCount = 20;
+            const lifeMin = Math.min(...lifeData);
+            const lifeMax = Math.max(...lifeData);
+            const lifeBinWidth = (lifeMax - lifeMin) / lifeBinCount;
+            const lifeHistogramData = Array(lifeBinCount).fill(0);
+            
+            lifeData.forEach(life => {
+                const binIndex = Math.min(Math.floor((life - lifeMin) / lifeBinWidth), lifeBinCount - 1);
+                lifeHistogramData[binIndex]++;
+            });
+            
+            const lifeBinLabels = Array(lifeBinCount).fill(0).map((_, i) => (lifeMin + i * lifeBinWidth).toFixed(1));
+            
+            lifeChart = new Chart(lifeCtx, {
+                type: 'bar',
+                data: {
+                    labels: lifeBinLabels,
+                    datasets: [{
+                        label: '寿命分布',
+                        data: lifeHistogramData,
+                        backgroundColor: '#F97316',
+                        borderColor: '#EA580C',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '频数'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '寿命'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                autoSkip: true,
+                                maxTicksLimit: 10
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 强度分布图表
+            const strengthCtx = document.getElementById('strength-chart').getContext('2d');
+            if (strengthChart) {
+                strengthChart.destroy();
+            }
+            
+            // 生成强度直方图数据
+            const strengthBinCount = 20;
+            const strengthMin = Math.min(...strengthData);
+            const strengthMax = Math.max(...strengthData);
+            const strengthBinWidth = (strengthMax - strengthMin) / strengthBinCount;
+            const strengthHistogramData = Array(strengthBinCount).fill(0);
+            
+            strengthData.forEach(strength => {
+                const binIndex = Math.min(Math.floor((strength - strengthMin) / strengthBinWidth), strengthBinCount - 1);
+                strengthHistogramData[binIndex]++;
+            });
+            
+            const strengthBinLabels = Array(strengthBinCount).fill(0).map((_, i) => (strengthMin + i * strengthBinWidth).toFixed(1));
+            
+            strengthChart = new Chart(strengthCtx, {
+                type: 'bar',
+                data: {
+                    labels: strengthBinLabels,
+                    datasets: [{
+                        label: '强度分布',
+                        data: strengthHistogramData,
+                        backgroundColor: '#3B82F6',
+                        borderColor: '#1D4ED8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '频数'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '强度'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                autoSkip: true,
+                                maxTicksLimit: 10
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 开始模拟按钮点击事件
+        document.getElementById('start-simulation').addEventListener('click', runSimulation);
+
+        // 重置按钮点击事件
+        document.getElementById('reset-simulation').addEventListener('click', function() {
+            document.getElementById('total-products').textContent = '0';
+            document.getElementById('pass-products').textContent = '0';
+            document.getElementById('condition-products').textContent = '0';
+            document.getElementById('condition-probability').textContent = '0%';
+            
+            document.getElementById('product-visualization').innerHTML = '';
+            
+            if (scatterChart) {
+                scatterChart.destroy();
+            }
+            if (lifeChart) {
+                lifeChart.destroy();
+            }
+            if (strengthChart) {
+                strengthChart.destroy();
+            }
+        });
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            // 初始生成一些产品数据
+            const initialProducts = [];
+            for (let i = 0; i < 8; i++) {
+                initialProducts.push({
+                    life: Math.max(0, generateNormal(10, 2)),
+                    strength: Math.max(0, generateNormal(15, 3)),
+                    pass: Math.random() < 0.8
+                });
+            }
+            generateProductVisualization(initialProducts);
+        });
+    </script>
+</body>
+</html>

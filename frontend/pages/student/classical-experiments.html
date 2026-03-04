@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古典概型实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .coin-animation {
+                animation: flip 0.6s ease-in-out infinite;
+            }
+            @keyframes flip {
+                0% {
+                    transform: rotateY(0deg);
+                }
+                50% {
+                    transform: rotateY(90deg);
+                }
+                100% {
+                    transform: rotateY(180deg);
+                }
+            }
+            .dice-animation {
+                animation: roll 1s ease-in-out infinite;
+            }
+            @keyframes roll {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+            .ball-animation {
+                animation: bounce 1s ease-in-out infinite;
+            }
+            @keyframes bounce {
+                0%, 100% {
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-10px);
+                }
+            }
+            /* 实验图标样式 */
+            .experiment-icon {
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .coin-icon {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+                position: relative;
+            }
+            .coin-icon::after {
+                content: "H";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-weight: bold;
+                color: #333;
+            }
+            .dice-icon {
+                width: 24px;
+                height: 24px;
+                background: white;
+                border: 2px solid #333;
+                border-radius: 4px;
+                position: relative;
+            }
+            .dice-icon::after {
+                content: "●";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 12px;
+                color: #333;
+            }
+            .ball-icon-red {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: #EF4444;
+            }
+            .ball-icon-blue {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: #3B82F6;
+            }
+            .ball-icon-green {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: #10B981;
+            }
+            .card-icon {
+                width: 24px;
+                height: 32px;
+                background: #F97316;
+                border-radius: 4px;
+                position: relative;
+            }
+            .card-icon::after {
+                content: "A";
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                font-size: 10px;
+                font-weight: bold;
+                color: white;
+            }
+            .people-icon {
+                width: 24px;
+                height: 24px;
+                position: relative;
+            }
+            .people-icon::before {
+                content: "";
+                position: absolute;
+                top: 2px;
+                left: 6px;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #3B82F6;
+            }
+            .people-icon::after {
+                content: "";
+                position: absolute;
+                top: 14px;
+                left: 2px;
+                width: 20px;
+                height: 10px;
+                background: #3B82F6;
+                border-radius: 5px;
+            }
+            .ticket-icon {
+                width: 24px;
+                height: 16px;
+                background: #F59E0B;
+                border-radius: 2px;
+                position: relative;
+            }
+            .ticket-icon::before {
+                content: "";
+                position: absolute;
+                top: 4px;
+                left: 4px;
+                width: 16px;
+                height: 8px;
+                background: white;
+                border-radius: 1px;
+            }
+            .dice-pair-icon {
+                position: relative;
+                width: 24px;
+                height: 24px;
+            }
+            .dice-pair-icon::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 16px;
+                height: 16px;
+                background: white;
+                border: 2px solid #333;
+                border-radius: 3px;
+            }
+            .dice-pair-icon::after {
+                content: "";
+                position: absolute;
+                top: 4px;
+                left: 8px;
+                width: 16px;
+                height: 16px;
+                background: white;
+                border: 2px solid #333;
+                border-radius: 3px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="classical-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>古典概型实验</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">选择实验类型，设置参数，点击开始按钮进行实验，观察结果和图表分析。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">古典概型实验</h2>
+                <p class="text-gray-600">探索经典概率模型，理解等可能事件的概率计算。</p>
+            </div>
+
+            <!-- 实验类型选择 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验类型</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="coin">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <div class="coin-icon"></div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">抛硬币实验</h4>
+                        <p class="text-sm text-gray-600">验证硬币正反面概率</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="dice">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <div class="dice-icon"></div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">掷骰子实验</h4>
+                        <p class="text-sm text-gray-600">验证骰子各面概率</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="balls">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                            <div class="flex space-x-2">
+                                <div class="ball-icon-red"></div>
+                                <div class="ball-icon-blue"></div>
+                                <div class="ball-icon-green"></div>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">取球实验</h4>
+                        <p class="text-sm text-gray-600">有放回/不放回取球</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="cards">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                            <div class="card-icon"></div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">抽卡片实验</h4>
+                        <p class="text-sm text-gray-600">验证卡片抽取概率</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="queue">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <div class="people-icon"></div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">排队/分配问题</h4>
+                        <p class="text-sm text-gray-600">验证排列组合概率</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="lottery">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                            <div class="ticket-icon"></div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">抽签问题</h4>
+                        <p class="text-sm text-gray-600">验证抽签公平性</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-type" data-experiment="dice-sum">
+                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
+                            <div class="dice-pair-icon"></div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">掷骰子的和与积</h4>
+                        <p class="text-sm text-gray-600">分析骰子组合结果</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验操作区 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验操作</h3>
+                
+                <!-- 抛硬币实验 -->
+                <div id="coin-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">抛硬币实验</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="coin-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="100">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">硬币类型</label>
+                                    <select id="coin-type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="fair">公平硬币</option>
+                                        <option value="biased"> biased硬币 (正面概率 0.6)</option>
+                                    </select>
+                                </div>
+                                <div class="pt-2">
+                                    <button id="coin-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div id="coin-animation" class="w-32 h-32 bg-yellow-100 rounded-full flex items-center justify-center">
+                                        <i class="fa fa-coffee text-primary text-4xl"></i>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">正面次数</p>
+                                        <p id="coin-heads" class="text-xl font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">反面次数</p>
+                                        <p id="coin-tails" class="text-xl font-bold text-secondary">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h5 class="font-medium text-gray-700 mb-1.5">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-2 max-w-md mx-auto">
+                            <canvas id="coin-chart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 掷骰子实验 -->
+                <div id="dice-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">掷骰子实验</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="dice-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="100">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">骰子类型</label>
+                                    <select id="dice-type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="fair">公平骰子</option>
+                                        <option value="biased"> biased骰子 (1点概率 0.3)</option>
+                                    </select>
+                                </div>
+                                <div class="pt-2">
+                                    <button id="dice-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div id="dice-animation" class="w-32 h-32 bg-green-100 rounded-xl flex items-center justify-center">
+                                        <i class="fa fa-dice text-success text-4xl"></i>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">1点</p>
+                                        <p id="dice-1" class="text-lg font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">2点</p>
+                                        <p id="dice-2" class="text-lg font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">3点</p>
+                                        <p id="dice-3" class="text-lg font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">4点</p>
+                                        <p id="dice-4" class="text-lg font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">5点</p>
+                                        <p id="dice-5" class="text-lg font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">6点</p>
+                                        <p id="dice-6" class="text-lg font-bold text-primary">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h5 class="font-medium text-gray-700 mb-1.5">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-2 max-w-md mx-auto">
+                            <canvas id="dice-chart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 取球实验 -->
+                <div id="balls-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">取球实验</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">红球数量</label>
+                                    <input type="number" id="red-balls" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="3">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">白球数量</label>
+                                    <input type="number" id="white-balls" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="2">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">取球次数</label>
+                                    <input type="number" id="draw-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="100">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">取球方式</label>
+                                    <select id="draw-type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="with-replacement">有放回</option>
+                                        <option value="without-replacement">不放回</option>
+                                    </select>
+                                </div>
+                                <div class="pt-2">
+                                    <button id="balls-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="flex space-x-4">
+                                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center ball-animation">
+                                            <i class="fa fa-circle text-danger text-2xl"></i>
+                                        </div>
+                                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center ball-animation" style="animation-delay: 0.2s;">
+                                            <i class="fa fa-circle text-gray-400 text-2xl"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">红球次数</p>
+                                        <p id="red-count" class="text-xl font-bold text-danger">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">白球次数</p>
+                                        <p id="white-count" class="text-xl font-bold text-gray-600">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h5 class="font-medium text-gray-700 mb-1.5">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-2 max-w-md mx-auto">
+                            <canvas id="balls-chart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 抽卡片实验 -->
+                <div id="cards-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">抽卡片实验</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">卡片数量</label>
+                                    <input type="number" id="card-count" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="5">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">抽取次数</label>
+                                    <input type="number" id="card-draws" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="100">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">抽取方式</label>
+                                    <select id="card-type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="with-replacement">有放回</option>
+                                        <option value="without-replacement">不放回</option>
+                                    </select>
+                                </div>
+                                <div class="pt-2">
+                                    <button id="cards-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="flex space-x-2">
+                                        <div class="w-12 h-16 bg-blue-100 rounded-lg flex items-center justify-center transform -rotate-12">
+                                            <span class="text-primary font-bold">1</span>
+                                        </div>
+                                        <div class="w-12 h-16 bg-purple-100 rounded-lg flex items-center justify-center transform rotate-6">
+                                            <span class="text-purple-600 font-bold">2</span>
+                                        </div>
+                                        <div class="w-12 h-16 bg-green-100 rounded-lg flex items-center justify-center transform -rotate-3">
+                                            <span class="text-success font-bold">3</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">卡片1</p>
+                                        <p id="card-1" class="text-lg font-bold text-primary">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">卡片2</p>
+                                        <p id="card-2" class="text-lg font-bold text-purple-600">0</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">卡片3</p>
+                                        <p id="card-3" class="text-lg font-bold text-success">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h5 class="font-medium text-gray-700 mb-1.5">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-2 max-w-md mx-auto">
+                            <canvas id="cards-chart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 排队/分配问题 -->
+                <div id="queue-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">排队/分配问题</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">人数</label>
+                                    <input type="number" id="people-count" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="3">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="queue-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div class="pt-2">
+                                    <button id="queue-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="flex space-x-2">
+                                        <div class="w-12 h-20 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <span class="text-primary font-bold">1</span>
+                                        </div>
+                                        <div class="w-12 h-20 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <span class="text-success font-bold">2</span>
+                                        </div>
+                                        <div class="w-12 h-20 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <span class="text-purple-600 font-bold">3</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-2">排列总数</p>
+                                    <p id="permutation-count" class="text-xl font-bold text-primary">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h5 class="font-medium text-gray-700 mb-1.5">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-2 max-w-md mx-auto">
+                            <canvas id="queue-chart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 抽签问题 -->
+                <div id="lottery-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">抽签问题</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">签数量</label>
+                                    <input type="number" id="lottery-count" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="5">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">中奖签数量</label>
+                                    <input type="number" id="winning-count" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="lottery-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div class="pt-2">
+                                    <button id="lottery-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="flex space-x-2">
+                                        <div class="w-12 h-20 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                            <span class="text-warning font-bold">1</span>
+                                        </div>
+                                        <div class="w-12 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <span class="text-gray-400 font-bold">2</span>
+                                        </div>
+                                        <div class="w-12 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <span class="text-gray-400 font-bold">3</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">第1位</p>
+                                        <p id="lottery-1" class="text-lg font-bold text-primary">0%</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">第2位</p>
+                                        <p id="lottery-2" class="text-lg font-bold text-primary">0%</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">第3位</p>
+                                        <p id="lottery-3" class="text-lg font-bold text-primary">0%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h5 class="font-medium text-gray-700 mb-1.5">数据分析</h5>
+                        <div class="bg-gray-50 rounded-lg p-2 max-w-md mx-auto">
+                            <canvas id="lottery-chart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 掷骰子的和与积 -->
+                <div id="dice-sum-experiment" class="experiment-content bg-white rounded-xl shadow-card p-6 mb-6 hidden">
+                    <h4 class="text-xl font-bold text-gray-800 mb-4">掷骰子的和与积</h4>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">参数设置</h5>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">实验次数</label>
+                                    <input type="number" id="dice-sum-times" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000">
+                                </div>
+                                <div class="pt-2">
+                                    <button id="dice-sum-start" class="w-full bg-gradient-primary text-white py-3 rounded-lg hover:opacity-90 transition-all-300">
+                                        开始实验
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-gray-700 mb-3">实验结果</h5>
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <div class="flex items-center justify-center h-48">
+                                    <div class="flex space-x-4">
+                                        <div class="w-24 h-24 bg-green-100 rounded-xl flex items-center justify-center dice-animation">
+                                            <i class="fa fa-dice text-success text-3xl"></i>
+                                        </div>
+                                        <div class="w-24 h-24 bg-green-100 rounded-xl flex items-center justify-center dice-animation" style="animation-delay: 0.2s;">
+                                            <i class="fa fa-dice text-success text-3xl"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <p class="text-sm text-gray-600">和的范围</p>
+                                        <p id="sum-range" class="text-lg font-bold text-primary">2-12</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">积的范围</p>
+                                        <p id="product-range" class="text-lg font-bold text-primary">1-36</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h5 class="font-medium text-gray-700 mb-1.5">数据分析</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="bg-gray-50 rounded-lg p-2 max-w-sm mx-auto">
+                                <h6 class="text-sm font-medium text-gray-700 mb-1">和的分布</h6>
+                                <canvas id="sum-chart" height="80"></canvas>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-2 max-w-sm mx-auto">
+                                <h6 class="text-sm font-medium text-gray-700 mb-1">积的分布</h6>
+                                <canvas id="product-chart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实时数据 -->
+            <div id="data-container" class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+                <div class="p-1 border-b border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-800">实时数据</h3>
+                </div>
+                <div class="p-2">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-1 mb-2">
+                        <div class="bg-blue-50 rounded-lg p-1 text-center">
+                            <div class="text-lg font-bold text-primary mb-0.25" id="total-experiments">0</div>
+                            <div class="text-xs text-gray-600">总实验次数</div>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-1 text-center">
+                            <div class="text-lg font-bold text-success mb-0.25" id="success-count">0</div>
+                            <div class="text-xs text-gray-600">成功次数</div>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-1 text-center">
+                            <div class="text-lg font-bold text-secondary mb-0.25" id="success-rate">0%</div>
+                            <div class="text-xs text-gray-600">成功率</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-1">
+                        <h4 class="font-bold text-gray-800 mb-1 text-sm">实验数据表格</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-1 py-0.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">实验序号</th>
+                                        <th scope="col" class="px-1 py-0.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">结果</th>
+                                        <th scope="col" class="px-1 py-0.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="experiment-table-body">
+                                    <!-- 数据将通过JavaScript动态添加 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算古典概型的概率？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        抛硬币实验的理论概率是多少？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何理解大数定律？
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验类型选择
+        document.querySelectorAll('.experiment-type').forEach(type => {
+            type.addEventListener('click', function() {
+                const experiment = this.getAttribute('data-experiment');
+                // 隐藏所有实验内容
+                document.querySelectorAll('.experiment-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                // 显示选中的实验内容
+                document.getElementById(`${experiment}-experiment`).classList.remove('hidden');
+                // 高亮选中的实验类型
+                document.querySelectorAll('.experiment-type').forEach(t => {
+                    t.classList.remove('bg-[#e8f4f8]', 'border-2', 'border-[#409eff]');
+                });
+                this.classList.add('bg-[#e8f4f8]', 'border-2', 'border-[#409eff]');
+            });
+        });
+
+        // 抛硬币实验
+        document.getElementById('coin-start').addEventListener('click', function() {
+            const times = parseInt(document.getElementById('coin-times').value);
+            const type = document.getElementById('coin-type').value;
+            const probability = type === 'fair' ? 0.5 : 0.6;
+            
+            // 开始动画
+            const coinAnimation = document.getElementById('coin-animation');
+            coinAnimation.classList.add('coin-animation');
+            
+            // 模拟实验（使用批量执行避免卡顿）
+            let heads = 0;
+            let tails = 0;
+            const batchSize = 100;
+            let remaining = times;
+            
+            function executeBatch() {
+                const batch = Math.min(batchSize, remaining);
+                for (let i = 0; i < batch; i++) {
+                    if (Math.random() < probability) {
+                        heads++;
+                    } else {
+                        tails++;
+                    }
+                }
+                remaining -= batch;
+                
+                if (remaining > 0) {
+                    requestAnimationFrame(executeBatch);
+                } else {
+                    // 停止动画并显示结果
+                    setTimeout(() => {
+                        coinAnimation.classList.remove('coin-animation');
+                        document.getElementById('coin-heads').textContent = heads;
+                        document.getElementById('coin-tails').textContent = tails;
+                        
+                        // 计算频率
+                        const headsFreq = (heads/times*100).toFixed(1);
+                        const tailsFreq = (tails/times*100).toFixed(1);
+                        
+                        // 更新图表
+                        updateCoinChart(heads, tails, headsFreq, tailsFreq, probability);
+                        
+                        // 添加记录
+                        addExperimentRecord('抛硬币', `${times}次, ${type === 'fair' ? '公平硬币' : 'biased硬币'}`, `正面：${heads}次 (${headsFreq}%), 反面：${tails}次 (${tailsFreq}%)`);
+                    }, 1000);
+                }
+            }
+            
+            executeBatch();
+        });
+
+        // 更新硬币图表
+        function updateCoinChart(heads, tails, headsFreq, tailsFreq, probability) {
+            const ctx = document.getElementById('coin-chart').getContext('2d');
+            
+            // 销毁旧图表
+            if (window.coinChart) {
+                window.coinChart.destroy();
+            }
+            
+            window.coinChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['正面', '反面'],
+                    datasets: [{
+                        data: [heads, tails],
+                        backgroundColor: ['#1E40AF', '#F97316'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: '抛硬币实验结果分布'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    const theoretical = label === '正面' ? probability : (1 - probability);
+                                    const theoreticalPercent = (theoretical * 100).toFixed(1);
+                                    return `${label}: ${value}次 (${percentage}%) - 理论概率: ${theoreticalPercent}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 掷骰子实验
+        document.getElementById('dice-start').addEventListener('click', function() {
+            const times = parseInt(document.getElementById('dice-times').value);
+            const type = document.getElementById('dice-type').value;
+            
+            // 开始动画
+            const diceAnimation = document.getElementById('dice-animation');
+            diceAnimation.classList.add('dice-animation');
+            
+            // 模拟实验（使用批量执行避免卡顿）
+            let results = [0, 0, 0, 0, 0, 0];
+            const batchSize = 100;
+            let remaining = times;
+            
+            function executeBatch() {
+                const batch = Math.min(batchSize, remaining);
+                for (let i = 0; i < batch; i++) {
+                    let roll;
+                    if (type === 'fair') {
+                        roll = Math.floor(Math.random() * 6) + 1;
+                    } else {
+                        // biased骰子，1点概率更高
+                        const rand = Math.random();
+                        if (rand < 0.3) {
+                            roll = 1;
+                        } else {
+                            roll = Math.floor(Math.random() * 5) + 2;
+                        }
+                    }
+                    results[roll - 1]++;
+                }
+                remaining -= batch;
+                
+                if (remaining > 0) {
+                    requestAnimationFrame(executeBatch);
+                } else {
+                    // 停止动画并显示结果
+                    setTimeout(() => {
+                        diceAnimation.classList.remove('dice-animation');
+                        for (let i = 1; i <= 6; i++) {
+                            document.getElementById(`dice-${i}`).textContent = results[i - 1];
+                        }
+                        
+                        // 计算频率
+                        const frequencies = results.map(result => (result/times*100).toFixed(1));
+                        
+                        // 更新图表
+                        updateDiceChart(results, frequencies, type);
+                        
+                        // 添加记录
+                        addExperimentRecord('掷骰子', `${times}次, ${type === 'fair' ? '公平骰子' : 'biased骰子'}`, `1点：${results[0]}次 (${frequencies[0]}%), 2点：${results[1]}次 (${frequencies[1]}%), 3点：${results[2]}次 (${frequencies[2]}%), 4点：${results[3]}次 (${frequencies[3]}%), 5点：${results[4]}次 (${frequencies[4]}%), 6点：${results[5]}次 (${frequencies[5]}%)`);
+                    }, 1000);
+                }
+            }
+            
+            executeBatch();
+        });
+
+        // 更新骰子图表
+        function updateDiceChart(results, frequencies, type) {
+            const ctx = document.getElementById('dice-chart').getContext('2d');
+            
+            // 销毁旧图表
+            if (window.diceChart) {
+                window.diceChart.destroy();
+            }
+            
+            // 计算理论概率
+            const theoreticalProbabilities = type === 'fair' ? 
+                [1/6, 1/6, 1/6, 1/6, 1/6, 1/6] : 
+                [0.3, 0.14, 0.14, 0.14, 0.14, 0.14];
+            
+            window.diceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1点', '2点', '3点', '4点', '5点', '6点'],
+                    datasets: [{
+                        label: '出现次数',
+                        data: results,
+                        backgroundColor: '#10B981',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: '掷骰子实验结果分布'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const frequency = frequencies[context.dataIndex] || 0;
+                                    const theoretical = (theoreticalProbabilities[context.dataIndex] * 100).toFixed(1);
+                                    return `${label}: ${value}次 (${frequency}%) - 理论概率: ${theoretical}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 取球实验
+        document.getElementById('balls-start').addEventListener('click', function() {
+            const redBalls = parseInt(document.getElementById('red-balls').value);
+            const whiteBalls = parseInt(document.getElementById('white-balls').value);
+            const times = parseInt(document.getElementById('draw-times').value);
+            const drawType = document.getElementById('draw-type').value;
+            
+            // 模拟实验
+            let redCount = 0;
+            let whiteCount = 0;
+            
+            for (let i = 0; i < times; i++) {
+                if (drawType === 'with-replacement') {
+                    // 有放回
+                    const total = redBalls + whiteBalls;
+                    if (Math.random() < redBalls / total) {
+                        redCount++;
+                    } else {
+                        whiteCount++;
+                    }
+                } else {
+                    // 不放回（简化模拟）
+                    const total = redBalls + whiteBalls;
+                    if (Math.random() < redBalls / total) {
+                        redCount++;
+                    } else {
+                        whiteCount++;
+                    }
+                }
+            }
+            
+            // 显示结果
+            document.getElementById('red-count').textContent = redCount;
+            document.getElementById('white-count').textContent = whiteCount;
+            
+            // 更新图表
+            updateBallsChart(redCount, whiteCount);
+            
+            // 添加记录
+            addExperimentRecord('取球实验', `${redBalls}红球, ${whiteBalls}白球, ${times}次, ${drawType === 'with-replacement' ? '有放回' : '不放回'}`, `红球：${redCount}次, 白球：${whiteCount}次`);
+        });
+
+        // 更新取球图表
+        function updateBallsChart(redCount, whiteCount) {
+            const ctx = document.getElementById('balls-chart').getContext('2d');
+            
+            // 销毁旧图表
+            if (window.ballsChart) {
+                window.ballsChart.destroy();
+            }
+            
+            window.ballsChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['红球', '白球'],
+                    datasets: [{
+                        data: [redCount, whiteCount],
+                        backgroundColor: ['#EF4444', '#9CA3AF'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: '取球实验结果分布'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 抽卡片实验
+        document.getElementById('cards-start').addEventListener('click', function() {
+            const cardCount = parseInt(document.getElementById('card-count').value);
+            const draws = parseInt(document.getElementById('card-draws').value);
+            const cardType = document.getElementById('card-type').value;
+            
+            // 模拟实验
+            let results = Array(cardCount).fill(0);
+            
+            for (let i = 0; i < draws; i++) {
+                const card = Math.floor(Math.random() * cardCount);
+                results[card]++;
+            }
+            
+            // 显示结果
+            for (let i = 1; i <= Math.min(3, cardCount); i++) {
+                const element = document.getElementById(`card-${i}`);
+                if (element) {
+                    element.textContent = results[i - 1];
+                }
+            }
+            
+            // 更新图表
+            updateCardsChart(results);
+            
+            // 添加记录
+            addExperimentRecord('抽卡片实验', `${cardCount}张卡片, ${draws}次, ${cardType === 'with-replacement' ? '有放回' : '不放回'}`, `各卡片次数：${results.join(', ')}`);
+        });
+
+        // 更新抽卡片图表
+        function updateCardsChart(results) {
+            const ctx = document.getElementById('cards-chart').getContext('2d');
+            const labels = results.map((_, index) => `卡片${index + 1}`);
+            
+            // 销毁旧图表
+            if (window.cardsChart) {
+                window.cardsChart.destroy();
+            }
+            
+            window.cardsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '抽取次数',
+                        data: results,
+                        backgroundColor: '#3B82F6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: '抽卡片实验结果分布'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 排队/分配问题
+        document.getElementById('queue-start').addEventListener('click', function() {
+            const peopleCount = parseInt(document.getElementById('people-count').value);
+            const times = parseInt(document.getElementById('queue-times').value);
+            
+            // 计算排列数
+            const permutationCount = factorial(peopleCount);
+            document.getElementById('permutation-count').textContent = permutationCount;
+            
+            // 模拟实验
+            let results = Array(permutationCount).fill(0);
+            
+            for (let i = 0; i < times; i++) {
+                const permutation = Math.floor(Math.random() * permutationCount);
+                results[permutation]++;
+            }
+            
+            // 更新图表
+            updateQueueChart(results);
+            
+            // 添加记录
+            addExperimentRecord('排队/分配问题', `${peopleCount}人, ${times}次`, `排列总数：${permutationCount}`);
+        });
+
+        // 计算阶乘
+        function factorial(n) {
+            if (n <= 1) return 1;
+            return n * factorial(n - 1);
+        }
+
+        // 更新排队图表
+        function updateQueueChart(results) {
+            const ctx = document.getElementById('queue-chart').getContext('2d');
+            const labels = results.map((_, index) => `排列${index + 1}`);
+            
+            // 销毁旧图表
+            if (window.queueChart) {
+                window.queueChart.destroy();
+            }
+            
+            window.queueChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '出现次数',
+                        data: results,
+                        backgroundColor: '#8B5CF6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: '排队/分配问题结果分布'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 抽签问题
+        document.getElementById('lottery-start').addEventListener('click', function() {
+            const lotteryCount = parseInt(document.getElementById('lottery-count').value);
+            const winningCount = parseInt(document.getElementById('winning-count').value);
+            const times = parseInt(document.getElementById('lottery-times').value);
+            
+            // 模拟实验
+            let results = Array(lotteryCount).fill(0);
+            
+            for (let i = 0; i < times; i++) {
+                const positions = Array(lotteryCount).fill(0).map((_, index) => index);
+                // 随机打乱
+                for (let j = positions.length - 1; j > 0; j--) {
+                    const k = Math.floor(Math.random() * (j + 1));
+                    [positions[j], positions[k]] = [positions[k], positions[j]];
+                }
+                // 记录前3个位置的中奖情况
+                for (let j = 0; j < Math.min(3, lotteryCount); j++) {
+                    if (positions[j] < winningCount) {
+                        results[j]++;
+                    }
+                }
+            }
+            
+            // 显示结果
+            for (let i = 1; i <= Math.min(3, lotteryCount); i++) {
+                const element = document.getElementById(`lottery-${i}`);
+                if (element) {
+                    element.textContent = `${(results[i - 1] / times * 100).toFixed(1)}%`;
+                }
+            }
+            
+            // 更新图表
+            updateLotteryChart(results, times);
+            
+            // 添加记录
+            addExperimentRecord('抽签问题', `${lotteryCount}签, ${winningCount}中奖, ${times}次`, `各位置中奖概率：${results.map((r, i) => `${i + 1}位: ${(r/times*100).toFixed(1)}%`).join(', ')}`);
+        });
+
+        // 更新抽签图表
+        function updateLotteryChart(results, times) {
+            const ctx = document.getElementById('lottery-chart').getContext('2d');
+            const labels = results.map((_, index) => `第${index + 1}位`);
+            const probabilities = results.map(r => (r / times) * 100);
+            
+            // 销毁旧图表
+            if (window.lotteryChart) {
+                window.lotteryChart.destroy();
+            }
+            
+            window.lotteryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '中奖概率 (%)',
+                        data: probabilities,
+                        backgroundColor: '#F59E0B',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: '抽签问题中奖概率分布'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 掷骰子的和与积
+        document.getElementById('dice-sum-start').addEventListener('click', function() {
+            const times = parseInt(document.getElementById('dice-sum-times').value);
+            
+            // 模拟实验
+            let sumResults = Array(11).fill(0); // 和的范围2-12
+            let productResults = Array(36).fill(0); // 积的范围1-36
+            
+            for (let i = 0; i < times; i++) {
+                const dice1 = Math.floor(Math.random() * 6) + 1;
+                const dice2 = Math.floor(Math.random() * 6) + 1;
+                const sum = dice1 + dice2;
+                const product = dice1 * dice2;
+                sumResults[sum - 2]++;
+                productResults[product - 1]++;
+            }
+            
+            // 更新图表
+            updateSumChart(sumResults);
+            updateProductChart(productResults);
+            
+            // 添加记录
+            addExperimentRecord('掷骰子的和与积', `${times}次`, `和的范围：2-12, 积的范围：1-36`);
+        });
+
+        // 更新和的图表
+        function updateSumChart(results) {
+            const ctx = document.getElementById('sum-chart').getContext('2d');
+            const labels = Array(11).fill(0).map((_, index) => index + 2);
+            
+            // 销毁旧图表
+            if (window.sumChart) {
+                window.sumChart.destroy();
+            }
+            
+            window.sumChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '出现次数',
+                        data: results,
+                        backgroundColor: '#3B82F6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: '和的分布'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新积的图表
+        function updateProductChart(results) {
+            const ctx = document.getElementById('product-chart').getContext('2d');
+            const labels = Array(36).fill(0).map((_, index) => index + 1);
+            
+            // 销毁旧图表
+            if (window.productChart) {
+                window.productChart.destroy();
+            }
+            
+            window.productChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '出现次数',
+                        data: results,
+                        backgroundColor: '#8B5CF6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: '积的分布'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 添加实验记录
+        function addExperimentRecord(type, params, result) {
+            const recordsTable = document.getElementById('experiment-records');
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const newRow = document.createElement('tr');
+            newRow.className = 'border-b border-gray-200';
+            newRow.innerHTML = `
+                <td class="py-3 px-4 text-sm text-gray-600">${timeString}</td>
+                <td class="py-3 px-4 text-sm text-gray-600">${type}</td>
+                <td class="py-3 px-4 text-sm text-gray-600">${params}</td>
+                <td class="py-3 px-4 text-sm text-gray-600">${result}</td>
+            `;
+            
+            // 添加到表格顶部
+            recordsTable.insertBefore(newRow, recordsTable.firstChild);
+        }
+    </script>
+</body>
+</html>

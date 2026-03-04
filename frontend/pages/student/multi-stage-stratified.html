@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分层抽检复合 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .batch-item {
+                transition: all 0.3s ease;
+            }
+            .batch-item:hover {
+                transform: translateX(5px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">分层抽检复合实验，学习如何计算总次品率及各批次贡献。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">分层抽检复合实验</h2>
+                    <a href="multi-stage-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回多阶段实验
+                    </a>
+                </div>
+                <p class="text-gray-600">先从 3 批产品中按比例抽取样本，再从样本中二次抽检次品，计算总次品率及各批次贡献。</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 参数设置区 -->
+                <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">参数设置</h3>
+                    
+                    <!-- 批次设置 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">批次设置</h4>
+                        
+                        <!-- 批次1 -->
+                        <div class="mb-4 p-4 bg-blue-50 rounded-lg batch-item">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium text-gray-800">批次1</span>
+                                <span class="text-sm text-gray-600">占比: <span id="batch1-percentage">30</span>%</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm text-gray-600 mb-1">产品总数</label>
+                                <input type="number" id="batch1-total" min="10" max="1000" value="300" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">次品数</label>
+                                <input type="number" id="batch1-defective" min="0" max="300" value="15" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                            </div>
+                        </div>
+                        
+                        <!-- 批次2 -->
+                        <div class="mb-4 p-4 bg-blue-50 rounded-lg batch-item">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium text-gray-800">批次2</span>
+                                <span class="text-sm text-gray-600">占比: <span id="batch2-percentage">40</span>%</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm text-gray-600 mb-1">产品总数</label>
+                                <input type="number" id="batch2-total" min="10" max="1000" value="400" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">次品数</label>
+                                <input type="number" id="batch2-defective" min="0" max="400" value="12" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                            </div>
+                        </div>
+                        
+                        <!-- 批次3 -->
+                        <div class="p-4 bg-blue-50 rounded-lg batch-item">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium text-gray-800">批次3</span>
+                                <span class="text-sm text-gray-600">占比: <span id="batch3-percentage">30</span>%</span>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm text-gray-600 mb-1">产品总数</label>
+                                <input type="number" id="batch3-total" min="10" max="1000" value="300" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">次品数</label>
+                                <input type="number" id="batch3-defective" min="0" max="300" value="9" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 抽样设置 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">抽样设置</h4>
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-600 mb-1">总样本量</label>
+                            <input type="number" id="total-sample" min="10" max="200" value="100" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">实验次数</label>
+                            <input type="number" id="experiment-times" min="10" max="10000" value="1000" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                        </div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="space-y-3">
+                        <button id="start-experiment" class="w-full bg-secondary text-white py-3 rounded-lg hover:bg-orange-600 transition-all-300 font-medium">
+                            开始实验
+                        </button>
+                        <button id="reset-experiment" class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-all-300 font-medium">
+                            重置实验
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 实验过程区 -->
+                <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">实验过程</h3>
+                    
+                    <!-- 批次可视化 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">批次分布</h4>
+                        <div class="h-48 flex items-center justify-center">
+                            <canvas id="batch-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- 抽样过程 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">抽样过程</h4>
+                        <div id="sampling-process" class="h-64 bg-gray-50 rounded-lg p-4 overflow-y-auto">
+                            <p class="text-gray-500 text-center py-8">点击开始实验查看抽样过程</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 实时进度 -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">实验进度</h4>
+                        <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                            <div id="progress-bar" class="bg-secondary h-4 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span id="progress-text">0/1000</span>
+                            <span id="estimated-time">估计时间: 0s</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 结果统计区 -->
+                <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">结果统计</h3>
+                    
+                    <!-- 理论概率 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">理论概率</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">批次1次品率</span>
+                                <span class="font-medium text-gray-800" id="batch1-theoretical">5.00%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">批次2次品率</span>
+                                <span class="font-medium text-gray-800" id="batch2-theoretical">3.00%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">批次3次品率</span>
+                                <span class="font-medium text-gray-800" id="batch3-theoretical">3.00%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">总理论次品率</span>
+                                <span class="font-medium text-gray-800" id="total-theoretical">3.60%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 实验结果 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">实验结果</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">批次1检出次品</span>
+                                <span class="font-medium text-gray-800" id="batch1-actual">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">批次2检出次品</span>
+                                <span class="font-medium text-gray-800" id="batch2-actual">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">批次3检出次品</span>
+                                <span class="font-medium text-gray-800" id="batch3-actual">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">总检出次品</span>
+                                <span class="font-medium text-gray-800" id="total-actual">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">实验次品率</span>
+                                <span class="font-medium text-gray-800" id="experiment-rate">0.00%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 批次贡献分析 -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">批次贡献分析</h4>
+                        <div class="h-48">
+                            <canvas id="contribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        分层抽检的次品率计算方法
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何分析各批次的贡献
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        分层抽样的优势是什么
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let batchDistributionChart = null;
+        let contributionChart = null;
+        let isExperimentRunning = false;
+        let experimentData = {
+            batch1: { theoretical: 0, actual: 0 },
+            batch2: { theoretical: 0, actual: 0 },
+            batch3: { theoretical: 0, actual: 0 },
+            total: { theoretical: 0, actual: 0 }
+        };
+        
+        // 初始化图表
+        function initCharts() {
+            // 批次分布图表
+            const batchCtx = document.getElementById('batch-distribution-chart').getContext('2d');
+            batchDistributionChart = new Chart(batchCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['批次1', '批次2', '批次3'],
+                    datasets: [{
+                        data: [30, 40, 30],
+                        backgroundColor: [
+                            '#F97316',
+                            '#FB923C',
+                            '#FDBA74'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // 贡献分析图表
+            const contributionCtx = document.getElementById('contribution-chart').getContext('2d');
+            contributionChart = new Chart(contributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['批次1', '批次2', '批次3'],
+                    datasets: [{
+                        label: '理论贡献',
+                        data: [0, 0, 0],
+                        backgroundColor: '#3B82F6',
+                        borderWidth: 1
+                    }, {
+                        label: '实际贡献',
+                        data: [0, 0, 0],
+                        backgroundColor: '#F97316',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '贡献比例 (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 更新理论概率
+        function updateTheoreticalProbabilities() {
+            const batch1Total = parseInt(document.getElementById('batch1-total').value) || 0;
+            const batch1Defective = parseInt(document.getElementById('batch1-defective').value) || 0;
+            const batch2Total = parseInt(document.getElementById('batch2-total').value) || 0;
+            const batch2Defective = parseInt(document.getElementById('batch2-defective').value) || 0;
+            const batch3Total = parseInt(document.getElementById('batch3-total').value) || 0;
+            const batch3Defective = parseInt(document.getElementById('batch3-defective').value) || 0;
+            
+            // 计算各批次次品率
+            const batch1Rate = batch1Total > 0 ? (batch1Defective / batch1Total) * 100 : 0;
+            const batch2Rate = batch2Total > 0 ? (batch2Defective / batch2Total) * 100 : 0;
+            const batch3Rate = batch3Total > 0 ? (batch3Defective / batch3Total) * 100 : 0;
+            
+            // 计算总理论次品率（加权平均）
+            const totalRate = (batch1Rate * 0.3) + (batch2Rate * 0.4) + (batch3Rate * 0.3);
+            
+            // 更新显示
+            document.getElementById('batch1-theoretical').textContent = batch1Rate.toFixed(2) + '%';
+            document.getElementById('batch2-theoretical').textContent = batch2Rate.toFixed(2) + '%';
+            document.getElementById('batch3-theoretical').textContent = batch3Rate.toFixed(2) + '%';
+            document.getElementById('total-theoretical').textContent = totalRate.toFixed(2) + '%';
+            
+            // 更新实验数据
+            experimentData.batch1.theoretical = batch1Rate;
+            experimentData.batch2.theoretical = batch2Rate;
+            experimentData.batch3.theoretical = batch3Rate;
+            experimentData.total.theoretical = totalRate;
+            
+            // 更新贡献图表
+            updateContributionChart();
+        }
+        
+        // 更新贡献图表
+        function updateContributionChart() {
+            if (contributionChart) {
+                contributionChart.data.datasets[0].data = [
+                    experimentData.batch1.theoretical * 0.3,
+                    experimentData.batch2.theoretical * 0.4,
+                    experimentData.batch3.theoretical * 0.3
+                ];
+                contributionChart.data.datasets[1].data = [
+                    experimentData.batch1.actual * 0.3,
+                    experimentData.batch2.actual * 0.4,
+                    experimentData.batch3.actual * 0.3
+                ];
+                contributionChart.update();
+            }
+        }
+        
+        // 执行单次实验
+        function runSingleExperiment() {
+            const batch1Total = parseInt(document.getElementById('batch1-total').value) || 0;
+            const batch1Defective = parseInt(document.getElementById('batch1-defective').value) || 0;
+            const batch2Total = parseInt(document.getElementById('batch2-total').value) || 0;
+            const batch2Defective = parseInt(document.getElementById('batch2-defective').value) || 0;
+            const batch3Total = parseInt(document.getElementById('batch3-total').value) || 0;
+            const batch3Defective = parseInt(document.getElementById('batch3-defective').value) || 0;
+            const totalSample = parseInt(document.getElementById('total-sample').value) || 100;
+            
+            // 计算各批次应抽取的样本数
+            const batch1Sample = Math.round(totalSample * 0.3);
+            const batch2Sample = Math.round(totalSample * 0.4);
+            const batch3Sample = totalSample - batch1Sample - batch2Sample;
+            
+            // 模拟从各批次抽取样本
+            let batch1DefectiveFound = 0;
+            let batch2DefectiveFound = 0;
+            let batch3DefectiveFound = 0;
+            
+            // 批次1抽样
+            for (let i = 0; i < batch1Sample; i++) {
+                const isDefective = Math.random() < (batch1Defective / batch1Total);
+                if (isDefective) batch1DefectiveFound++;
+            }
+            
+            // 批次2抽样
+            for (let i = 0; i < batch2Sample; i++) {
+                const isDefective = Math.random() < (batch2Defective / batch2Total);
+                if (isDefective) batch2DefectiveFound++;
+            }
+            
+            // 批次3抽样
+            for (let i = 0; i < batch3Sample; i++) {
+                const isDefective = Math.random() < (batch3Defective / batch3Total);
+                if (isDefective) batch3DefectiveFound++;
+            }
+            
+            return {
+                batch1: batch1DefectiveFound,
+                batch2: batch2DefectiveFound,
+                batch3: batch3DefectiveFound,
+                total: batch1DefectiveFound + batch2DefectiveFound + batch3DefectiveFound
+            };
+        }
+        
+        // 批量执行实验
+        function runBatchExperiments() {
+            if (isExperimentRunning) return;
+            
+            isExperimentRunning = true;
+            const experimentTimes = parseInt(document.getElementById('experiment-times').value) || 1000;
+            const totalSample = parseInt(document.getElementById('total-sample').value) || 100;
+            
+            let completedExperiments = 0;
+            let totalBatch1Defective = 0;
+            let totalBatch2Defective = 0;
+            let totalBatch3Defective = 0;
+            let totalDefective = 0;
+            
+            const startTime = Date.now();
+            
+            // 清空抽样过程
+            document.getElementById('sampling-process').innerHTML = '';
+            
+            // 使用requestAnimationFrame分批执行实验
+            function executeBatch() {
+                const batchSize = Math.min(100, experimentTimes - completedExperiments);
+                
+                for (let i = 0; i < batchSize; i++) {
+                    const result = runSingleExperiment();
+                    totalBatch1Defective += result.batch1;
+                    totalBatch2Defective += result.batch2;
+                    totalBatch3Defective += result.batch3;
+                    totalDefective += result.total;
+                    completedExperiments++;
+                }
+                
+                // 更新进度
+                const progress = (completedExperiments / experimentTimes) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+                document.getElementById('progress-text').textContent = completedExperiments + '/' + experimentTimes;
+                
+                // 估计剩余时间
+                const elapsedTime = (Date.now() - startTime) / 1000;
+                const estimatedTotalTime = (elapsedTime / completedExperiments) * experimentTimes;
+                const estimatedRemainingTime = Math.max(0, estimatedTotalTime - elapsedTime);
+                document.getElementById('estimated-time').textContent = '估计时间: ' + estimatedRemainingTime.toFixed(1) + 's';
+                
+                // 每100次实验更新一次抽样过程
+                if (completedExperiments % 100 === 0) {
+                    const processElement = document.getElementById('sampling-process');
+                    const sampleResult = runSingleExperiment();
+                    const processText = `实验 ${completedExperiments}: 批次1检出${sampleResult.batch1}个次品, 批次2检出${sampleResult.batch2}个次品, 批次3检出${sampleResult.batch3}个次品\n`;
+                    processElement.innerHTML += processText;
+                    processElement.scrollTop = processElement.scrollHeight;
+                }
+                
+                if (completedExperiments < experimentTimes) {
+                    requestAnimationFrame(executeBatch);
+                } else {
+                    // 实验完成
+                    isExperimentRunning = false;
+                    
+                    // 计算平均结果
+                    const avgBatch1Defective = totalBatch1Defective / experimentTimes;
+                    const avgBatch2Defective = totalBatch2Defective / experimentTimes;
+                    const avgBatch3Defective = totalBatch3Defective / experimentTimes;
+                    const avgTotalDefective = totalDefective / experimentTimes;
+                    const experimentRate = (avgTotalDefective / totalSample) * 100;
+                    
+                    // 更新显示
+                    document.getElementById('batch1-actual').textContent = avgBatch1Defective.toFixed(2);
+                    document.getElementById('batch2-actual').textContent = avgBatch2Defective.toFixed(2);
+                    document.getElementById('batch3-actual').textContent = avgBatch3Defective.toFixed(2);
+                    document.getElementById('total-actual').textContent = avgTotalDefective.toFixed(2);
+                    document.getElementById('experiment-rate').textContent = experimentRate.toFixed(2) + '%';
+                    
+                    // 更新实验数据
+                    experimentData.batch1.actual = (totalBatch1Defective / (experimentTimes * Math.round(totalSample * 0.3))) * 100;
+                    experimentData.batch2.actual = (totalBatch2Defective / (experimentTimes * Math.round(totalSample * 0.4))) * 100;
+                    experimentData.batch3.actual = (totalBatch3Defective / (experimentTimes * (totalSample - Math.round(totalSample * 0.3) - Math.round(totalSample * 0.4)))) * 100;
+                    experimentData.total.actual = experimentRate;
+                    
+                    // 更新贡献图表
+                    updateContributionChart();
+                }
+            }
+            
+            executeBatch();
+        }
+        
+        // 重置实验
+        function resetExperiment() {
+            if (isExperimentRunning) return;
+            
+            // 重置进度
+            document.getElementById('progress-bar').style.width = '0%';
+            document.getElementById('progress-text').textContent = '0/1000';
+            document.getElementById('estimated-time').textContent = '估计时间: 0s';
+            
+            // 重置结果
+            document.getElementById('batch1-actual').textContent = '0';
+            document.getElementById('batch2-actual').textContent = '0';
+            document.getElementById('batch3-actual').textContent = '0';
+            document.getElementById('total-actual').textContent = '0';
+            document.getElementById('experiment-rate').textContent = '0.00%';
+            
+            // 重置实验数据
+            experimentData = {
+                batch1: { theoretical: experimentData.batch1.theoretical, actual: 0 },
+                batch2: { theoretical: experimentData.batch2.theoretical, actual: 0 },
+                batch3: { theoretical: experimentData.batch3.theoretical, actual: 0 },
+                total: { theoretical: experimentData.total.theoretical, actual: 0 }
+            };
+            
+            // 重置抽样过程
+            document.getElementById('sampling-process').innerHTML = '<p class="text-gray-500 text-center py-8">点击开始实验查看抽样过程</p>';
+            
+            // 更新图表
+            updateContributionChart();
+        }
+        
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+        
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+        
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+        
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+        
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+        
+        // 事件监听
+        document.getElementById('start-experiment').addEventListener('click', runBatchExperiments);
+        document.getElementById('reset-experiment').addEventListener('click', resetExperiment);
+        
+        // 参数变化时更新理论概率
+        document.getElementById('batch1-total').addEventListener('input', updateTheoreticalProbabilities);
+        document.getElementById('batch1-defective').addEventListener('input', updateTheoreticalProbabilities);
+        document.getElementById('batch2-total').addEventListener('input', updateTheoreticalProbabilities);
+        document.getElementById('batch2-defective').addEventListener('input', updateTheoreticalProbabilities);
+        document.getElementById('batch3-total').addEventListener('input', updateTheoreticalProbabilities);
+        document.getElementById('batch3-defective').addEventListener('input', updateTheoreticalProbabilities);
+        
+        // 初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            updateTheoreticalProbabilities();
+        });
+    </script>
+</body>
+</html>

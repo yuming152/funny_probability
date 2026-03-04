@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蒙特卡洛积分实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .bg-gradient-accent {
+                background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .point {
+                position: absolute;
+                width: 2px;
+                height: 2px;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            }
+            .point.inside {
+                background-color: #10B981;
+            }
+            .point.outside {
+                background-color: #EF4444;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">通过蒙特卡洛积分实验，学习如何用随机数模拟计算积分值。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">蒙特卡洛积分实验</h2>
+                    <a href="random-interval-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回随机区间实验
+                    </a>
+                </div>
+                <p class="text-gray-600">用随机数模拟计算∫₀¹ e⁻ˣ² dx，验证积分值与理论值的偏差。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">模拟次数</label>
+                            <input type="number" id="simulation-count" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="10000" min="1000" max="1000000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">积分下限</label>
+                            <input type="number" id="integral-lower" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="0" min="0" max="10" step="0.1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">积分上限</label>
+                            <input type="number" id="integral-upper" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="1" min="0" max="10" step="0.1">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">函数选择</label>
+                            <select id="function-select" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent">
+                                <option value="exp(-x^2)">e⁻ˣ² (高斯函数)</option>
+                                <option value="sin(x)">sin(x)</option>
+                                <option value="cos(x)">cos(x)</option>
+                                <option value="x^2">x²</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Y轴范围上限</label>
+                            <input type="number" id="y-max" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="1" min="0.1" max="10" step="0.1">
+                        </div>
+                        <div class="pt-6">
+                            <button id="run-experiment" class="w-full bg-secondary text-white py-3 rounded-lg hover:bg-orange-600 transition-all-300 font-medium flex items-center justify-center">
+                                <i class="fa fa-play mr-2"></i> 运行实验
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="mb-4">
+                                <i class="fa fa-area-chart text-secondary text-6xl"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-gray-800 mb-2">蒙特卡洛积分</h4>
+                            <p class="text-gray-600">通过随机抽样方法近似计算定积分，验证积分值与理论值的偏差。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">模拟次数</h4>
+                        <p id="total-simulations" class="text-2xl font-bold text-primary">0</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">蒙特卡洛积分值</h4>
+                        <p id="monte-carlo-value" class="text-2xl font-bold text-secondary">0</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">理论积分值</h4>
+                        <p id="theoretical-value" class="text-2xl font-bold text-success">0</p>
+                    </div>
+                </div>
+
+                <!-- 函数可视化和随机点 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">函数可视化与随机点分布</h4>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="relative h-64 mb-4" id="function-visualization">
+                            <!-- 函数图像和随机点将通过JavaScript动态生成 -->
+                        </div>
+                        <div class="flex justify-center space-x-4">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-green-500 mr-2"></div>
+                                <span class="text-sm text-gray-600">在曲线下方的点</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-red-500 mr-2"></div>
+                                <span class="text-sm text-gray-600">在曲线上方的点</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-blue-500 mr-2"></div>
+                                <span class="text-sm text-gray-600">函数曲线</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 收敛性分析 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">积分值收敛趋势</h4>
+                        <canvas id="convergence-chart" height="200"></canvas>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">误差分析</h4>
+                        <canvas id="error-chart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <!-- 统计分析 -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">统计分析</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="text-sm font-medium text-gray-700 mb-2">积分结果</h5>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">蒙特卡洛积分值:</span>
+                                    <span id="monte-carlo-value-detail" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">理论积分值:</span>
+                                    <span id="theoretical-value-detail" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">绝对误差:</span>
+                                    <span id="absolute-error" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">相对误差:</span>
+                                    <span id="relative-error" class="font-medium">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-medium text-gray-700 mb-2">随机点统计</h5>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">总随机点数:</span>
+                                    <span id="total-points" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">曲线下方点数:</span>
+                                    <span id="inside-points" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">曲线上方点数:</span>
+                                    <span id="outside-points" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">命中率:</span>
+                                    <span id="hit-rate" class="font-medium">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论解释 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论解释</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">蒙特卡洛积分原理</h4>
+                        <p class="text-gray-600">蒙特卡洛积分是一种通过随机抽样来近似计算定积分的方法。其基本思想是：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>在积分区间 [a, b] 和函数值范围 [0, M] 组成的矩形区域内生成随机点</li>
+                            <li>统计落在函数曲线下方的点的比例</li>
+                            <li>积分值近似为：(b - a) * M * 命中率</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">误差分析</h4>
+                        <p class="text-gray-600">蒙特卡洛积分的误差与模拟次数的平方根成反比，即：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>误差 ∝ 1/√N，其中 N 是模拟次数</li>
+                            <li>要将误差减少一半，需要将模拟次数增加到原来的4倍</li>
+                            <li>与传统数值积分方法相比，蒙特卡洛积分在高维积分中更有优势</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">理论积分值</h4>
+                        <p class="text-gray-600">对于不同函数的理论积分值：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>∫₀¹ e⁻ˣ² dx = (√π/2) * erf(1) ≈ 0.746824</li>
+                            <li>∫₀¹ sin(x) dx = 1 - cos(1) ≈ 0.459700</li>
+                            <li>∫₀¹ cos(x) dx = sin(1) ≈ 0.841471</li>
+                            <li>∫₀¹ x² dx = 1/3 ≈ 0.333333</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">实际应用</h4>
+                        <p class="text-gray-600">蒙特卡洛积分在以下领域有广泛应用：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>物理学中的多体问题和路径积分</li>
+                            <li>金融学中的期权定价和风险评估</li>
+                            <li>工程学中的可靠性分析和优化设计</li>
+                            <li>计算机图形学中的光线追踪和渲染</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        蒙特卡洛积分的原理
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何提高蒙特卡洛积分的精度
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        蒙特卡洛积分的应用场景
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验相关变量
+        let convergenceChart = null;
+        let errorChart = null;
+
+        // 初始化图表
+        function initCharts() {
+            // 积分值收敛趋势图表
+            const convergenceCtx = document.getElementById('convergence-chart').getContext('2d');
+            convergenceChart = new Chart(convergenceCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '蒙特卡洛积分值',
+                        data: [],
+                        borderColor: '#F97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }, {
+                        label: '理论积分值',
+                        data: [],
+                        borderColor: '#10B981',
+                        borderDash: [5, 5],
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: '积分值'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '模拟次数'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 误差分析图表
+            const errorCtx = document.getElementById('error-chart').getContext('2d');
+            errorChart = new Chart(errorCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '相对误差',
+                        data: [],
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '相对误差 (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '模拟次数'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 计算函数值
+        function calculateFunction(x, functionType) {
+            switch (functionType) {
+                case 'exp(-x^2)':
+                    return Math.exp(-Math.pow(x, 2));
+                case 'sin(x)':
+                    return Math.sin(x);
+                case 'cos(x)':
+                    return Math.cos(x);
+                case 'x^2':
+                    return Math.pow(x, 2);
+                default:
+                    return Math.exp(-Math.pow(x, 2));
+            }
+        }
+
+        // 计算理论积分值
+        function calculateTheoreticalIntegral(lower, upper, functionType) {
+            switch (functionType) {
+                case 'exp(-x^2)':
+                    // 使用误差函数近似计算
+                    // erf(x) = (2/√π) ∫₀ˣ e⁻ᵗ² dt
+                    // ∫₀¹ e⁻ˣ² dx = √π/2 * erf(1)
+                    const erf1 = 0.8427007929497148; // 预计算的 erf(1) 值
+                    return (Math.sqrt(Math.PI) / 2) * erf1;
+                case 'sin(x)':
+                    return Math.cos(lower) - Math.cos(upper);
+                case 'cos(x)':
+                    return Math.sin(upper) - Math.sin(lower);
+                case 'x^2':
+                    return (Math.pow(upper, 3) - Math.pow(lower, 3)) / 3;
+                default:
+                    return 0;
+            }
+        }
+
+        // 绘制函数图像
+        function drawFunction(lower, upper, functionType, yMax) {
+            const container = document.getElementById('function-visualization');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            // 清空容器
+            container.innerHTML = '';
+            
+            // 创建SVG元素
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', width);
+            svg.setAttribute('height', height);
+            svg.setAttribute('style', 'position: absolute; top: 0; left: 0;');
+            
+            // 绘制坐标轴
+            const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            xAxis.setAttribute('x1', '0');
+            xAxis.setAttribute('y1', height);
+            xAxis.setAttribute('x2', width);
+            xAxis.setAttribute('y2', height);
+            xAxis.setAttribute('stroke', '#9CA3AF');
+            xAxis.setAttribute('stroke-width', '1');
+            svg.appendChild(xAxis);
+            
+            const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            yAxis.setAttribute('x1', '0');
+            yAxis.setAttribute('y1', '0');
+            yAxis.setAttribute('x2', '0');
+            yAxis.setAttribute('y2', height);
+            yAxis.setAttribute('stroke', '#9CA3AF');
+            yAxis.setAttribute('stroke-width', '1');
+            svg.appendChild(yAxis);
+            
+            // 绘制函数曲线
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            let pathData = '';
+            
+            for (let i = 0; i <= width; i++) {
+                const x = lower + (upper - lower) * (i / width);
+                const y = calculateFunction(x, functionType);
+                const yScaled = height - (y / yMax) * height;
+                
+                if (i === 0) {
+                    pathData += `M ${i} ${yScaled}`;
+                } else {
+                    pathData += ` L ${i} ${yScaled}`;
+                }
+            }
+            
+            path.setAttribute('d', pathData);
+            path.setAttribute('stroke', '#3B82F6');
+            path.setAttribute('stroke-width', '2');
+            path.setAttribute('fill', 'none');
+            svg.appendChild(path);
+            
+            container.appendChild(svg);
+        }
+
+        // 绘制随机点
+        function drawRandomPoints(points, lower, upper, yMax) {
+            const container = document.getElementById('function-visualization');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            points.forEach(point => {
+                const xScaled = ((point.x - lower) / (upper - lower)) * width;
+                const yScaled = height - (point.y / yMax) * height;
+                
+                const pointElement = document.createElement('div');
+                pointElement.className = `point ${point.inside ? 'inside' : 'outside'}`;
+                pointElement.style.left = `${xScaled}px`;
+                pointElement.style.top = `${yScaled}px`;
+                
+                container.appendChild(pointElement);
+            });
+        }
+
+        // 运行实验
+        document.getElementById('run-experiment').addEventListener('click', function() {
+            // 获取参数
+            const simulationCount = parseInt(document.getElementById('simulation-count').value);
+            const lower = parseFloat(document.getElementById('integral-lower').value);
+            const upper = parseFloat(document.getElementById('integral-upper').value);
+            const functionType = document.getElementById('function-select').value;
+            const yMax = parseFloat(document.getElementById('y-max').value);
+
+            // 计算理论积分值
+            const theoreticalValue = calculateTheoreticalIntegral(lower, upper, functionType);
+
+            // 初始化统计变量
+            let insideCount = 0;
+            const points = [];
+            const convergenceData = [];
+            const convergenceLabels = [];
+            const errorData = [];
+            const errorLabels = [];
+
+            // 模拟实验
+            for (let i = 0; i < simulationCount; i++) {
+                // 生成随机点
+                const x = lower + (upper - lower) * Math.random();
+                const y = yMax * Math.random();
+                const functionValue = calculateFunction(x, functionType);
+                const inside = y <= functionValue;
+                
+                if (inside) {
+                    insideCount++;
+                }
+                
+                // 保存点数据（每1000次保存一次）
+                if (i % 1000 === 0) {
+                    points.push({ x, y, inside });
+                }
+                
+                // 记录收敛数据（每1000次记录一次）
+                if (i % 1000 === 0) {
+                    const currentValue = (upper - lower) * yMax * (insideCount / (i + 1));
+                    convergenceLabels.push(i + 1);
+                    convergenceData.push(currentValue);
+                    
+                    const error = Math.abs(currentValue - theoreticalValue) / theoreticalValue * 100;
+                    errorLabels.push(i + 1);
+                    errorData.push(error);
+                }
+            }
+
+            // 计算蒙特卡洛积分值
+            const monteCarloValue = (upper - lower) * yMax * (insideCount / simulationCount);
+            const absoluteError = Math.abs(monteCarloValue - theoreticalValue);
+            const relativeError = (absoluteError / theoreticalValue) * 100;
+
+            // 更新统计结果
+            document.getElementById('total-simulations').textContent = simulationCount;
+            document.getElementById('monte-carlo-value').textContent = monteCarloValue.toFixed(6);
+            document.getElementById('theoretical-value').textContent = theoreticalValue.toFixed(6);
+
+            // 更新详细统计
+            document.getElementById('monte-carlo-value-detail').textContent = monteCarloValue.toFixed(6);
+            document.getElementById('theoretical-value-detail').textContent = theoreticalValue.toFixed(6);
+            document.getElementById('absolute-error').textContent = absoluteError.toFixed(6);
+            document.getElementById('relative-error').textContent = relativeError.toFixed(4) + '%';
+            document.getElementById('total-points').textContent = simulationCount;
+            document.getElementById('inside-points').textContent = insideCount;
+            document.getElementById('outside-points').textContent = simulationCount - insideCount;
+            document.getElementById('hit-rate').textContent = ((insideCount / simulationCount) * 100).toFixed(4) + '%';
+
+            // 绘制函数图像和随机点
+            drawFunction(lower, upper, functionType, yMax);
+            drawRandomPoints(points, lower, upper, yMax);
+
+            // 更新收敛趋势图表
+            convergenceChart.data.labels = convergenceLabels;
+            convergenceChart.data.datasets[0].data = convergenceData;
+            convergenceChart.data.datasets[1].data = Array(convergenceLabels.length).fill(theoreticalValue);
+            convergenceChart.update();
+
+            // 更新误差分析图表
+            errorChart.data.labels = errorLabels;
+            errorChart.data.datasets[0].data = errorData;
+            errorChart.update();
+        });
+
+        // 初始化图表
+        window.addEventListener('DOMContentLoaded', initCharts);
+    </script>
+</body>
+</html>

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重尾分布中心极限 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="limit-theorem-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-area-chart w-5 text-center"></i>
+                    <span>极限定理实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">比较柯西分布与正态分布的收敛情况，验证中心极限定理在重尾分布下的表现。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">重尾分布中心极限</h2>
+                    <a href="limit-theorem-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">比较柯西分布（无方差）与正态分布的收敛情况，验证中心极限定理在重尾分布下的表现。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">实验次数</label>
+                        <input type="number" id="experimentCount" min="1000" max="50000" value="10000" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">样本数量</label>
+                        <input type="number" id="sampleSize" min="10" max="500" value="100" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">分布类型</label>
+                        <select id="distributionType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="cauchy">柯西分布</option>
+                            <option value="normal">正态分布</option>
+                            <option value="both">两者比较</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">柯西分布位置参数</label>
+                        <input type="number" id="cauchyLocation" step="0.1" value="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">柯西分布尺度参数</label>
+                        <input type="number" id="cauchyScale" min="0.1" step="0.1" value="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">正态分布均值</label>
+                        <input type="number" id="normalMean" step="0.1" value="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">正态分布标准差</label>
+                    <input type="number" id="normalStdDev" min="0.1" step="0.1" value="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button id="startExperiment" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-play mr-2"></i> 开始实验
+                    </button>
+                    <button id="resetExperiment" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 实验结果 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-blue-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-primary" id="cauchyMean">0.00</div>
+                    <div class="text-sm text-gray-600">柯西分布均值</div>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-success" id="normalMeanResult">0.00</div>
+                    <div class="text-sm text-gray-600">正态分布均值</div>
+                </div>
+                <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-warning" id="cauchyVariance">∞</div>
+                    <div class="text-sm text-gray-600">柯西分布方差</div>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="normalVariance">1.00</div>
+                    <div class="text-sm text-gray-600">正态分布方差</div>
+                </div>
+            </div>
+
+            <!-- 分布对比图 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">分布对比</h3>
+                <div class="h-80">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 收敛趋势图 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">收敛趋势</h3>
+                <div class="h-80">
+                    <canvas id="convergenceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">中心极限定理</h4>
+                        <p class="text-gray-600">中心极限定理指出，独立同分布的随机变量之和的分布会收敛到正态分布，前提是这些变量具有有限的方差。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">柯西分布特性</h4>
+                        <p class="text-gray-600">柯西分布是一种重尾分布，它的方差是无限的，因此不满足中心极限定理的条件。本实验通过比较柯西分布和正态分布的收敛情况，验证中心极限定理在重尾分布下的表现。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">实验验证步骤</h4>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-600 pl-4">
+                            <li>从柯西分布和正态分布中生成随机样本</li>
+                            <li>计算不同样本量下的样本均值</li>
+                            <li>观察样本均值的分布情况</li>
+                            <li>比较两种分布的收敛速度和模式</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">结论</h4>
+                        <p class="text-gray-600">实验结果表明，正态分布的样本均值会收敛到正态分布，而柯西分布的样本均值仍然服从柯西分布，不会收敛到正态分布。这验证了中心极限定理对变量方差有限的要求。</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        中心极限定理的验证
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        柯西分布的特性
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        重尾分布对中心极限定理的影响
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 全局变量
+        let distributionChart, convergenceChart;
+        let cauchyData = [];
+        let normalData = [];
+
+        // 初始化图表
+        function initCharts() {
+            // 分布对比图
+            const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+            distributionChart = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '柯西分布',
+                        data: [],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(30, 64, 175, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: '正态分布',
+                        data: [],
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '样本均值分布对比'
+                        },
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '数值区间'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 收敛趋势图
+            const convergenceCtx = document.getElementById('convergenceChart').getContext('2d');
+            convergenceChart = new Chart(convergenceCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '柯西分布均值',
+                        data: [],
+                        borderColor: '#1E40AF',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: '正态分布均值',
+                        data: [],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '样本均值收敛趋势'
+                        },
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '样本数量'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '均值'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 生成柯西分布随机数
+        function generateCauchy(location, scale) {
+            const u = Math.random();
+            return location + scale * Math.tan(Math.PI * (u - 0.5));
+        }
+
+        // 生成正态分布随机数
+        function generateNormal(mean, stdDev) {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random();
+            while (v === 0) v = Math.random();
+            let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+            return num * stdDev + mean;
+        }
+
+        // 计算均值
+        function calculateMean(values) {
+            return values.reduce((sum, val) => sum + val, 0) / values.length;
+        }
+
+        // 计算方差
+        function calculateVariance(values, mean) {
+            const squaredDiffs = values.map(val => Math.pow(val - mean, 2));
+            return squaredDiffs.reduce((sum, val) => sum + val, 0) / values.length;
+        }
+
+        // 生成直方图数据
+        function generateHistogram(data, binCount) {
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const binWidth = (max - min) / binCount;
+            const bins = Array(binCount).fill(0);
+            const binLabels = [];
+
+            for (let i = 0; i < binCount; i++) {
+                const binStart = min + i * binWidth;
+                const binEnd = binStart + binWidth;
+                binLabels.push(`${binStart.toFixed(2)}-${binEnd.toFixed(2)}`);
+            }
+
+            for (const value of data) {
+                const binIndex = Math.min(Math.floor((value - min) / binWidth), binCount - 1);
+                if (binIndex >= 0) {
+                    bins[binIndex]++;
+                }
+            }
+
+            return { bins, binLabels, min, max };
+        }
+
+        // 开始实验
+        function startExperiment() {
+            const experimentCount = parseInt(document.getElementById('experimentCount').value);
+            const sampleSize = parseInt(document.getElementById('sampleSize').value);
+            const distributionType = document.getElementById('distributionType').value;
+            const cauchyLocation = parseFloat(document.getElementById('cauchyLocation').value);
+            const cauchyScale = parseFloat(document.getElementById('cauchyScale').value);
+            const normalMean = parseFloat(document.getElementById('normalMean').value);
+            const normalStdDev = parseFloat(document.getElementById('normalStdDev').value);
+
+            // 重置数据
+            cauchyData = [];
+            normalData = [];
+            const cauchyMeans = [];
+            const normalMeans = [];
+            const sampleCounts = [];
+
+            // 进行实验
+            for (let i = 1; i <= experimentCount; i += experimentCount / 100) {
+                // 生成柯西分布样本
+                const cauchySample = [];
+                for (let j = 0; j < sampleSize; j++) {
+                    cauchySample.push(generateCauchy(cauchyLocation, cauchyScale));
+                }
+                const cauchySampleMean = calculateMean(cauchySample);
+                cauchyMeans.push(cauchySampleMean);
+                cauchyData.push(cauchySampleMean);
+
+                // 生成正态分布样本
+                const normalSample = [];
+                for (let j = 0; j < sampleSize; j++) {
+                    normalSample.push(generateNormal(normalMean, normalStdDev));
+                }
+                const normalSampleMean = calculateMean(normalSample);
+                normalMeans.push(normalSampleMean);
+                normalData.push(normalSampleMean);
+
+                sampleCounts.push(i);
+            }
+
+            // 计算结果
+            const cauchyOverallMean = calculateMean(cauchyData);
+            const normalOverallMean = calculateMean(normalData);
+            const normalVariance = calculateVariance(normalData, normalOverallMean);
+
+            // 更新结果显示
+            document.getElementById('cauchyMean').textContent = cauchyOverallMean.toFixed(4);
+            document.getElementById('normalMeanResult').textContent = normalOverallMean.toFixed(4);
+            document.getElementById('normalVariance').textContent = normalVariance.toFixed(4);
+
+            // 更新分布对比图
+            const binCount = 30;
+            const cauchyHist = generateHistogram(cauchyData, binCount);
+            const normalHist = generateHistogram(normalData, binCount);
+
+            // 统一 bins 和 labels
+            const combinedMin = Math.min(cauchyHist.min, normalHist.min);
+            const combinedMax = Math.max(cauchyHist.max, normalHist.max);
+            const combinedBinWidth = (combinedMax - combinedMin) / binCount;
+            const combinedBinLabels = [];
+            const combinedCauchyBins = Array(binCount).fill(0);
+            const combinedNormalBins = Array(binCount).fill(0);
+
+            for (let i = 0; i < binCount; i++) {
+                const binStart = combinedMin + i * combinedBinWidth;
+                const binEnd = binStart + combinedBinWidth;
+                combinedBinLabels.push(`${binStart.toFixed(2)}-${binEnd.toFixed(2)}`);
+            }
+
+            for (const value of cauchyData) {
+                const binIndex = Math.min(Math.floor((value - combinedMin) / combinedBinWidth), binCount - 1);
+                if (binIndex >= 0) {
+                    combinedCauchyBins[binIndex]++;
+                }
+            }
+
+            for (const value of normalData) {
+                const binIndex = Math.min(Math.floor((value - combinedMin) / combinedBinWidth), binCount - 1);
+                if (binIndex >= 0) {
+                    combinedNormalBins[binIndex]++;
+                }
+            }
+
+            distributionChart.data.labels = combinedBinLabels;
+            distributionChart.data.datasets[0].data = combinedCauchyBins;
+            distributionChart.data.datasets[1].data = combinedNormalBins;
+            distributionChart.update();
+
+            // 更新收敛趋势图
+            convergenceChart.data.labels = sampleCounts;
+            convergenceChart.data.datasets[0].data = cauchyMeans;
+            convergenceChart.data.datasets[1].data = normalMeans;
+            convergenceChart.update();
+        }
+
+        // 重置实验
+        function resetExperiment() {
+            // 重置表单
+            document.getElementById('experimentCount').value = 10000;
+            document.getElementById('sampleSize').value = 100;
+            document.getElementById('distributionType').value = 'both';
+            document.getElementById('cauchyLocation').value = 0;
+            document.getElementById('cauchyScale').value = 1;
+            document.getElementById('normalMean').value = 0;
+            document.getElementById('normalStdDev').value = 1;
+
+            // 重置结果
+            document.getElementById('cauchyMean').textContent = '0.00';
+            document.getElementById('normalMeanResult').textContent = '0.00';
+            document.getElementById('normalVariance').textContent = '1.00';
+
+            // 重置图表
+            distributionChart.data.labels = [];
+            distributionChart.data.datasets[0].data = [];
+            distributionChart.data.datasets[1].data = [];
+            distributionChart.update();
+
+            convergenceChart.data.labels = [];
+            convergenceChart.data.datasets[0].data = [];
+            convergenceChart.data.datasets[1].data = [];
+            convergenceChart.update();
+
+            cauchyData = [];
+            normalData = [];
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+
+            // 绑定事件
+            document.getElementById('startExperiment').addEventListener('click', startExperiment);
+            document.getElementById('resetExperiment').addEventListener('click', resetExperiment);
+        });
+    </script>
+</body>
+</html>

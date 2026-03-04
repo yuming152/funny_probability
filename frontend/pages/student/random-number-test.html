@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机数生成检验实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .bg-gradient-accent {
+                background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .random-point {
+                position: absolute;
+                width: 3px;
+                height: 3px;
+                border-radius: 50%;
+                background-color: #3B82F6;
+                transition: all 0.3s ease;
+            }
+        </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">通过随机数生成检验实验，学习如何检验随机数的均匀分布特性。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">随机数生成检验实验</h2>
+                    <a href="random-interval-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回随机区间实验
+                    </a>
+                </div>
+                <p class="text-gray-600">检验一组伪随机数是否均匀分布，计算其落在 [0.2,0.8] 的频率是否接近 0.6。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">随机数数量</label>
+                            <input type="number" id="random-count" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" value="10000" min="1000" max="1000000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">随机数生成方法</label>
+                            <select id="random-method" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent">
+                                <option value="Math.random">Math.random()</option>
+                                <option value="custom">自定义线性同余生成器</option>
+                                <option value="crypto">crypto.getRandomValues()</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">检验区间下限</label>
+                            <input type="number" id="interval-lower" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" value="0.2" min="0" max="1" step="0.1">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">检验区间上限</label>
+                            <input type="number" id="interval-upper" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" value="0.8" min="0" max="1" step="0.1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">分组数量</label>
+                            <input type="number" id="group-count" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent" value="10" min="5" max="50">
+                        </div>
+                        <div class="pt-6">
+                            <button id="run-experiment" class="w-full bg-accent text-white py-3 rounded-lg hover:bg-indigo-600 transition-all-300 font-medium flex items-center justify-center">
+                                <i class="fa fa-play mr-2"></i> 运行实验
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="mb-4">
+                                <i class="fa fa-random text-accent text-6xl"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-gray-800 mb-2">随机数均匀性检验</h4>
+                            <p class="text-gray-600">通过统计方法检验随机数是否符合均匀分布，验证其落在特定区间的频率。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">随机数数量</h4>
+                        <p id="total-random-numbers" class="text-2xl font-bold text-primary">0</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">落在区间内的数量</h4>
+                        <p id="in-interval-count" class="text-2xl font-bold text-secondary">0</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">区间内频率</h4>
+                        <p id="interval-frequency" class="text-2xl font-bold text-success">0%</p>
+                    </div>
+                </div>
+
+                <!-- 随机数可视化 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">随机数可视化</h4>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="relative h-64 mb-4" id="random-visualization">
+                            <!-- 随机点将通过JavaScript动态生成 -->
+                        </div>
+                        <div class="flex justify-center space-x-4">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-blue-500 mr-2"></div>
+                                <span class="text-sm text-gray-600">随机点</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-green-500 mr-2"></div>
+                                <span class="text-sm text-gray-600">检验区间</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分布分析 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">随机数分布直方图</h4>
+                        <canvas id="distribution-chart" height="200"></canvas>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">频率收敛趋势</h4>
+                        <canvas id="frequency-trend-chart" height="200"></canvas>
+                    </div>
+                </div>
+
+                <!-- 统计分析 -->
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">统计分析</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="text-sm font-medium text-gray-700 mb-2">区间检验结果</h5>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">检验区间:</span>
+                                    <span id="test-interval" class="font-medium">[0.2, 0.8]</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">理论频率:</span>
+                                    <span id="theoretical-frequency" class="font-medium">60%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">实际频率:</span>
+                                    <span id="actual-frequency" class="font-medium">0%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">频率误差:</span>
+                                    <span id="frequency-error" class="font-medium">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="text-sm font-medium text-gray-700 mb-2">均匀性检验</h5>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">卡方检验统计量:</span>
+                                    <span id="chi-square-stat" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">自由度:</span>
+                                    <span id="degrees-freedom" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">p值:</span>
+                                    <span id="p-value" class="font-medium">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">均匀性结论:</span>
+                                    <span id="uniformity-conclusion" class="font-medium">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论解释 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论解释</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">随机数生成方法</h4>
+                        <p class="text-gray-600">常用的随机数生成方法包括：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>Math.random(): JavaScript内置的伪随机数生成器</li>
+                            <li>线性同余生成器(LCG): 通过数学公式生成伪随机数</li>
+                            <li>加密安全的随机数生成器: 如crypto.getRandomValues()</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">均匀分布检验</h4>
+                        <p class="text-gray-600">均匀分布检验的基本思想是：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>将[0,1]区间分成k个等宽的子区间</li>
+                            <li>统计每个子区间内的随机数个数</li>
+                            <li>使用卡方检验统计量来判断分布是否均匀</li>
+                            <li>卡方统计量: χ² = Σ((O_i - E_i)² / E_i)，其中O_i是实际频数，E_i是理论频数</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">区间频率检验</h4>
+                        <p class="text-gray-600">对于区间 [a, b]，均匀分布的随机数落在该区间内的理论频率为 b - a。通过比较实际频率与理论频率的差异，可以检验随机数的均匀性。</p>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">实际应用</h4>
+                        <p class="text-gray-600">随机数均匀性检验在以下领域有广泛应用：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>密码学中的密钥生成</li>
+                            <li>蒙特卡洛模拟</li>
+                            <li>统计抽样和实验设计</li>
+                            <li>游戏和娱乐应用</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        随机数均匀性检验方法
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        卡方检验的原理
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何生成高质量的随机数
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 线性同余生成器
+        class LCG {
+            constructor(seed = Date.now()) {
+                this.m = 2147483647; // 2^31 - 1
+                this.a = 16807;      // 7^5
+                this.c = 0;
+                this.state = seed % this.m;
+                if (this.state <= 0) this.state += this.m - 1;
+            }
+            next() {
+                this.state = (this.a * this.state + this.c) % this.m;
+                return this.state / this.m;
+            }
+        }
+
+        // 实验相关变量
+        let distributionChart = null;
+        let frequencyTrendChart = null;
+        let lcg = new LCG();
+
+        // 初始化图表
+        function initCharts() {
+            // 随机数分布直方图
+            const distributionCtx = document.getElementById('distribution-chart').getContext('2d');
+            distributionChart = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '随机数频率',
+                        data: [],
+                        backgroundColor: '#6366F1',
+                        borderColor: '#6366F1',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '区间'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 频率收敛趋势图表
+            const trendCtx = document.getElementById('frequency-trend-chart').getContext('2d');
+            frequencyTrendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '实际频率',
+                        data: [],
+                        borderColor: '#F97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }, {
+                        label: '理论频率',
+                        data: [],
+                        borderColor: '#10B981',
+                        borderDash: [5, 5],
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '随机数数量'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 生成随机数
+        function generateRandomNumber(method) {
+            switch (method) {
+                case 'Math.random':
+                    return Math.random();
+                case 'custom':
+                    return lcg.next();
+                case 'crypto':
+                    if (window.crypto && window.crypto.getRandomValues) {
+                        const array = new Uint32Array(1);
+                        window.crypto.getRandomValues(array);
+                        return array[0] / 4294967296; // 2^32
+                    } else {
+                        return Math.random();
+                    }
+                default:
+                    return Math.random();
+            }
+        }
+
+        // 绘制随机点
+        function drawRandomPoints(points, lower, upper) {
+            const container = document.getElementById('random-visualization');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            // 清空容器
+            container.innerHTML = '';
+            
+            // 绘制检验区间
+            const intervalLeft = lower * width;
+            const intervalWidth = (upper - lower) * width;
+            const intervalElement = document.createElement('div');
+            intervalElement.style.position = 'absolute';
+            intervalElement.style.left = `${intervalLeft}px`;
+            intervalElement.style.width = `${intervalWidth}px`;
+            intervalElement.style.top = '0';
+            intervalElement.style.height = '100%';
+            intervalElement.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+            intervalElement.style.borderLeft = '1px solid #10B981';
+            intervalElement.style.borderRight = '1px solid #10B981';
+            container.appendChild(intervalElement);
+            
+            // 绘制随机点
+            points.forEach(point => {
+                const x = point * width;
+                const y = Math.random() * height;
+                
+                const pointElement = document.createElement('div');
+                pointElement.className = 'random-point';
+                pointElement.style.left = `${x}px`;
+                pointElement.style.top = `${y}px`;
+                
+                container.appendChild(pointElement);
+            });
+        }
+
+        // 计算卡方检验统计量
+        function calculateChiSquare(observations, expected) {
+            let chiSquare = 0;
+            for (let i = 0; i < observations.length; i++) {
+                const diff = observations[i] - expected[i];
+                chiSquare += (diff * diff) / expected[i];
+            }
+            return chiSquare;
+        }
+
+        // 运行实验
+        document.getElementById('run-experiment').addEventListener('click', function() {
+            // 获取参数
+            const randomCount = parseInt(document.getElementById('random-count').value);
+            const randomMethod = document.getElementById('random-method').value;
+            const intervalLower = parseFloat(document.getElementById('interval-lower').value);
+            const intervalUpper = parseFloat(document.getElementById('interval-upper').value);
+            const groupCount = parseInt(document.getElementById('group-count').value);
+
+            // 初始化统计变量
+            let inIntervalCount = 0;
+            const distribution = new Array(groupCount).fill(0);
+            const frequencyTrend = [];
+            const frequencyLabels = [];
+            const samplePoints = [];
+
+            // 生成随机数并统计
+            for (let i = 0; i < randomCount; i++) {
+                const randomNum = generateRandomNumber(randomMethod);
+                
+                // 检查是否在检验区间内
+                if (randomNum >= intervalLower && randomNum <= intervalUpper) {
+                    inIntervalCount++;
+                }
+                
+                // 统计分布
+                const groupIndex = Math.floor(randomNum * groupCount);
+                distribution[groupIndex]++;
+                
+                // 保存样本点（每1000个保存一个）
+                if (i % 1000 === 0) {
+                    samplePoints.push(randomNum);
+                }
+                
+                // 记录频率趋势（每1000个记录一次）
+                if (i % 1000 === 0) {
+                    const frequency = inIntervalCount / (i + 1);
+                    frequencyTrend.push(frequency);
+                    frequencyLabels.push(i + 1);
+                }
+            }
+
+            // 计算频率
+            const intervalFrequency = inIntervalCount / randomCount;
+            const theoreticalFrequency = intervalUpper - intervalLower;
+            const frequencyError = Math.abs(intervalFrequency - theoreticalFrequency) / theoreticalFrequency * 100;
+
+            // 计算卡方检验
+            const expectedPerGroup = randomCount / groupCount;
+            const expected = new Array(groupCount).fill(expectedPerGroup);
+            const chiSquareStat = calculateChiSquare(distribution, expected);
+            const degreesFreedom = groupCount - 1;
+            // 简化的p值计算（实际应用中应使用卡方分布表）
+            const pValue = Math.exp(-chiSquareStat / 2);
+            const isUniform = pValue > 0.05;
+
+            // 更新统计结果
+            document.getElementById('total-random-numbers').textContent = randomCount;
+            document.getElementById('in-interval-count').textContent = inIntervalCount;
+            document.getElementById('interval-frequency').textContent = (intervalFrequency * 100).toFixed(4) + '%';
+
+            // 更新详细统计
+            document.getElementById('test-interval').textContent = `[${intervalLower}, ${intervalUpper}]`;
+            document.getElementById('theoretical-frequency').textContent = (theoreticalFrequency * 100).toFixed(2) + '%';
+            document.getElementById('actual-frequency').textContent = (intervalFrequency * 100).toFixed(4) + '%';
+            document.getElementById('frequency-error').textContent = frequencyError.toFixed(4) + '%';
+            document.getElementById('chi-square-stat').textContent = chiSquareStat.toFixed(4);
+            document.getElementById('degrees-freedom').textContent = degreesFreedom;
+            document.getElementById('p-value').textContent = pValue.toFixed(4);
+            document.getElementById('uniformity-conclusion').textContent = isUniform ? '均匀分布' : '非均匀分布';
+
+            // 绘制随机点
+            drawRandomPoints(samplePoints, intervalLower, intervalUpper);
+
+            // 更新分布直方图
+            const groupLabels = [];
+            for (let i = 0; i < groupCount; i++) {
+                const start = (i / groupCount).toFixed(2);
+                const end = ((i + 1) / groupCount).toFixed(2);
+                groupLabels.push(`[${start}, ${end})`);
+            }
+            distributionChart.data.labels = groupLabels;
+            distributionChart.data.datasets[0].data = distribution;
+            distributionChart.update();
+
+            // 更新频率趋势图表
+            frequencyTrendChart.data.labels = frequencyLabels;
+            frequencyTrendChart.data.datasets[0].data = frequencyTrend;
+            frequencyTrendChart.data.datasets[1].data = Array(frequencyLabels.length).fill(theoreticalFrequency);
+            frequencyTrendChart.update();
+        });
+
+        // 初始化图表
+        window.addEventListener('DOMContentLoaded', initCharts);
+    </script>
+</body>
+</html>

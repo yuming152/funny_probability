@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI模型预测误差的概率建模实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.12/src-min-noconflict/ace.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937',
+                        purple: '#8B5CF6',
+                        teal: '#14B8A6',
+                        pink: '#EC4899',
+                        indigo: '#6366F1',
+                        cyan: '#06B6D4',
+                        emerald: '#10B981'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-purple {
+                background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+            }
+            .bg-gradient-teal {
+                background: linear-gradient(135deg, #14B8A6 0%, #2DD4BF 100%);
+            }
+            .bg-gradient-indigo {
+                background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+            }
+            .bg-gradient-emerald {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .bg-gradient-cyan {
+                background: linear-gradient(135deg, #06B6D4 0%, #22D3EE 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .neon-border {
+                box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3);
+            }
+            .grid-pattern {
+                background-image: 
+                    linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+                background-size: 20px 20px;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .3d-effect {
+                transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+                transition: transform 0.5s ease;
+            }
+            .3d-effect:hover {
+                transform: perspective(1000px) rotateX(5deg) rotateY(5deg);
+            }
+            .chart-container {
+                position: relative;
+                height: 100%;
+                width: 100%;
+            }
+            .progress-ring {
+                transform: rotate(-90deg);
+            }
+            .progress-ring-circle {
+                transition: stroke-dashoffset 0.5s ease;
+                stroke-linecap: round;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="bayesian-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-refresh w-5 text-center"></i>
+                    <span>逆概率 / 贝叶斯进阶实验</span>
+                </a>
+                <a href="queuing-theory-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>排队论 / 随机过程基础实验</span>
+                </a>
+                <a href="probability-inequality-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-balance-scale w-5 text-center"></i>
+                    <span>概率不等式的构造与验证实验</span>
+                </a>
+                <a href="ai-error-probability-modeling.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-robot w-5 text-center"></i>
+                    <span>AI模型预测误差的概率建模实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">探索AI模型预测误差的概率分布，学习如何用贝叶斯方法修正预测概率。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <!-- 实验标题 -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">AI模型预测误差的概率建模实验</h2>
+                    <a href="probability-experiment-library.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验库
+                    </a>
+                </div>
+                <p class="text-gray-600">将概率论与机器学习相结合，突破传统假设，用概率模型描述AI什么时候容易出错。</p>
+            </div>
+
+            <!-- 实验核心 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border grid-pattern">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">实验核心</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg p-5 shadow-md hover:shadow-lg transition-all-300">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-purple rounded-full flex items-center justify-center mr-4">
+                                <i class="fa fa-brain text-white text-xl"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-800">模型应用</h4>
+                        </div>
+                        <p class="text-gray-600 mb-4">使用手写数字识别和图片分类模型，记录每一张图片的预测误差和置信度。</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">手写数字识别模型</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">图片分类模型</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">预测误差记录</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white rounded-lg p-5 shadow-md hover:shadow-lg transition-all-300">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-gradient-teal rounded-full flex items-center justify-center mr-4">
+                                <i class="fa fa-bar-chart text-white text-xl"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-800">概率分析</h4>
+                        </div>
+                        <p class="text-gray-600 mb-4">研究误差分布和关联性，使用贝叶斯更新修正预测概率。</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">误差分布分析</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">关联性研究</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check-circle text-success mr-2"></i>
+                                <span class="text-sm text-gray-600">贝叶斯更新修正</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">模型类型</label>
+                            <select id="model-type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="digit-recognition">手写数字识别</option>
+                                <option value="image-classification">图片分类</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">测试样本数量</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="number" id="sample-count" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000" min="100" max="10000" step="100">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">难度分布</label>
+                            <select id="difficulty-distribution" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="uniform">均匀分布</option>
+                                <option value="normal">正态分布</option>
+                                <option value="exponential">指数分布</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">基础错误率</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="range" id="base-error-rate" class="flex-1" min="0.01" max="0.5" step="0.01" value="0.1">
+                                <span id="base-error-rate-value" class="text-sm font-medium text-gray-700 min-w-[40px]">0.10</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">贝叶斯更新参数</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="range" id="bayesian-update-rate" class="flex-1" min="0.1" max="1" step="0.1" value="0.5">
+                                <span id="bayesian-update-rate-value" class="text-sm font-medium text-gray-700 min-w-[40px]">0.5</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">置信度阈值</label>
+                            <div class="flex items-center space-x-2">
+                                <input type="range" id="confidence-threshold" class="flex-1" min="0.5" max="0.99" step="0.01" value="0.8">
+                                <span id="confidence-threshold-value" class="text-sm font-medium text-gray-700 min-w-[40px]">0.80</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 flex space-x-4">
+                    <button id="start-simulation" class="px-8 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-play mr-2"></i> 开始模拟
+                    </button>
+                    <button id="reset-simulation" class="px-8 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                    <button id="export-data" class="px-8 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-download mr-2"></i> 导出数据
+                    </button>
+                </div>
+            </div>
+
+            <!-- 实时状态监控 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-gradient-primary text-white rounded-xl shadow-card p-6 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">总样本数</p>
+                        <h4 id="total-samples" class="text-3xl font-bold">0</h4>
+                    </div>
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fa fa-database text-2xl"></i>
+                    </div>
+                </div>
+                <div class="bg-gradient-secondary text-white rounded-xl shadow-card p-6 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">错误数</p>
+                        <h4 id="error-count" class="text-3xl font-bold">0</h4>
+                    </div>
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fa fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                </div>
+                <div class="bg-gradient-emerald text-white rounded-xl shadow-card p-6 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">准确率</p>
+                        <h4 id="accuracy" class="text-3xl font-bold">0.00%</h4>
+                    </div>
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fa fa-check-circle text-2xl"></i>
+                    </div>
+                </div>
+                <div class="bg-gradient-purple text-white rounded-xl shadow-card p-6 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm opacity-80">平均置信度</p>
+                        <h4 id="avg-confidence" class="text-3xl font-bold">0.00</h4>
+                    </div>
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fa fa-line-chart text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验可视化 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- 误差分布 -->
+                <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">误差分布</h3>
+                    <div class="h-80">
+                        <canvas id="error-distribution-chart"></canvas>
+                    </div>
+                </div>
+                <!-- 置信度变化曲线 -->
+                <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">置信度变化曲线</h3>
+                    <div class="h-80">
+                        <canvas id="confidence-change-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模型预测展示 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">模型预测展示</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="prediction-display">
+                    <!-- 预测结果将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 实验数据 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验数据</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">样本ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">预测结果</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">真实标签</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">原始置信度</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">修正后置信度</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">误差</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">难度</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="experiment-data">
+                            <!-- 数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 统计分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">统计分析</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">置信度分布</h4>
+                        <div class="h-64">
+                            <canvas id="confidence-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">难度与误差关系</h4>
+                        <div class="h-64">
+                            <canvas id="difficulty-error-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">贝叶斯更新效果</h4>
+                        <div class="h-64">
+                            <canvas id="bayesian-update-chart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">误差时间序列</h4>
+                        <div class="h-64">
+                            <canvas id="error-time-series-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 高级统计分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-6">高级统计分析</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-primary mb-2">误差分布统计</h4>
+                        <div id="error-distribution-stats" class="text-sm text-gray-600 space-y-2">
+                            <p>请运行模拟以查看统计结果</p>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-success mb-2">置信度分析</h4>
+                        <div id="confidence-stats" class="text-sm text-gray-600 space-y-2">
+                            <p>请运行模拟以查看统计结果</p>
+                        </div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-purple-600 mb-2">假设检验结果</h4>
+                        <div id="hypothesis-test-results" class="text-sm text-gray-600 space-y-2">
+                            <p>请运行模拟以查看检验结果</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">贝叶斯更新</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600 mb-2">贝叶斯更新公式：</p>
+                            <p class="text-gray-600 text-center font-medium">P(A|B) = P(B|A) * P(A) / P(B)</p>
+                            <p class="text-gray-600 mt-2">其中，P(A) 是先验概率，P(B|A) 是似然度，P(B) 是证据，P(A|B) 是后验概率。</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">误差分布模型</h4>
+                        <p class="text-gray-600">假设误差服从正态分布，我们可以用最大似然估计来拟合分布参数，然后使用贝叶斯方法更新预测概率。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">核心知识点</h4>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1">
+                            <li>条件概率</li>
+                            <li>贝叶斯更新</li>
+                            <li>分布拟合</li>
+                            <li>相依随机变量</li>
+                            <li>假设检验</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结论 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结论</h3>
+                <div id="experiment-conclusion" class="text-gray-600">
+                    <p>请运行模拟以查看实验结论。</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        贝叶斯更新的原理
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        AI模型误差的概率分布
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何提高预测准确性
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 滑块值同步
+        document.getElementById('base-error-rate').addEventListener('input', function() {
+            document.getElementById('base-error-rate-value').textContent = parseFloat(this.value).toFixed(2);
+        });
+
+        document.getElementById('bayesian-update-rate').addEventListener('input', function() {
+            document.getElementById('bayesian-update-rate-value').textContent = parseFloat(this.value).toFixed(1);
+        });
+
+        document.getElementById('confidence-threshold').addEventListener('input', function() {
+            document.getElementById('confidence-threshold-value').textContent = parseFloat(this.value).toFixed(2);
+        });
+
+        // 图表初始化
+        let errorDistributionChart, confidenceChangeChart, confidenceDistributionChart, difficultyErrorChart, bayesianUpdateChart, errorTimeSeriesChart;
+
+        function initCharts() {
+            // 误差分布图表
+            const errorCtx = document.getElementById('error-distribution-chart').getContext('2d');
+            errorDistributionChart = new Chart(errorCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['正确', '错误'],
+                    datasets: [{
+                        label: '误差分布',
+                        data: [0, 0],
+                        backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(239, 68, 68, 0.6)'],
+                        borderColor: ['rgba(16, 185, 129, 1)', 'rgba(239, 68, 68, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '误差值'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    }
+                }
+            });
+
+            // 置信度变化曲线
+            const confidenceCtx = document.getElementById('confidence-change-chart').getContext('2d');
+            confidenceChangeChart = new Chart(confidenceCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '原始置信度',
+                        data: [],
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: '修正后置信度',
+                        data: [],
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: '置信度'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '样本序号'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    }
+                }
+            });
+
+            // 置信度分布
+            const confDistCtx = document.getElementById('confidence-distribution-chart').getContext('2d');
+            confidenceDistributionChart = new Chart(confDistCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '原始置信度',
+                        data: [],
+                        backgroundColor: 'rgba(249, 115, 22, 0.6)',
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: '修正后置信度',
+                        data: [],
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '置信度区间'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    }
+                }
+            });
+
+            // 难度与误差关系
+            const diffErrorCtx = document.getElementById('difficulty-error-chart').getContext('2d');
+            difficultyErrorChart = new Chart(diffErrorCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '难度与误差',
+                        data: [],
+                        backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        borderWidth: 1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: '误差'
+                            }
+                        },
+                        x: {
+                            beginAtZero: true,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: '难度'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    }
+                }
+            });
+
+            // 贝叶斯更新效果
+            const bayesianCtx = document.getElementById('bayesian-update-chart').getContext('2d');
+            bayesianUpdateChart = new Chart(bayesianCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '置信度更新',
+                        data: [],
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: '置信度'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '更新次数'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    }
+                }
+            });
+
+            // 误差时间序列
+            const errorTimeCtx = document.getElementById('error-time-series-chart').getContext('2d');
+            errorTimeSeriesChart = new Chart(errorTimeCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '误差序列',
+                        data: [],
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: '误差'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '样本序号'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    }
+                }
+            });
+        }
+
+        // 移除图像生成功能
+        // 生成模拟数据的辅助函数
+        function generateRandomData(size, min, max) {
+            const data = [];
+            for (let i = 0; i < size; i++) {
+                data.push(min + Math.random() * (max - min));
+            }
+            return data;
+        }
+
+        // 计算统计指标
+        function calculateStatistics(data) {
+            const sum = data.reduce((acc, val) => acc + val, 0);
+            const mean = sum / data.length;
+            const variance = data.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / data.length;
+            const stdDev = Math.sqrt(variance);
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            return { sum, mean, variance, stdDev, min, max };
+        }
+
+        // 拟合正态分布
+        function fitNormalDistribution(data) {
+            const stats = calculateStatistics(data);
+            return {
+                mean: stats.mean,
+                stdDev: stats.stdDev
+            };
+        }
+
+        // 计算置信区间
+        function calculateConfidenceInterval(data, confidenceLevel = 0.95) {
+            const stats = calculateStatistics(data);
+            const zScore = 1.96; // 95% 置信水平的 z-score
+            const marginOfError = zScore * (stats.stdDev / Math.sqrt(data.length));
+            return {
+                lower: stats.mean - marginOfError,
+                upper: stats.mean + marginOfError
+            };
+        }
+
+        // 假设检验
+        function hypothesisTest(sampleData, populationMean) {
+            const stats = calculateStatistics(sampleData);
+            const zScore = (stats.mean - populationMean) / (stats.stdDev / Math.sqrt(sampleData.length));
+            const pValue = 2 * (1 - Math.abs(0.5 - Math.abs(zScore) / 3.29)); // 简化计算
+            return {
+                zScore,
+                pValue
+            };
+        }
+
+        // 生成难度值
+        function generateDifficulty(distribution) {
+            switch (distribution) {
+                case 'uniform':
+                    return Math.random();
+                case 'normal':
+                    // Box-Muller变换生成正态分布
+                    let u1 = Math.random();
+                    let u2 = Math.random();
+                    let z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+                    return Math.max(0, Math.min(1, 0.5 + 0.3 * z0));
+                case 'exponential':
+                    return 1 - Math.exp(-2 * Math.random());
+                default:
+                    return Math.random();
+            }
+        }
+
+        // 生成预测结果
+        function generatePrediction(modelType, difficulty, baseErrorRate) {
+            let trueLabel, predictedLabel, confidence;
+            
+            if (modelType === 'digit-recognition') {
+                trueLabel = Math.floor(Math.random() * 10);
+                // 根据难度调整错误率
+                const errorRate = baseErrorRate * (1 + difficulty * 2);
+                if (Math.random() < errorRate) {
+                    // 错误预测
+                    do {
+                        predictedLabel = Math.floor(Math.random() * 10);
+                    } while (predictedLabel === trueLabel);
+                    confidence = 0.5 + Math.random() * 0.3; // 较低的置信度
+                } else {
+                    // 正确预测
+                    predictedLabel = trueLabel;
+                    confidence = 0.7 + Math.random() * 0.3; // 较高的置信度
+                }
+            } else {
+                const categories = ['猫', '狗', '汽车', '飞机', '鸟'];
+                trueLabel = categories[Math.floor(Math.random() * categories.length)];
+                // 根据难度调整错误率
+                const errorRate = baseErrorRate * (1 + difficulty * 2);
+                if (Math.random() < errorRate) {
+                    // 错误预测
+                    do {
+                        predictedLabel = categories[Math.floor(Math.random() * categories.length)];
+                    } while (predictedLabel === trueLabel);
+                    confidence = 0.5 + Math.random() * 0.3; // 较低的置信度
+                } else {
+                    // 正确预测
+                    predictedLabel = trueLabel;
+                    confidence = 0.7 + Math.random() * 0.3; // 较高的置信度
+                }
+            }
+            
+            return { trueLabel, predictedLabel, confidence, error: predictedLabel !== trueLabel };
+        }
+
+        // 贝叶斯更新
+        function bayesianUpdate(confidence, error, updateRate) {
+            if (error) {
+                // 错误时降低置信度
+                return Math.max(0.1, confidence * (1 - updateRate));
+            } else {
+                // 正确时提高置信度
+                return Math.min(0.99, confidence + (1 - confidence) * updateRate);
+            }
+        }
+
+        // 开始模拟
+        document.getElementById('start-simulation').addEventListener('click', function() {
+            const modelType = document.getElementById('model-type').value;
+            const sampleCount = parseInt(document.getElementById('sample-count').value);
+            const difficultyDistribution = document.getElementById('difficulty-distribution').value;
+            const baseErrorRate = parseFloat(document.getElementById('base-error-rate').value);
+            const bayesianUpdateRate = parseFloat(document.getElementById('bayesian-update-rate').value);
+            const confidenceThreshold = parseFloat(document.getElementById('confidence-threshold').value);
+
+            // 生成数据
+            const data = [];
+            let errorCount = 0;
+            let totalConfidence = 0;
+            let totalCorrectedConfidence = 0;
+            let currentConfidence = 0.5; // 初始置信度
+
+            for (let i = 0; i < sampleCount; i++) {
+                const difficulty = generateDifficulty(difficultyDistribution);
+                const prediction = generatePrediction(modelType, difficulty, baseErrorRate);
+                currentConfidence = bayesianUpdate(currentConfidence, prediction.error, bayesianUpdateRate);
+                const correctedConfidence = currentConfidence;
+                
+                data.push({
+                    id: i + 1,
+                    trueLabel: prediction.trueLabel,
+                    predictedLabel: prediction.predictedLabel,
+                    confidence: prediction.confidence,
+                    correctedConfidence: correctedConfidence,
+                    error: prediction.error,
+                    difficulty: difficulty
+                });
+
+                if (prediction.error) errorCount++;
+                totalConfidence += prediction.confidence;
+                totalCorrectedConfidence += correctedConfidence;
+            }
+
+            // 更新统计信息
+            document.getElementById('total-samples').textContent = sampleCount;
+            document.getElementById('error-count').textContent = errorCount;
+            document.getElementById('accuracy').textContent = ((sampleCount - errorCount) / sampleCount * 100).toFixed(2) + '%';
+            document.getElementById('avg-confidence').textContent = (totalConfidence / sampleCount).toFixed(2);
+
+            // 更新图表
+            updateCharts(data);
+
+            // 更新预测展示
+            updatePredictionDisplay(data.slice(0, 8), modelType);
+
+            // 更新实验数据
+            updateExperimentData(data.slice(0, 10));
+
+            // 更新高级统计分析
+            updateAdvancedStatistics(data);
+
+            // 更新实验结论
+            updateExperimentConclusion(data, modelType, sampleCount, errorCount, totalConfidence, totalCorrectedConfidence);
+        });
+
+        // 更新高级统计分析
+        function updateAdvancedStatistics(data) {
+            // 误差分布统计
+            const errors = data.map(item => item.error ? 1 : 0);
+            const errorStats = calculateStatistics(errors);
+            const errorDistribution = fitNormalDistribution(errors);
+            const errorConfidenceInterval = calculateConfidenceInterval(errors);
+
+            document.getElementById('error-distribution-stats').innerHTML = `
+                <p>均值: ${errorStats.mean.toFixed(4)}</p>
+                <p>标准差: ${errorStats.stdDev.toFixed(4)}</p>
+                <p>最小值: ${errorStats.min}</p>
+                <p>最大值: ${errorStats.max}</p>
+                <p>正态分布拟合: μ=${errorDistribution.mean.toFixed(4)}, σ=${errorDistribution.stdDev.toFixed(4)}</p>
+                <p>95% 置信区间: [${errorConfidenceInterval.lower.toFixed(4)}, ${errorConfidenceInterval.upper.toFixed(4)}]</p>
+            `;
+
+            // 置信度分析
+            const originalConfidences = data.map(item => item.confidence);
+            const correctedConfidences = data.map(item => item.correctedConfidence);
+            const originalConfidenceStats = calculateStatistics(originalConfidences);
+            const correctedConfidenceStats = calculateStatistics(correctedConfidences);
+
+            document.getElementById('confidence-stats').innerHTML = `
+                <p>原始置信度均值: ${originalConfidenceStats.mean.toFixed(4)}</p>
+                <p>原始置信度标准差: ${originalConfidenceStats.stdDev.toFixed(4)}</p>
+                <p>修正后置信度均值: ${correctedConfidenceStats.mean.toFixed(4)}</p>
+                <p>修正后置信度标准差: ${correctedConfidenceStats.stdDev.toFixed(4)}</p>
+                <p>置信度改善: ${(correctedConfidenceStats.mean - originalConfidenceStats.mean).toFixed(4)}</p>
+            `;
+
+            // 假设检验
+            const hypothesisTestResult = hypothesisTest(originalConfidences, 0.7);
+            document.getElementById('hypothesis-test-results').innerHTML = `
+                <p>Z统计量: ${hypothesisTestResult.zScore.toFixed(4)}</p>
+                <p>P值: ${hypothesisTestResult.pValue.toFixed(4)}</p>
+                <p>结论: ${hypothesisTestResult.pValue < 0.05 ? '拒绝原假设' : '接受原假设'}</p>
+            `;
+        }
+
+        // 计算相关性
+        function calculateCorrelation(x, y) {
+            const n = x.length;
+            const sumX = x.reduce((acc, val) => acc + val, 0);
+            const sumY = y.reduce((acc, val) => acc + val, 0);
+            const sumXY = x.reduce((acc, val, i) => acc + val * y[i], 0);
+            const sumX2 = x.reduce((acc, val) => acc + val * val, 0);
+            const sumY2 = y.reduce((acc, val) => acc + val * val, 0);
+            
+            const numerator = n * sumXY - sumX * sumY;
+            const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+            
+            return numerator / denominator;
+        }
+
+        // 计算偏度
+        function calculateSkewness(data) {
+            const stats = calculateStatistics(data);
+            const n = data.length;
+            const skewness = data.reduce((acc, val) => acc + Math.pow((val - stats.mean) / stats.stdDev, 3), 0) / n;
+            return skewness;
+        }
+
+        // 计算峰度
+        function calculateKurtosis(data) {
+            const stats = calculateStatistics(data);
+            const n = data.length;
+            const kurtosis = data.reduce((acc, val) => acc + Math.pow((val - stats.mean) / stats.stdDev, 4), 0) / n - 3;
+            return kurtosis;
+        }
+
+        // 生成概率密度函数
+        function generatePDF(data, bins = 20) {
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const binWidth = (max - min) / bins;
+            const pdf = Array(bins).fill(0);
+            
+            data.forEach(value => {
+                const binIndex = Math.min(bins - 1, Math.floor((value - min) / binWidth));
+                pdf[binIndex]++;
+            });
+            
+            const total = pdf.reduce((acc, val) => acc + val, 0);
+            return pdf.map(count => count / total / binWidth);
+        }
+
+        // 计算信息熵
+        function calculateEntropy(data) {
+            const frequency = {};
+            const n = data.length;
+            
+            data.forEach(value => {
+                frequency[value] = (frequency[value] || 0) + 1;
+            });
+            
+            let entropy = 0;
+            for (const key in frequency) {
+                const p = frequency[key] / n;
+                entropy -= p * Math.log2(p);
+            }
+            
+            return entropy;
+        }
+
+        // 执行Bootstrap分析
+        function bootstrapAnalysis(data, iterations = 1000) {
+            const results = [];
+            const n = data.length;
+            
+            for (let i = 0; i < iterations; i++) {
+                const sample = [];
+                for (let j = 0; j < n; j++) {
+                    const index = Math.floor(Math.random() * n);
+                    sample.push(data[index]);
+                }
+                const stats = calculateStatistics(sample);
+                results.push(stats.mean);
+            }
+            
+            return calculateStatistics(results);
+        }
+
+        // 计算ROC曲线
+        function calculateROC(predictions, actual) {
+            const thresholds = Array.from(new Set(predictions)).sort((a, b) => b - a);
+            const rocPoints = [];
+            
+            thresholds.forEach(threshold => {
+                let truePositive = 0;
+                let falsePositive = 0;
+                let trueNegative = 0;
+                let falseNegative = 0;
+                
+                for (let i = 0; i < predictions.length; i++) {
+                    if (predictions[i] >= threshold) {
+                        if (actual[i]) {
+                            truePositive++;
+                        } else {
+                            falsePositive++;
+                        }
+                    } else {
+                        if (actual[i]) {
+                            falseNegative++;
+                        } else {
+                            trueNegative++;
+                        }
+                    }
+                }
+                
+                const tpr = truePositive / (truePositive + falseNegative);
+                const fpr = falsePositive / (falsePositive + trueNegative);
+                rocPoints.push({ fpr, tpr });
+            });
+            
+            return rocPoints;
+        }
+
+        // 计算AUC
+        function calculateAUC(rocPoints) {
+            rocPoints.sort((a, b) => a.fpr - b.fpr);
+            let auc = 0;
+            for (let i = 1; i < rocPoints.length; i++) {
+                const width = rocPoints[i].fpr - rocPoints[i - 1].fpr;
+                const height = (rocPoints[i].tpr + rocPoints[i - 1].tpr) / 2;
+                auc += width * height;
+            }
+            return auc;
+        }
+
+        // 执行主成分分析
+        function principalComponentAnalysis(data) {
+            // 简化版PCA实现
+            const n = data.length;
+            const features = data[0].length;
+            
+            // 计算均值
+            const means = Array(features).fill(0);
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < features; j++) {
+                    means[j] += data[i][j];
+                }
+            }
+            for (let j = 0; j < features; j++) {
+                means[j] /= n;
+            }
+            
+            // 去中心化
+            const centeredData = data.map(row => 
+                row.map((value, j) => value - means[j])
+            );
+            
+            // 计算协方差矩阵
+            const covMatrix = Array(features).fill().map(() => Array(features).fill(0));
+            for (let i = 0; i < features; i++) {
+                for (let j = 0; j < features; j++) {
+                    for (let k = 0; k < n; k++) {
+                        covMatrix[i][j] += centeredData[k][i] * centeredData[k][j];
+                    }
+                    covMatrix[i][j] /= n - 1;
+                }
+            }
+            
+            return {
+                means,
+                covMatrix
+            };
+        }
+
+        // 更新图表
+        function updateCharts(data) {
+            // 误差分布
+            const errorCount = data.filter(item => item.error).length;
+            const correctCount = data.length - errorCount;
+            errorDistributionChart.data.datasets[0].data = [correctCount, errorCount];
+            errorDistributionChart.update();
+
+            // 置信度变化曲线
+            const sampleLabels = data.slice(0, 50).map(item => item.id);
+            const originalConfidence = data.slice(0, 50).map(item => item.confidence);
+            const correctedConfidence = data.slice(0, 50).map(item => item.correctedConfidence);
+            confidenceChangeChart.data.labels = sampleLabels;
+            confidenceChangeChart.data.datasets[0].data = originalConfidence;
+            confidenceChangeChart.data.datasets[1].data = correctedConfidence;
+            confidenceChangeChart.update();
+
+            // 置信度分布
+            const confBins = Array(10).fill(0);
+            const correctedConfBins = Array(10).fill(0);
+            data.forEach(item => {
+                const confIndex = Math.min(9, Math.floor(item.confidence * 10));
+                const correctedConfIndex = Math.min(9, Math.floor(item.correctedConfidence * 10));
+                confBins[confIndex]++;
+                correctedConfBins[correctedConfIndex]++;
+            });
+            const confLabels = Array.from({length: 10}, (_, i) => `${(i/10).toFixed(1)}-${((i+1)/10).toFixed(1)}`);
+            confidenceDistributionChart.data.labels = confLabels;
+            confidenceDistributionChart.data.datasets[0].data = confBins;
+            confidenceDistributionChart.data.datasets[1].data = correctedConfBins;
+            confidenceDistributionChart.update();
+
+            // 难度与误差关系
+            const scatterData = data.map(item => ({
+                x: item.difficulty,
+                y: item.error ? 1 : 0
+            }));
+            difficultyErrorChart.data.datasets[0].data = scatterData;
+            difficultyErrorChart.update();
+
+            // 贝叶斯更新效果
+            const updateLabels = data.slice(0, 50).map(item => item.id);
+            const updateData = data.slice(0, 50).map(item => item.correctedConfidence);
+            bayesianUpdateChart.data.labels = updateLabels;
+            bayesianUpdateChart.data.datasets[0].data = updateData;
+            bayesianUpdateChart.update();
+
+            // 误差时间序列
+            const errorLabels = data.slice(0, 50).map(item => item.id);
+            const errorData = data.slice(0, 50).map(item => item.error ? 1 : 0);
+            errorTimeSeriesChart.data.labels = errorLabels;
+            errorTimeSeriesChart.data.datasets[0].data = errorData;
+            errorTimeSeriesChart.update();
+        }
+
+        // 生成混淆矩阵
+        function generateConfusionMatrix(predictions, actual) {
+            const classes = Array.from(new Set([...predictions, ...actual]));
+            const matrix = Array(classes.length).fill().map(() => Array(classes.length).fill(0));
+            
+            for (let i = 0; i < predictions.length; i++) {
+                const predIndex = classes.indexOf(predictions[i]);
+                const actualIndex = classes.indexOf(actual[i]);
+                matrix[actualIndex][predIndex]++;
+            }
+            
+            return { matrix, classes };
+        }
+
+        // 计算分类指标
+        function calculateClassificationMetrics(confusionMatrix) {
+            const { matrix, classes } = confusionMatrix;
+            const metrics = {};
+            
+            classes.forEach((className, index) => {
+                const truePositive = matrix[index][index];
+                const falsePositive = matrix.reduce((sum, row) => sum + row[index], 0) - truePositive;
+                const falseNegative = matrix[index].reduce((sum, val) => sum + val, 0) - truePositive;
+                const trueNegative = matrix.flat().reduce((sum, val) => sum + val, 0) - truePositive - falsePositive - falseNegative;
+                
+                const precision = truePositive / (truePositive + falsePositive);
+                const recall = truePositive / (truePositive + falseNegative);
+                const f1Score = 2 * (precision * recall) / (precision + recall);
+                
+                metrics[className] = {
+                    precision: isNaN(precision) ? 0 : precision,
+                    recall: isNaN(recall) ? 0 : recall,
+                    f1Score: isNaN(f1Score) ? 0 : f1Score
+                };
+            });
+            
+            return metrics;
+        }
+
+        // 执行时间序列分析
+        function timeSeriesAnalysis(data) {
+            const errors = data.map(item => item.error ? 1 : 0);
+            const confidences = data.map(item => item.confidence);
+            
+            // 计算移动平均线
+            function movingAverage(data, windowSize) {
+                const result = [];
+                for (let i = 0; i < data.length; i++) {
+                    const start = Math.max(0, i - windowSize + 1);
+                    const window = data.slice(start, i + 1);
+                    const avg = window.reduce((sum, val) => sum + val, 0) / window.length;
+                    result.push(avg);
+                }
+                return result;
+            }
+            
+            return {
+                errorMovingAverage: movingAverage(errors, 10),
+                confidenceMovingAverage: movingAverage(confidences, 10)
+            };
+        }
+
+        // 执行聚类分析
+        function clusterAnalysis(data, k = 3) {
+            // K-means聚类简化实现
+            const features = data.map(item => [item.difficulty, item.confidence, item.correctedConfidence]);
+            
+            // 初始化聚类中心
+            let centroids = [];
+            for (let i = 0; i < k; i++) {
+                centroids.push(features[Math.floor(Math.random() * features.length)]);
+            }
+            
+            let clusters = [];
+            let converged = false;
+            
+            while (!converged) {
+                // 分配样本到最近的聚类中心
+                clusters = Array(k).fill().map(() => []);
+                
+                features.forEach(feature => {
+                    let minDistance = Infinity;
+                    let closestCluster = 0;
+                    
+                    centroids.forEach((centroid, index) => {
+                        const distance = Math.sqrt(
+                            Math.pow(feature[0] - centroid[0], 2) +
+                            Math.pow(feature[1] - centroid[1], 2) +
+                            Math.pow(feature[2] - centroid[2], 2)
+                        );
+                        
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestCluster = index;
+                        }
+                    });
+                    
+                    clusters[closestCluster].push(feature);
+                });
+                
+                // 更新聚类中心
+                const newCentroids = centroids.map((centroid, index) => {
+                    if (clusters[index].length === 0) return centroid;
+                    
+                    return clusters[index].reduce((sum, feature) => {
+                        return [sum[0] + feature[0], sum[1] + feature[1], sum[2] + feature[2]];
+                    }, [0, 0, 0]).map(sum => sum / clusters[index].length);
+                });
+                
+                // 检查收敛
+                converged = newCentroids.every((centroid, index) => {
+                    return centroid.every((value, dim) => {
+                        return Math.abs(value - centroids[index][dim]) < 0.001;
+                    });
+                });
+                
+                centroids = newCentroids;
+            }
+            
+            return { clusters, centroids };
+        }
+
+        // 执行异常检测
+        function anomalyDetection(data, threshold = 3) {
+            const confidences = data.map(item => item.confidence);
+            const stats = calculateStatistics(confidences);
+            
+            const anomalies = data.filter(item => {
+                const zScore = Math.abs((item.confidence - stats.mean) / stats.stdDev);
+                return zScore > threshold;
+            });
+            
+            return anomalies;
+        }
+
+        // 生成报告
+        function generateReport(data) {
+            const errors = data.map(item => item.error ? 1 : 0);
+            const confidences = data.map(item => item.confidence);
+            const correctedConfidences = data.map(item => item.correctedConfidence);
+            const difficulties = data.map(item => item.difficulty);
+            
+            const errorStats = calculateStatistics(errors);
+            const confidenceStats = calculateStatistics(confidences);
+            const correctedConfidenceStats = calculateStatistics(correctedConfidences);
+            const difficultyStats = calculateStatistics(difficulties);
+            
+            const correlationErrorDifficulty = calculateCorrelation(errors, difficulties);
+            const correlationConfidenceError = calculateCorrelation(confidences, errors);
+            
+            const skewnessError = calculateSkewness(errors);
+            const kurtosisError = calculateKurtosis(errors);
+            
+            const entropyError = calculateEntropy(errors);
+            
+            const bootstrapResults = bootstrapAnalysis(confidences);
+            
+            return {
+                errorStats,
+                confidenceStats,
+                correctedConfidenceStats,
+                difficultyStats,
+                correlations: {
+                    errorDifficulty: correlationErrorDifficulty,
+                    confidenceError: correlationConfidenceError
+                },
+                distribution: {
+                    skewnessError,
+                    kurtosisError,
+                    entropyError
+                },
+                bootstrapResults
+            };
+        }
+
+        // 生成多种概率分布
+        function generateDistribution(type, params) {
+            switch (type) {
+                case 'normal':
+                    return function() {
+                        const { mean = 0, stdDev = 1 } = params;
+                        let u = 0, v = 0;
+                        while (u === 0) u = Math.random();
+                        while (v === 0) v = Math.random();
+                        const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+                        return z * stdDev + mean;
+                    };
+                case 'exponential':
+                    return function() {
+                        const { lambda = 1 } = params;
+                        return -Math.log(1 - Math.random()) / lambda;
+                    };
+                case 'uniform':
+                    return function() {
+                        const { min = 0, max = 1 } = params;
+                        return min + Math.random() * (max - min);
+                    };
+                case 'poisson':
+                    return function() {
+                        const { lambda = 1 } = params;
+                        let k = 0;
+                        let p = 1;
+                        const L = Math.exp(-lambda);
+                        while (p > L) {
+                            k++;
+                            p *= Math.random();
+                        }
+                        return k - 1;
+                    };
+                case 'binomial':
+                    return function() {
+                        const { n = 10, p = 0.5 } = params;
+                        let successes = 0;
+                        for (let i = 0; i < n; i++) {
+                            if (Math.random() < p) {
+                                successes++;
+                            }
+                        }
+                        return successes;
+                    };
+                default:
+                    return Math.random;
+            }
+        }
+
+        // 贝叶斯网络简化实现
+        class BayesianNetwork {
+            constructor() {
+                this.nodes = {};
+                this.edges = {};
+            }
+            
+            addNode(name, states) {
+                this.nodes[name] = {
+                    states,
+                    probabilities: {}
+                };
+                this.edges[name] = [];
+            }
+            
+            addEdge(from, to) {
+                if (!this.edges[to]) {
+                    this.edges[to] = [];
+                }
+                this.edges[to].push(from);
+            }
+            
+            setProbabilities(node, probabilities) {
+                this.nodes[node].probabilities = probabilities;
+            }
+            
+            getProbability(node, state, evidence = {}) {
+                // 简化实现，仅支持简单的贝叶斯网络
+                const nodeInfo = this.nodes[node];
+                const parents = this.edges[node];
+                
+                if (parents.length === 0) {
+                    return nodeInfo.probabilities[state];
+                } else {
+                    // 这里是简化实现，实际应该考虑所有父节点的组合
+                    return nodeInfo.probabilities[state] || 0;
+                }
+            }
+        }
+
+        // 模型性能评估
+        function evaluateModelPerformance(data) {
+            const predictions = data.map(item => item.predictedLabel);
+            const actual = data.map(item => item.trueLabel);
+            const confidences = data.map(item => item.confidence);
+            
+            const confusionMatrix = generateConfusionMatrix(predictions, actual);
+            const metrics = calculateClassificationMetrics(confusionMatrix);
+            
+            const rocPoints = calculateROC(confidences, data.map(item => item.error ? 1 : 0));
+            const auc = calculateAUC(rocPoints);
+            
+            // 计算准确率、精确率、召回率
+            const accuracy = data.filter(item => item.predictedLabel === item.trueLabel).length / data.length;
+            
+            const truePositives = data.filter(item => item.predictedLabel === item.trueLabel && item.error === false).length;
+            const falsePositives = data.filter(item => item.predictedLabel !== item.trueLabel && item.error === true).length;
+            const falseNegatives = data.filter(item => item.predictedLabel !== item.trueLabel && item.error === true).length;
+            
+            const precision = truePositives / (truePositives + falsePositives);
+            const recall = truePositives / (truePositives + falseNegatives);
+            const f1Score = 2 * (precision * recall) / (precision + recall);
+            
+            return {
+                accuracy,
+                precision: isNaN(precision) ? 0 : precision,
+                recall: isNaN(recall) ? 0 : recall,
+                f1Score: isNaN(f1Score) ? 0 : f1Score,
+                auc,
+                confusionMatrix,
+                metrics
+            };
+        }
+
+        // 生成详细的实验报告
+        function generateDetailedReport(data, modelType) {
+            const basicReport = generateReport(data);
+            const performance = evaluateModelPerformance(data);
+            const anomalies = anomalyDetection(data);
+            const clusterResults = clusterAnalysis(data);
+            const timeSeriesResults = timeSeriesAnalysis(data);
+            
+            return {
+                basicReport,
+                performance,
+                anomalies: {
+                    count: anomalies.length,
+                    percentage: (anomalies.length / data.length * 100).toFixed(2) + '%',
+                    samples: anomalies.slice(0, 5)
+                },
+                clusterAnalysis: {
+                    clusterCount: clusterResults.clusters.length,
+                    clusterSizes: clusterResults.clusters.map(cluster => cluster.length),
+                    centroids: clusterResults.centroids
+                },
+                timeSeries: timeSeriesResults,
+                modelType,
+                sampleCount: data.length,
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        // 导出详细报告
+        function exportDetailedReport(data, modelType) {
+            const report = generateDetailedReport(data, modelType);
+            const reportJSON = JSON.stringify(report, null, 2);
+            
+            const blob = new Blob([reportJSON], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `ai-error-probability-modeling-report-${new Date().toISOString().slice(0, 10)}.json`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 添加导出详细报告按钮功能
+        document.getElementById('export-data').addEventListener('click', function() {
+            const modelType = document.getElementById('model-type').value;
+            const sampleCount = document.getElementById('sample-count').value;
+            const difficultyDistribution = document.getElementById('difficulty-distribution').value;
+            const baseErrorRate = document.getElementById('base-error-rate').value;
+            const bayesianUpdateRate = document.getElementById('bayesian-update-rate').value;
+            
+            // 生成模拟数据用于导出
+            const data = [];
+            for (let i = 0; i < parseInt(sampleCount); i++) {
+                const difficulty = generateDifficulty(difficultyDistribution);
+                const prediction = generatePrediction(modelType, difficulty, parseFloat(baseErrorRate));
+                const correctedConfidence = bayesianUpdate(prediction.confidence, prediction.error, parseFloat(bayesianUpdateRate));
+                
+                data.push({
+                    id: i + 1,
+                    trueLabel: prediction.trueLabel,
+                    predictedLabel: prediction.predictedLabel,
+                    confidence: prediction.confidence,
+                    correctedConfidence: correctedConfidence,
+                    error: prediction.error,
+                    difficulty: difficulty
+                });
+            }
+            
+            // 导出CSV
+            let csvContent = "样本ID,真实标签,预测结果,原始置信度,修正后置信度,误差,难度\n";
+            data.forEach(item => {
+                csvContent += `${item.id},${item.trueLabel},${item.predictedLabel},${item.confidence.toFixed(4)},${item.correctedConfidence.toFixed(4)},${item.error ? '是' : '否'},${item.difficulty.toFixed(4)}\n`;
+            });
+            
+            const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const csvUrl = URL.createObjectURL(csvBlob);
+            const csvLink = document.createElement('a');
+            csvLink.setAttribute('href', csvUrl);
+            csvLink.setAttribute('download', `ai-error-probability-modeling-${new Date().toISOString().slice(0, 10)}.csv`);
+            csvLink.style.visibility = 'hidden';
+            document.body.appendChild(csvLink);
+            csvLink.click();
+            document.body.removeChild(csvLink);
+            
+            // 导出详细报告
+            exportDetailedReport(data, modelType);
+        });
+
+        // 计算多变量统计
+        function calculateMultivariateStatistics(data) {
+            const features = Object.keys(data[0]).filter(key => typeof data[0][key] === 'number');
+            const stats = {};
+            
+            features.forEach(feature => {
+                const values = data.map(item => item[feature]);
+                stats[feature] = calculateStatistics(values);
+            });
+            
+            // 计算协方差矩阵
+            const covMatrix = {};
+            features.forEach(f1 => {
+                covMatrix[f1] = {};
+                features.forEach(f2 => {
+                    const values1 = data.map(item => item[f1]);
+                    const values2 = data.map(item => item[f2]);
+                    const mean1 = stats[f1].mean;
+                    const mean2 = stats[f2].mean;
+                    const covariance = values1.reduce((sum, val, i) => sum + (val - mean1) * (values2[i] - mean2), 0) / (data.length - 1);
+                    covMatrix[f1][f2] = covariance;
+                });
+            });
+            
+            return { stats, covMatrix, features };
+        }
+
+        // 执行因子分析
+        function factorAnalysis(data, factors = 2) {
+            // 简化版因子分析实现
+            const mvStats = calculateMultivariateStatistics(data);
+            const features = mvStats.features;
+            const covMatrix = mvStats.covMatrix;
+            
+            // 这里是简化实现，实际应该计算特征值和特征向量
+            const factorsResult = {
+                factors: factors,
+                loadings: {},
+                communalities: {}
+            };
+            
+            features.forEach(feature => {
+                factorsResult.loadings[feature] = Array(factors).fill(0).map(() => Math.random() * 0.8 + 0.2);
+                factorsResult.communalities[feature] = factorsResult.loadings[feature].reduce((sum, val) => sum + val * val, 0);
+            });
+            
+            return factorsResult;
+        }
+
+        // 执行判别分析
+        function discriminantAnalysis(data, groups) {
+            // 简化版判别分析实现
+            const groupData = {};
+            groups.forEach((group, index) => {
+                if (!groupData[group]) {
+                    groupData[group] = [];
+                }
+                groupData[group].push(data[index]);
+            });
+            
+            const groupStats = {};
+            Object.keys(groupData).forEach(group => {
+                groupStats[group] = calculateMultivariateStatistics(groupData[group]);
+            });
+            
+            return { groupStats, groups: Object.keys(groupData) };
+        }
+
+        // 计算信息增益
+        function calculateInformationGain(data, feature, target) {
+            const totalEntropy = calculateEntropy(data.map(item => item[target]));
+            const featureValues = Array.from(new Set(data.map(item => item[feature])));
+            let weightedEntropy = 0;
+            
+            featureValues.forEach(value => {
+                const subset = data.filter(item => item[feature] === value);
+                const subsetEntropy = calculateEntropy(subset.map(item => item[target]));
+                weightedEntropy += (subset.length / data.length) * subsetEntropy;
+            });
+            
+            return totalEntropy - weightedEntropy;
+        }
+
+        // 执行决策树分析
+        function decisionTreeAnalysis(data, target, maxDepth = 5) {
+            // 简化版决策树实现
+            const features = Object.keys(data[0]).filter(key => key !== target);
+            
+            function buildTree(data, depth) {
+                if (depth >= maxDepth) {
+                    const classes = data.map(item => item[target]);
+                    const majorityClass = classes.sort((a, b) => 
+                        classes.filter(v => v === a).length - classes.filter(v => v === b).length
+                    )[0];
+                    return { type: 'leaf', class: majorityClass };
+                }
+                
+                let bestFeature = null;
+                let bestGain = -Infinity;
+                
+                features.forEach(feature => {
+                    const gain = calculateInformationGain(data, feature, target);
+                    if (gain > bestGain) {
+                        bestGain = gain;
+                        bestFeature = feature;
+                    }
+                });
+                
+                if (bestFeature === null) {
+                    const classes = data.map(item => item[target]);
+                    const majorityClass = classes.sort((a, b) => 
+                        classes.filter(v => v === a).length - classes.filter(v => v === b).length
+                    )[0];
+                    return { type: 'leaf', class: majorityClass };
+                }
+                
+                const featureValues = Array.from(new Set(data.map(item => item[bestFeature])));
+                const branches = {};
+                
+                featureValues.forEach(value => {
+                    const subset = data.filter(item => item[bestFeature] === value);
+                    branches[value] = buildTree(subset, depth + 1);
+                });
+                
+                return { type: 'node', feature: bestFeature, branches };
+            }
+            
+            return buildTree(data, 0);
+        }
+
+        // 执行随机森林分析
+        function randomForestAnalysis(data, target, trees = 10, maxDepth = 5) {
+            const forest = [];
+            
+            for (let i = 0; i < trees; i++) {
+                // 随机采样
+                const sample = [];
+                for (let j = 0; j < data.length; j++) {
+                    const index = Math.floor(Math.random() * data.length);
+                    sample.push(data[index]);
+                }
+                
+                const tree = decisionTreeAnalysis(sample, target, maxDepth);
+                forest.push(tree);
+            }
+            
+            return { forest, trees, maxDepth };
+        }
+
+        // 执行梯度提升分析
+        function gradientBoostingAnalysis(data, target, estimators = 10, learningRate = 0.1) {
+            // 简化版梯度提升实现
+            const models = [];
+            let predictions = data.map(() => 0);
+            
+            for (let i = 0; i < estimators; i++) {
+                // 计算残差
+                const residuals = data.map((item, index) => item[target] - predictions[index]);
+                
+                // 这里使用简化的决策树作为基学习器
+                const tree = decisionTreeAnalysis(
+                    data.map((item, index) => ({ ...item, residual: residuals[index] })),
+                    'residual',
+                    3
+                );
+                
+                models.push({ tree, learningRate });
+                
+                // 更新预测
+                predictions = predictions.map((pred, index) => pred + learningRate * residuals[index]);
+            }
+            
+            return { models, estimators, learningRate };
+        }
+
+        // 计算特征重要性
+        function calculateFeatureImportance(data, target) {
+            const features = Object.keys(data[0]).filter(key => key !== target && typeof data[0][key] === 'number');
+            const importances = {};
+            
+            features.forEach(feature => {
+                const gain = calculateInformationGain(data, feature, target);
+                importances[feature] = gain;
+            });
+            
+            // 归一化
+            const totalGain = Object.values(importances).reduce((sum, val) => sum + val, 0);
+            Object.keys(importances).forEach(feature => {
+                importances[feature] /= totalGain;
+            });
+            
+            return importances;
+        }
+
+        // 执行交叉验证
+        function crossValidation(data, modelFunction, k = 5) {
+            const foldSize = Math.floor(data.length / k);
+            const scores = [];
+            
+            for (let i = 0; i < k; i++) {
+                const start = i * foldSize;
+                const end = (i + 1) * foldSize;
+                const testData = data.slice(start, end);
+                const trainData = [...data.slice(0, start), ...data.slice(end)];
+                
+                const model = modelFunction(trainData);
+                const score = evaluateModel(model, testData);
+                scores.push(score);
+            }
+            
+            return {
+                scores,
+                meanScore: scores.reduce((sum, val) => sum + val, 0) / scores.length,
+                stdScore: Math.sqrt(scores.reduce((sum, val, i, arr) => {
+                    const mean = arr.reduce((sum, val) => sum + val, 0) / arr.length;
+                    return sum + Math.pow(val - mean, 2);
+                }, 0) / scores.length)
+            };
+        }
+
+        // 评估模型
+        function evaluateModel(model, data) {
+            // 简化的模型评估
+            return Math.random() * 0.2 + 0.8; // 模拟准确率
+        }
+
+        // 执行网格搜索
+        function gridSearch(data, modelFunction, paramGrid) {
+            const bestParams = {};
+            let bestScore = -Infinity;
+            
+            // 简化的网格搜索
+            for (const param in paramGrid) {
+                for (const value of paramGrid[param]) {
+                    const score = Math.random(); // 模拟评分
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestParams[param] = value;
+                    }
+                }
+            }
+            
+            return { bestParams, bestScore };
+        }
+
+        // 生成综合报告
+        function generateComprehensiveReport(data, modelType) {
+            const basicReport = generateReport(data);
+            const performance = evaluateModelPerformance(data);
+            const anomalies = anomalyDetection(data);
+            const clusterResults = clusterAnalysis(data);
+            const timeSeriesResults = timeSeriesAnalysis(data);
+            const factorAnalysisResults = factorAnalysis(data);
+            const featureImportance = calculateFeatureImportance(data, 'error');
+            
+            return {
+                basicReport,
+                performance,
+                anomalies: {
+                    count: anomalies.length,
+                    percentage: (anomalies.length / data.length * 100).toFixed(2) + '%',
+                    samples: anomalies.slice(0, 5)
+                },
+                clusterAnalysis: {
+                    clusterCount: clusterResults.clusters.length,
+                    clusterSizes: clusterResults.clusters.map(cluster => cluster.length),
+                    centroids: clusterResults.centroids
+                },
+                timeSeries: timeSeriesResults,
+                factorAnalysis: factorAnalysisResults,
+                featureImportance: featureImportance,
+                modelType,
+                sampleCount: data.length,
+                timestamp: new Date().toISOString(),
+                advancedMetrics: {
+                    informationGain: calculateInformationGain(data, 'difficulty', 'error'),
+                    featureCorrelations: calculateCorrelationMatrix(data),
+                    modelComplexity: calculateModelComplexity(data)
+                }
+            };
+        }
+
+        // 计算相关矩阵
+        function calculateCorrelationMatrix(data) {
+            const features = Object.keys(data[0]).filter(key => typeof data[0][key] === 'number');
+            const matrix = {};
+            
+            features.forEach(f1 => {
+                matrix[f1] = {};
+                features.forEach(f2 => {
+                    const values1 = data.map(item => item[f1]);
+                    const values2 = data.map(item => item[f2]);
+                    matrix[f1][f2] = calculateCorrelation(values1, values2);
+                });
+            });
+            
+            return matrix;
+        }
+
+        // 计算模型复杂度
+        function calculateModelComplexity(data) {
+            // 简化的模型复杂度计算
+            return {
+                featureCount: Object.keys(data[0]).filter(key => typeof data[0][key] === 'number').length,
+                sampleCount: data.length,
+                complexityScore: Math.sqrt(data.length * Object.keys(data[0]).length)
+            };
+        }
+
+        // 执行敏感性分析
+        function sensitivityAnalysis(data, parameters) {
+            const results = {};
+            
+            parameters.forEach(param => {
+                const originalValue = param.value;
+                const variations = [0.8, 0.9, 1.1, 1.2];
+                results[param.name] = [];
+                
+                variations.forEach(factor => {
+                    const newValue = originalValue * factor;
+                    // 模拟参数变化对结果的影响
+                    const impact = Math.abs(1 - factor) * 0.5; // 模拟影响
+                    results[param.name].push({
+                        factor,
+                        value: newValue,
+                        impact
+                    });
+                });
+            });
+            
+            return results;
+        }
+
+        // 执行蒙特卡洛模拟
+        function monteCarloSimulation(data, iterations = 1000) {
+            const results = [];
+            
+            for (let i = 0; i < iterations; i++) {
+                // 随机采样
+                const sample = [];
+                for (let j = 0; j < data.length; j++) {
+                    const index = Math.floor(Math.random() * data.length);
+                    sample.push(data[index]);
+                }
+                
+                const stats = calculateStatistics(sample.map(item => item.error ? 1 : 0));
+                results.push(stats.mean);
+            }
+            
+            return calculateStatistics(results);
+        }
+
+        // 初始化高级功能
+        function initializeAdvancedFeatures() {
+            // 可以在这里添加更多初始化代码
+            console.log('Advanced features initialized');
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('load', function() {
+            initCharts();
+            initializeAdvancedFeatures();
+        });
+
+        // 更新预测展示
+        function updatePredictionDisplay(data, modelType) {
+            const container = document.getElementById('prediction-display');
+            container.innerHTML = '';
+
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-md p-4 border border-gray-200 hover:shadow-lg transition-all-300';
+                
+                card.innerHTML = `
+                    <div class="flex flex-col items-center mb-4">
+                        <div class="w-24 h-24 bg-gradient-primary rounded-lg flex items-center justify-center mb-2">
+                            <div class="text-center text-white">
+                                <div class="text-2xl font-bold">${item.trueLabel}</div>
+                                <div class="text-xs mt-1">真实值</div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm font-medium text-gray-800">真实: ${item.trueLabel}</p>
+                            <p class="text-sm font-medium ${item.error ? 'text-danger' : 'text-success'}">预测: ${item.predictedLabel}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                <span>原始置信度</span>
+                                <span>${item.confidence.toFixed(2)}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-secondary h-2 rounded-full" style="width: ${item.confidence * 100}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                <span>修正后置信度</span>
+                                <span>${item.correctedConfidence.toFixed(2)}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-success h-2 rounded-full" style="width: ${item.correctedConfidence * 100}%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                <span>样本难度</span>
+                                <span>${item.difficulty.toFixed(2)}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: ${item.difficulty * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // 更新实验数据
+        function updateExperimentData(data) {
+            const container = document.getElementById('experiment-data');
+            container.innerHTML = '';
+
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${item.error ? 'text-danger' : 'text-success'}">${item.predictedLabel}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.trueLabel}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.confidence.toFixed(4)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.correctedConfidence.toFixed(4)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${item.error ? 'text-danger' : 'text-success'}">${item.error ? '是' : '否'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.difficulty.toFixed(4)}</td>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // 更新实验结论
+        function updateExperimentConclusion(data, modelType, sampleCount, errorCount, totalConfidence, totalCorrectedConfidence) {
+            const accuracy = (sampleCount - errorCount) / sampleCount * 100;
+            const avgConfidence = totalConfidence / sampleCount;
+            const avgCorrectedConfidence = totalCorrectedConfidence / sampleCount;
+            
+            const conclusion = document.getElementById('experiment-conclusion');
+            conclusion.innerHTML = `
+                <div>
+                    <p class="mb-4">实验完成，共模拟了 ${sampleCount} 个样本，其中错误 ${errorCount} 个，准确率为 ${accuracy.toFixed(2)}%。</p>
+                    <p class="mb-4">模型类型：${modelType === 'digit-recognition' ? '手写数字识别' : '图片分类'}</p>
+                    <p class="mb-4">平均原始置信度：${avgConfidence.toFixed(4)}</p>
+                    <p class="mb-4">平均修正后置信度：${avgCorrectedConfidence.toFixed(4)}</p>
+                    <div class="bg-blue-50 p-4 rounded-lg mt-4">
+                        <h4 class="font-medium text-primary mb-2">实验结论</h4>
+                        <p class="text-gray-600">1. 通过贝叶斯更新，我们成功修正了模型的预测置信度，使其更准确地反映预测的可靠性。</p>
+                        <p class="text-gray-600 mt-2">2. 难度较高的样本更容易产生错误，且置信度通常较低。</p>
+                        <p class="text-gray-600 mt-2">3. 贝叶斯更新能够有效地根据历史预测结果调整置信度，提高模型的可靠性。</p>
+                        <p class="text-gray-600 mt-2">4. 误差分布显示，大多数错误发生在难度较高的样本上，符合预期。</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 重置模拟
+        document.getElementById('reset-simulation').addEventListener('click', function() {
+            // 重置参数
+            document.getElementById('model-type').value = 'digit-recognition';
+            document.getElementById('sample-count').value = 1000;
+            document.getElementById('difficulty-distribution').value = 'uniform';
+            document.getElementById('base-error-rate').value = 0.1;
+            document.getElementById('base-error-rate-value').textContent = '0.10';
+            document.getElementById('bayesian-update-rate').value = 0.5;
+            document.getElementById('bayesian-update-rate-value').textContent = '0.5';
+            document.getElementById('confidence-threshold').value = 0.8;
+            document.getElementById('confidence-threshold-value').textContent = '0.80';
+
+            // 重置统计信息
+            document.getElementById('total-samples').textContent = '0';
+            document.getElementById('error-count').textContent = '0';
+            document.getElementById('accuracy').textContent = '0.00%';
+            document.getElementById('avg-confidence').textContent = '0.00';
+
+            // 重置图表
+            errorDistributionChart.data.datasets[0].data = [];
+            errorDistributionChart.update();
+            confidenceChangeChart.data.labels = [];
+            confidenceChangeChart.data.datasets[0].data = [];
+            confidenceChangeChart.data.datasets[1].data = [];
+            confidenceChangeChart.update();
+            confidenceDistributionChart.data.labels = [];
+            confidenceDistributionChart.data.datasets[0].data = [];
+            confidenceDistributionChart.data.datasets[1].data = [];
+            confidenceDistributionChart.update();
+            difficultyErrorChart.data.datasets[0].data = [];
+            difficultyErrorChart.update();
+            bayesianUpdateChart.data.labels = [];
+            bayesianUpdateChart.data.datasets[0].data = [];
+            bayesianUpdateChart.update();
+            errorTimeSeriesChart.data.labels = [];
+            errorTimeSeriesChart.data.datasets[0].data = [];
+            errorTimeSeriesChart.update();
+
+            // 重置预测展示
+            document.getElementById('prediction-display').innerHTML = '';
+
+            // 重置实验数据
+            document.getElementById('experiment-data').innerHTML = '';
+
+            // 重置实验结论
+            document.getElementById('experiment-conclusion').innerHTML = '<p>请运行模拟以查看实验结论。</p>';
+        });
+
+
+    </script>
+</body>
+</html>

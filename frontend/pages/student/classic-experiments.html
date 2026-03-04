@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经典型实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .tree-node {
+                position: relative;
+                transition: all 0.3s ease;
+                z-index: 10;
+                pointer-events: auto;
+            }
+            .tree-node:hover {
+                transform: translateY(-2px);
+                z-index: 20;
+            }
+            .tree-popup {
+                position: absolute;
+                top: 50%;
+                left: 100%;
+                margin-left: 1rem;
+                margin-top: -10rem;
+                z-index: 99999;
+                background: white;
+                border-radius: 0.75rem;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                padding: 1rem;
+                min-width: 20rem;
+                border: 1px solid rgba(209, 213, 219, 0.5);
+                max-height: 80vh;
+                overflow-y: auto;
+                pointer-events: auto;
+                backdrop-filter: blur(8px);
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+                position: relative;
+                z-index: 10;
+                pointer-events: auto;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px) scale(1.02);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                z-index: 20;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="classic-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-history w-5 text-center"></i>
+                    <span>经典型实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">探索概率论发展史上的经典实验，理解概率理论的核心概念。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">经典型实验</h2>
+                <p class="text-gray-600">概率论发展史上的经典实验，如圣彼得堡悖论、赌徒破产问题、贝特朗悖论等。</p>
+            </div>
+
+            <!-- 实验类型卡片 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验类型</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- 一、古典 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="classical">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-history text-primary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">古典</h4>
+                        <p class="text-sm text-gray-600 mb-4">圣彼得堡悖论、赌徒破产问题、生日问题</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="classical-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="#" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    圣彼得堡悖论
+                                </a>
+                                <a href="#" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    赌徒破产问题
+                                </a>
+                                <a href="#" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    生日问题
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 二、几何 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="geometric">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-map-pin text-success text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">几何</h4>
+                        <p class="text-sm text-gray-600 mb-4">贝特朗悖论</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">1个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="geometric-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="#" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    贝特朗悖论
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 三、分布与极限理论 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="distribution">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-area-chart text-danger text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">分布与极限理论</h4>
+                        <p class="text-sm text-gray-600 mb-4">高尔顿板实验、泊松流实验</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">2个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="distribution-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="#" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    高尔顿板实验
+                                </a>
+                                <a href="#" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    泊松流实验
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 四、贝叶斯概率经典名实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="bayesian">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-database text-purple-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">贝叶斯概率经典名实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">蒙提霍尔问题</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">1个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="bayesian-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="#" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    蒙提霍尔问题
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 推荐实验 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">推荐实验</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 圣彼得堡悖论 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="aspect-w-16 aspect-h-9 mb-4 rounded-lg overflow-hidden bg-blue-100">
+                            <div class="flex items-center justify-center h-full">
+                                <i class="fa fa-history text-primary text-4xl"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">圣彼得堡悖论</h4>
+                        <p class="text-sm text-gray-600 mb-3">探索期望效用理论，理解风险偏好</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">古典</span>
+                            <a href="#" class="text-primary hover:text-secondary transition-all-300">
+                                开始实验
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 贝特朗悖论 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="aspect-w-16 aspect-h-9 mb-4 rounded-lg overflow-hidden bg-green-100">
+                            <div class="flex items-center justify-center h-full">
+                                <i class="fa fa-map-pin text-success text-4xl"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">贝特朗悖论</h4>
+                        <p class="text-sm text-gray-600 mb-3">理解几何概率中的歧义性问题</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">几何</span>
+                            <a href="#" class="text-primary hover:text-secondary transition-all-300">
+                                开始实验
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 蒙提霍尔问题 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="aspect-w-16 aspect-h-9 mb-4 rounded-lg overflow-hidden bg-purple-100">
+                            <div class="flex items-center justify-center h-full">
+                                <i class="fa fa-database text-purple-600 text-4xl"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">蒙提霍尔问题</h4>
+                        <p class="text-sm text-gray-600 mb-3">理解贝叶斯概率和条件概率的应用</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">贝叶斯概率经典名实验</span>
+                            <a href="#" class="text-primary hover:text-secondary transition-all-300">
+                                开始实验
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        什么是圣彼得堡悖论？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        贝特朗悖论的解决方案
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        蒙提霍尔问题的正确解法
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 树状图交互
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为每个实验类型添加点击事件
+            document.querySelectorAll('.experiment-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const type = this.getAttribute('data-type');
+                    const tree = this.querySelector(`.${type}-tree`);
+                    
+                    // 切换当前树状图的显示状态
+                    tree.classList.toggle('hidden');
+                    
+                    // 关闭其他树状图
+                    document.querySelectorAll('.tree-popup').forEach(otherTree => {
+                        if (otherTree !== tree) {
+                            otherTree.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // 点击其他地方关闭树状图
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.experiment-card')) {
+                    document.querySelectorAll('.tree-popup').forEach(tree => {
+                        tree.classList.add('hidden');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

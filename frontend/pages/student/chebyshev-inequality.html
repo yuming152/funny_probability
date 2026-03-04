@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>切比雪夫不等式验证 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.12/src-min-noconflict/ace.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .distribution-visualization {
+                position: relative;
+                height: 300px;
+                border: 2px solid #E5E7EB;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .distribution-curve {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                transition: all 0.5s ease;
+            }
+            .probability-area {
+                position: absolute;
+                bottom: 0;
+                transition: all 0.5s ease;
+                background: rgba(59, 130, 246, 0.2);
+                border-top: 2px solid #3B82F6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="bayesian-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-refresh w-5 text-center"></i>
+                    <span>逆概率 / 贝叶斯进阶实验</span>
+                </a>
+                <a href="queuing-theory-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>排队论 / 随机过程基础实验</span>
+                </a>
+                <a href="probability-inequality-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-balance-scale w-5 text-center"></i>
+                    <span>概率不等式的构造与验证实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">调整分布参数和偏差值，观察切比雪夫不等式的估计效果。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">切比雪夫不等式验证</h2>
+                    <a href="probability-inequality-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">验证切比雪夫不等式对随机变量偏离均值的概率上界的估计，分析不同分布下的不等式紧性。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">分布类型</label>
+                        <select id="distribution-type" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full">
+                            <option value="normal">正态分布</option>
+                            <option value="exponential">指数分布</option>
+                            <option value="uniform">均匀分布</option>
+                            <option value="poisson">泊松分布</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">均值 μ</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" id="mean" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0" min="-10" max="10" step="0.1">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">标准差 σ</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" id="std-dev" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1" min="0.1" max="5" step="0.1">
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">偏差值 ε</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" id="epsilon" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="2" min="0.1" max="10" step="0.1">
+                        </div>
+                        <input type="range" id="epsilon-slider" class="w-full mt-2" min="0.1" max="10" step="0.1" value="2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟次数</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" id="simulation-count" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="10000" min="1000" max="100000" step="1000">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button id="start-simulation" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-play mr-2"></i> 开始模拟
+                    </button>
+                    <button id="reset-simulation" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 分布可视化 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">分布可视化</h3>
+                <div class="distribution-visualization mb-4" id="distribution-visualization">
+                    <!-- 分布曲线将通过JavaScript动态生成 -->
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        <span id="distribution-info">分布: 正态分布 (μ=0, σ=1)</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <span id="probability-info">实际概率: 0.00, 切比雪夫上界: 0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结果分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结果分析</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">概率比较</h4>
+                        <div class="h-64">
+                            <canvas id="probability-comparison-chart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">不等式紧性分析</h4>
+                        <div class="h-64">
+                            <canvas id="tightness-analysis-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">统计结果</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">实际概率 P(|X-μ| ≥ ε)</span>
+                                <span id="actual-probability" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">切比雪夫上界 σ²/ε²</span>
+                                <span id="chebyshev-bound" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">紧性比率 (实际/上界)</span>
+                                <span id="tightness-ratio" class="font-bold text-primary">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">不同分布紧性比较</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">正态分布</span>
+                                <span id="normal-tightness" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">指数分布</span>
+                                <span id="exponential-tightness" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">均匀分布</span>
+                                <span id="uniform-tightness" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">泊松分布</span>
+                                <span id="poisson-tightness" class="font-bold text-primary">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">切比雪夫不等式</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600 mb-2">对于任何具有有限方差的随机变量 X，以及任意 ε > 0，有：</p>
+                            <p class="text-gray-600 text-center font-medium">P(|X - μ| ≥ ε) ≤ σ² / ε²</p>
+                            <p class="text-gray-600 mt-2">其中 μ 是 X 的均值，σ² 是 X 的方差。</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">不等式的意义</h4>
+                        <p class="text-gray-600">切比雪夫不等式提供了一个关于随机变量偏离其均值的概率的上界估计，它不依赖于分布的具体形式，只需要知道均值和方差。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">紧性分析</h4>
+                        <p class="text-gray-600">不同分布下，切比雪夫不等式的紧性不同：</p>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1 mt-2">
+                            <li>正态分布：切比雪夫上界通常比较宽松</li>
+                            <li>指数分布：切比雪夫上界相对较紧</li>
+                            <li>均匀分布：切比雪夫上界在某些情况下是紧的</li>
+                            <li>泊松分布：切比雪夫上界的紧性取决于参数值</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结论 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">实验结论</h3>
+                    <button id="open-latex-editor" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-edit mr-2"></i> LaTeX公式编辑器
+                    </button>
+                </div>
+                <div id="experiment-conclusion" class="text-gray-600">
+                    <p>请运行模拟以查看实验结论。</p>
+                </div>
+            </div>
+
+            <!-- LaTeX公式编辑器模态框 -->
+            <div id="latex-editor-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[80vh] overflow-hidden">
+                    <div class="bg-primary text-white p-4 flex justify-between items-center">
+                        <h3 class="text-lg font-bold">LaTeX公式编辑器</h3>
+                        <button id="close-latex-editor" class="text-white hover:text-gray-200">
+                            <i class="fa fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="p-4 h-[60vh] flex flex-col">
+                        <div class="flex-1 flex">
+                            <div class="w-1/2 pr-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">LaTeX代码</label>
+                                <div class="h-full border border-gray-300 rounded-lg overflow-hidden">
+                                    <div id="latex-editor" class="h-full"></div>
+                                </div>
+                            </div>
+                            <div class="w-1/2 pl-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">公式预览</label>
+                                <div class="h-full border border-gray-300 rounded-lg p-4 bg-gray-50 overflow-auto">
+                                    <div id="latex-preview" class="text-center">
+                                        <p class="text-gray-500">输入LaTeX代码以预览公式</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-between">
+                            <div class="flex space-x-2">
+                                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center" onclick="insertLatexCommand('frac{a}{b}')">
+                                    <i class="fa fa-fraction mr-1"></i> 分数
+                                </button>
+                                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center" onclick="insertLatexCommand('sqrt{x}')">
+                                    <i class="fa fa-square-root-alt mr-1"></i> 平方根
+                                </button>
+                                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center" onclick="insertLatexCommand('sum_{i=1}^{n}')">
+                                    <i class="fa fa-sigma mr-1"></i> 求和
+                                </button>
+                                <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center" onclick="insertLatexCommand('int_{a}^{b}')">
+                                    <i class="fa fa-integral mr-1"></i> 积分
+                                </button>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="cancel-latex" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium">
+                                    取消
+                                </button>
+                                <button id="insert-latex" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium">
+                                    插入公式
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        切比雪夫不等式的证明
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        切比雪夫不等式的应用场景
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何提高不等式的紧性
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 滑块与输入框同步
+        document.getElementById('epsilon-slider').addEventListener('input', function() {
+            document.getElementById('epsilon').value = this.value;
+        });
+
+        document.getElementById('epsilon').addEventListener('input', function() {
+            document.getElementById('epsilon-slider').value = this.value;
+        });
+
+        // 图表初始化
+        let probabilityComparisonChart, tightnessAnalysisChart;
+
+        function initCharts() {
+            // 概率比较图表
+            const comparisonCtx = document.getElementById('probability-comparison-chart').getContext('2d');
+            probabilityComparisonChart = new Chart(comparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['实际概率', '切比雪夫上界'],
+                    datasets: [{
+                        label: '概率值',
+                        data: [0, 0],
+                        backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(59, 130, 246, 0.6)'],
+                        borderColor: ['rgba(16, 185, 129, 1)', 'rgba(59, 130, 246, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1
+                        }
+                    }
+                }
+            });
+
+            // 紧性分析图表
+            const tightnessCtx = document.getElementById('tightness-analysis-chart').getContext('2d');
+            tightnessAnalysisChart = new Chart(tightnessCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '紧性比率',
+                        data: [],
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1
+                        }
+                    }
+                }
+            });
+        }
+
+        // 初始化图表
+        window.onload = initCharts;
+
+        // 生成随机数
+        function generateRandom(distribution, mean, stdDev) {
+            switch (distribution) {
+                case 'normal':
+                    return boxMullerTransform(mean, stdDev);
+                case 'exponential':
+                    return -Math.log(Math.random()) / (1 / stdDev);
+                case 'uniform':
+                    return mean - stdDev * Math.sqrt(3) + 2 * stdDev * Math.sqrt(3) * Math.random();
+                case 'poisson':
+                    return poissonRandom(mean);
+                default:
+                    return 0;
+            }
+        }
+
+        // 正态分布随机数生成
+        function boxMullerTransform(mean, stdDev) {
+            let u1 = Math.random();
+            let u2 = Math.random();
+            let z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+            return z0 * stdDev + mean;
+        }
+
+        // 泊松分布随机数生成
+        function poissonRandom(lambda) {
+            let k = 0;
+            let p = 1;
+            let L = Math.exp(-lambda);
+            while (p > L) {
+                k++;
+                p *= Math.random();
+            }
+            return k - 1;
+        }
+
+        // 计算切比雪夫上界
+        function calculateChebyshevBound(stdDev, epsilon) {
+            return Math.min(1, (stdDev * stdDev) / (epsilon * epsilon));
+        }
+
+        // 绘制分布曲线
+        function drawDistribution(distribution, mean, stdDev) {
+            const container = document.getElementById('distribution-visualization');
+            container.innerHTML = '';
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+            container.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 绘制坐标轴
+            ctx.beginPath();
+            ctx.moveTo(50, height - 50);
+            ctx.lineTo(width - 50, height - 50);
+            ctx.moveTo(50, 50);
+            ctx.lineTo(50, height - 50);
+            ctx.strokeStyle = '#9CA3AF';
+            ctx.stroke();
+            
+            // 绘制分布曲线
+            ctx.beginPath();
+            ctx.moveTo(50, height - 50);
+            
+            const epsilon = parseFloat(document.getElementById('epsilon').value);
+            const minX = mean - 4 * stdDev;
+            const maxX = mean + 4 * stdDev;
+            
+            for (let x = 0; x < width - 100; x++) {
+                const actualX = minX + (x / (width - 100)) * (maxX - minX);
+                let y;
+                
+                switch (distribution) {
+                    case 'normal':
+                        y = normalPDF(actualX, mean, stdDev);
+                        break;
+                    case 'exponential':
+                        y = exponentialPDF(actualX, 1 / stdDev);
+                        break;
+                    case 'uniform':
+                        y = uniformPDF(actualX, mean - stdDev * Math.sqrt(3), mean + stdDev * Math.sqrt(3));
+                        break;
+                    case 'poisson':
+                        y = poissonPMF(Math.round(actualX), mean);
+                        break;
+                    default:
+                        y = 0;
+                }
+                
+                // 归一化
+                const normalizedY = y * height * 0.8;
+                ctx.lineTo(50 + x, height - 50 - normalizedY);
+            }
+            
+            ctx.strokeStyle = '#3B82F6';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 绘制均值线
+            const meanX = 50 + ((mean - minX) / (maxX - minX)) * (width - 100);
+            ctx.beginPath();
+            ctx.moveTo(meanX, 50);
+            ctx.lineTo(meanX, height - 50);
+            ctx.strokeStyle = '#10B981';
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 绘制偏差区间
+            const leftX = 50 + ((mean - epsilon - minX) / (maxX - minX)) * (width - 100);
+            const rightX = 50 + ((mean + epsilon - minX) / (maxX - minX)) * (width - 100);
+            
+            // 左侧概率区域
+            ctx.beginPath();
+            ctx.moveTo(50, height - 50);
+            for (let x = 0; x < leftX - 50; x++) {
+                const actualX = minX + (x / (width - 100)) * (maxX - minX);
+                let y;
+                
+                switch (distribution) {
+                    case 'normal':
+                        y = normalPDF(actualX, mean, stdDev);
+                        break;
+                    case 'exponential':
+                        y = exponentialPDF(actualX, 1 / stdDev);
+                        break;
+                    case 'uniform':
+                        y = uniformPDF(actualX, mean - stdDev * Math.sqrt(3), mean + stdDev * Math.sqrt(3));
+                        break;
+                    case 'poisson':
+                        y = poissonPMF(Math.round(actualX), mean);
+                        break;
+                    default:
+                        y = 0;
+                }
+                
+                const normalizedY = y * height * 0.8;
+                ctx.lineTo(50 + x, height - 50 - normalizedY);
+            }
+            ctx.lineTo(leftX, height - 50);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+            ctx.fill();
+            
+            // 右侧概率区域
+            ctx.beginPath();
+            ctx.moveTo(rightX, height - 50);
+            for (let x = rightX - 50; x < width - 100; x++) {
+                const actualX = minX + (x / (width - 100)) * (maxX - minX);
+                let y;
+                
+                switch (distribution) {
+                    case 'normal':
+                        y = normalPDF(actualX, mean, stdDev);
+                        break;
+                    case 'exponential':
+                        y = exponentialPDF(actualX, 1 / stdDev);
+                        break;
+                    case 'uniform':
+                        y = uniformPDF(actualX, mean - stdDev * Math.sqrt(3), mean + stdDev * Math.sqrt(3));
+                        break;
+                    case 'poisson':
+                        y = poissonPMF(Math.round(actualX), mean);
+                        break;
+                    default:
+                        y = 0;
+                }
+                
+                const normalizedY = y * height * 0.8;
+                ctx.lineTo(50 + x, height - 50 - normalizedY);
+            }
+            ctx.lineTo(width - 50, height - 50);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+            ctx.fill();
+        }
+
+        // 概率密度函数
+        function normalPDF(x, mean, stdDev) {
+            return (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2));
+        }
+
+        function exponentialPDF(x, lambda) {
+            return x >= 0 ? lambda * Math.exp(-lambda * x) : 0;
+        }
+
+        function uniformPDF(x, a, b) {
+            return x >= a && x <= b ? 1 / (b - a) : 0;
+        }
+
+        function poissonPMF(k, lambda) {
+            return k >= 0 ? Math.pow(lambda, k) * Math.exp(-lambda) / factorial(k) : 0;
+        }
+
+        function factorial(n) {
+            if (n === 0 || n === 1) return 1;
+            return n * factorial(n - 1);
+        }
+
+        // 开始模拟
+        document.getElementById('start-simulation').addEventListener('click', function() {
+            // 获取参数
+            const distribution = document.getElementById('distribution-type').value;
+            const mean = parseFloat(document.getElementById('mean').value);
+            const stdDev = parseFloat(document.getElementById('std-dev').value);
+            const epsilon = parseFloat(document.getElementById('epsilon').value);
+            const simulationCount = parseInt(document.getElementById('simulation-count').value);
+
+            // 计算切比雪夫上界
+            const chebyshevBound = calculateChebyshevBound(stdDev, epsilon);
+
+            // 模拟实验
+            let count = 0;
+            for (let i = 0; i < simulationCount; i++) {
+                const value = generateRandom(distribution, mean, stdDev);
+                if (Math.abs(value - mean) >= epsilon) {
+                    count++;
+                }
+            }
+
+            // 计算实际概率
+            const actualProbability = count / simulationCount;
+
+            // 计算紧性比率
+            const tightnessRatio = actualProbability / chebyshevBound;
+
+            // 更新显示
+            document.getElementById('actual-probability').textContent = actualProbability.toFixed(4);
+            document.getElementById('chebyshev-bound').textContent = chebyshevBound.toFixed(4);
+            document.getElementById('tightness-ratio').textContent = tightnessRatio.toFixed(4);
+
+            // 更新概率比较图表
+            probabilityComparisonChart.data.datasets[0].data = [actualProbability, chebyshevBound];
+            probabilityComparisonChart.update();
+
+            // 分析不同分布的紧性
+            const distributions = ['normal', 'exponential', 'uniform', 'poisson'];
+            const tightnessValues = [];
+            
+            distributions.forEach(dist => {
+                let distCount = 0;
+                for (let i = 0; i < simulationCount; i++) {
+                    const value = generateRandom(dist, mean, stdDev);
+                    if (Math.abs(value - mean) >= epsilon) {
+                        distCount++;
+                    }
+                }
+                const distProbability = distCount / simulationCount;
+                const distTightness = distProbability / chebyshevBound;
+                tightnessValues.push(distTightness);
+            });
+
+            // 更新不同分布紧性显示
+            document.getElementById('normal-tightness').textContent = tightnessValues[0].toFixed(4);
+            document.getElementById('exponential-tightness').textContent = tightnessValues[1].toFixed(4);
+            document.getElementById('uniform-tightness').textContent = tightnessValues[2].toFixed(4);
+            document.getElementById('poisson-tightness').textContent = tightnessValues[3].toFixed(4);
+
+            // 生成紧性分析数据
+            const epsilonValues = [];
+            const tightnessRatios = [];
+            
+            for (let eps = 0.5; eps <= 5; eps += 0.5) {
+                const bound = calculateChebyshevBound(stdDev, eps);
+                let epsCount = 0;
+                for (let i = 0; i < simulationCount; i++) {
+                    const value = generateRandom(distribution, mean, stdDev);
+                    if (Math.abs(value - mean) >= eps) {
+                        epsCount++;
+                    }
+                }
+                const epsProbability = epsCount / simulationCount;
+                const epsTightness = epsProbability / bound;
+                epsilonValues.push(eps.toFixed(1));
+                tightnessRatios.push(epsTightness);
+            }
+
+            // 更新紧性分析图表
+            tightnessAnalysisChart.data.labels = epsilonValues;
+            tightnessAnalysisChart.data.datasets[0].data = tightnessRatios;
+            tightnessAnalysisChart.update();
+
+            // 更新分布可视化
+            drawDistribution(distribution, mean, stdDev);
+
+            // 更新信息显示
+            document.getElementById('distribution-info').textContent = `分布: ${getDistributionName(distribution)} (μ=${mean}, σ=${stdDev})`;
+            document.getElementById('probability-info').textContent = `实际概率: ${actualProbability.toFixed(4)}, 切比雪夫上界: ${chebyshevBound.toFixed(4)}`;
+
+            // 更新实验结论
+            const conclusion = document.getElementById('experiment-conclusion');
+            conclusion.innerHTML = `
+                <p>模拟次数：${simulationCount}</p>
+                <p>分布类型：${getDistributionName(distribution)}</p>
+                <p>均值 μ：${mean}</p>
+                <p>标准差 σ：${stdDev}</p>
+                <p>偏差值 ε：${epsilon}</p>
+                <p class="mt-2">实验结果：</p>
+                <ul class="list-disc list-inside">
+                    <li>实际概率 P(|X-μ| ≥ ε)：${actualProbability.toFixed(4)}</li>
+                    <li>切比雪夫上界 σ²/ε²：${chebyshevBound.toFixed(4)}</li>
+                    <li>紧性比率：${tightnessRatio.toFixed(4)}</li>
+                </ul>
+                <p class="mt-4 font-medium">结论：切比雪夫不等式提供了一个关于随机变量偏离均值概率的上界估计。对于${getDistributionName(distribution)}，当ε=${epsilon}时，实际概率为${actualProbability.toFixed(4)}，而切比雪夫上界为${chebyshevBound.toFixed(4)}，紧性比率为${tightnessRatio.toFixed(4)}。这表明切比雪夫不等式在这种情况下${tightnessRatio > 0.5 ? '相对较紧' : '比较宽松'}。</p>
+            `;
+        });
+
+        // 重置模拟
+        document.getElementById('reset-simulation').addEventListener('click', function() {
+            // 重置参数
+            document.getElementById('distribution-type').value = 'normal';
+            document.getElementById('mean').value = 0;
+            document.getElementById('std-dev').value = 1;
+            document.getElementById('epsilon').value = 2;
+            document.getElementById('epsilon-slider').value = 2;
+            document.getElementById('simulation-count').value = 10000;
+
+            // 重置显示
+            document.getElementById('actual-probability').textContent = '0.00';
+            document.getElementById('chebyshev-bound').textContent = '0.00';
+            document.getElementById('tightness-ratio').textContent = '0.00';
+            document.getElementById('normal-tightness').textContent = '0.00';
+            document.getElementById('exponential-tightness').textContent = '0.00';
+            document.getElementById('uniform-tightness').textContent = '0.00';
+            document.getElementById('poisson-tightness').textContent = '0.00';
+            document.getElementById('distribution-info').textContent = '分布: 正态分布 (μ=0, σ=1)';
+            document.getElementById('probability-info').textContent = '实际概率: 0.00, 切比雪夫上界: 0.00';
+
+            // 重置图表
+            probabilityComparisonChart.data.datasets[0].data = [0, 0];
+            probabilityComparisonChart.update();
+            tightnessAnalysisChart.data.labels = [];
+            tightnessAnalysisChart.data.datasets[0].data = [];
+            tightnessAnalysisChart.update();
+
+            // 重置分布可视化
+            drawDistribution('normal', 0, 1);
+
+            // 重置实验结论
+            document.getElementById('experiment-conclusion').innerHTML = '<p>请运行模拟以查看实验结论。</p>';
+        });
+
+        // 获取分布名称
+        function getDistributionName(distribution) {
+            switch (distribution) {
+                case 'normal': return '正态分布';
+                case 'exponential': return '指数分布';
+                case 'uniform': return '均匀分布';
+                case 'poisson': return '泊松分布';
+                default: return '未知分布';
+            }
+        }
+
+        // 初始绘制分布
+        drawDistribution('normal', 0, 1);
+
+        // LaTeX公式编辑器功能
+        let latexEditor;
+        
+        // 初始化LaTeX编辑器
+        function initLatexEditor() {
+            // 初始化Ace编辑器
+            latexEditor = ace.edit('latex-editor');
+            latexEditor.setTheme('ace/theme/github');
+            latexEditor.getSession().setMode('ace/mode/latex');
+            latexEditor.setFontSize(14);
+            latexEditor.setShowPrintMargin(false);
+            
+            // 实时预览
+            latexEditor.getSession().on('change', function() {
+                updateLatexPreview();
+            });
+        }
+        
+        // 更新LaTeX预览
+        function updateLatexPreview() {
+            const latexCode = latexEditor.getValue();
+            const previewDiv = document.getElementById('latex-preview');
+            
+            if (latexCode.trim() === '') {
+                previewDiv.innerHTML = '<p class="text-gray-500">输入LaTeX代码以预览公式</p>';
+                return;
+            }
+            
+            // 包装成MathJax格式
+            const mathJaxCode = `\\[ ${latexCode} \\]`;
+            previewDiv.innerHTML = mathJaxCode;
+            
+            // 重新渲染MathJax
+            if (window.MathJax) {
+                MathJax.typesetPromise([previewDiv]).catch(err => console.error('MathJax渲染错误:', err));
+            }
+        }
+        
+        // 插入LaTeX命令
+        function insertLatexCommand(command) {
+            const cursorPosition = latexEditor.getCursorPosition();
+            latexEditor.insert(command);
+            latexEditor.moveCursorTo(cursorPosition.row, cursorPosition.column + command.length);
+            latexEditor.focus();
+            updateLatexPreview();
+        }
+        
+        // 插入公式到实验结论
+        function insertLatexToConclusion() {
+            const latexCode = latexEditor.getValue();
+            if (latexCode.trim() === '') return;
+            
+            const conclusionDiv = document.getElementById('experiment-conclusion');
+            const mathJaxCode = `\\[ ${latexCode} \\]`;
+            
+            // 在结论末尾添加公式
+            conclusionDiv.innerHTML += '<p class="my-2">' + mathJaxCode + '</p>';
+            
+            // 重新渲染MathJax
+            if (window.MathJax) {
+                MathJax.typesetPromise([conclusionDiv]).catch(err => console.error('MathJax渲染错误:', err));
+            }
+            
+            // 关闭编辑器
+            document.getElementById('latex-editor-modal').classList.add('hidden');
+        }
+        
+        // 打开LaTeX编辑器
+        document.getElementById('open-latex-editor').addEventListener('click', function() {
+            document.getElementById('latex-editor-modal').classList.remove('hidden');
+            // 确保编辑器已初始化
+            if (!latexEditor) {
+                initLatexEditor();
+            }
+            latexEditor.focus();
+        });
+        
+        // 关闭LaTeX编辑器
+        document.getElementById('close-latex-editor').addEventListener('click', function() {
+            document.getElementById('latex-editor-modal').classList.add('hidden');
+        });
+        
+        document.getElementById('cancel-latex').addEventListener('click', function() {
+            document.getElementById('latex-editor-modal').classList.add('hidden');
+        });
+        
+        // 插入公式
+        document.getElementById('insert-latex').addEventListener('click', function() {
+            insertLatexToConclusion();
+        });
+        
+        // 点击模态框外部关闭
+        document.getElementById('latex-editor-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

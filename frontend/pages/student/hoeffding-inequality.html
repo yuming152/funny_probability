@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>霍夫丁不等式验证 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.4.12/src-min-noconflict/ace.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="bayesian-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-refresh w-5 text-center"></i>
+                    <span>逆概率 / 贝叶斯进阶实验</span>
+                </a>
+                <a href="queuing-theory-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>排队论 / 随机过程基础实验</span>
+                </a>
+                <a href="probability-inequality-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-balance-scale w-5 text-center"></i>
+                    <span>概率不等式的构造与验证实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">霍夫丁不等式适用于独立随机变量之和，可调整变量数量、分布类型和参数，观察理论上界与实际概率的差异。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">霍夫丁不等式验证</h2>
+                    <a href="probability-inequality-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">验证霍夫丁不等式对独立随机变量和的偏离概率的上界估计，分析样本大小对不等式紧性的影响。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 变量设置 -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">变量设置</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">变量数量 (n)</label>
+                                <div class="flex items-center">
+                                    <input type="range" id="variableCount" min="1" max="100" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <span id="variableCountValue" class="ml-3 text-sm font-medium text-gray-700 min-w-[40px]">20</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">偏差值 (ε)</label>
+                                <div class="flex items-center">
+                                    <input type="range" id="epsilon" min="0.1" max="5" step="0.1" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <span id="epsilonValue" class="ml-3 text-sm font-medium text-gray-700 min-w-[40px]">1.0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分布设置 -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">分布设置</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">分布类型</label>
+                                <select id="distributionType" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <option value="bernoulli">伯努利分布</option>
+                                    <option value="uniform">均匀分布</option>
+                                    <option value="normal">正态分布</option>
+                                    <option value="exponential">指数分布</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">分布参数</label>
+                                <div id="distributionParams">
+                                    <div class="flex space-x-2">
+                                        <div class="flex-1">
+                                            <label class="block text-xs text-gray-500 mb-1">p (概率)</label>
+                                            <input type="number" id="bernoulliP" value="0.5" min="0" max="1" step="0.01" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 模拟设置 -->
+                <div class="mt-6">
+                    <h4 class="font-medium text-gray-700 mb-3">模拟设置</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">模拟次数</label>
+                            <select id="simulationCount" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="1000">1,000</option>
+                                <option value="5000">5,000</option>
+                                <option value="10000" selected>10,000</option>
+                                <option value="50000">50,000</option>
+                                <option value="100000">100,000</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2 flex items-end">
+                            <button id="runSimulation" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-md shadow hover:shadow-lg transition-all-300 flex items-center">
+                                <i class="fa fa-play mr-2"></i> 运行模拟
+                            </button>
+                            <button id="resetSimulation" class="ml-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-6 rounded-md shadow hover:shadow-lg transition-all-300 flex items-center">
+                                <i class="fa fa-refresh mr-2"></i> 重置
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结果</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 分布可视化 -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">分布与偏差可视化</h4>
+                        <div class="h-80">
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- 概率比较 -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">概率比较</h4>
+                        <div class="h-80">
+                            <canvas id="probabilityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 实验数据 -->
+                <div class="mt-6">
+                    <h4 class="font-medium text-gray-700 mb-3">实验数据</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">统计量</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">值</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">说明</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="experimentData">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">变量数量</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" id="dataVariableCount">20</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">独立随机变量的数量</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">偏差值 (ε)</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" id="dataEpsilon">1.0</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">偏离均值的距离</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">实际概率</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" id="dataActualProbability">-</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">|S_n - E[S_n]| ≥ ε 的实际概率</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">霍夫丁上界</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" id="dataHoeffdingBound">-</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">霍夫丁不等式给出的上界</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">上界紧度</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" id="dataTightness">-</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">实际概率与上界的比值</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">霍夫丁不等式</h4>
+                        <p class="text-gray-600">霍夫丁不等式是一个关于独立随机变量和的偏差概率的上界估计。对于n个独立随机变量X₁, X₂, ..., Xₙ，每个变量Xᵢ的取值范围在[aᵢ, bᵢ]内，令Sₙ = X₁ + X₂ + ... + Xₙ，那么对于任意的ε > 0，有：</p>
+                        <div class="bg-gray-50 p-4 rounded-md mt-2 font-mono text-center">
+                            P(|Sₙ - E[Sₙ]| ≥ ε) ≤ 2exp(-2ε² / Σ(bᵢ - aᵢ)²)
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">不等式特点</h4>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1">
+                            <li>适用于有界独立随机变量</li>
+                            <li>给出了指数形式的上界</li>
+                            <li>不依赖于具体的分布形式</li>
+                            <li>随着n的增大，上界指数衰减</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">应用场景</h4>
+                        <p class="text-gray-600">霍夫丁不等式在机器学习、统计学习理论、随机算法分析等领域有广泛应用，特别是在证明学习算法的泛化能力和收敛性方面。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结论 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结论</h3>
+                <div id="experiment-conclusion" class="text-gray-600">
+                    <p>请运行模拟以查看实验结论。</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        什么是霍夫丁不等式？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        霍夫丁不等式与切比雪夫不等式有什么区别？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何选择合适的实验参数？
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let distributionChart, probabilityChart;
+        let simulationRunning = false;
+
+        // DOM 元素
+        const variableCountSlider = document.getElementById('variableCount');
+        const variableCountValue = document.getElementById('variableCountValue');
+        const epsilonSlider = document.getElementById('epsilon');
+        const epsilonValue = document.getElementById('epsilonValue');
+        const distributionType = document.getElementById('distributionType');
+        const distributionParams = document.getElementById('distributionParams');
+        const bernoulliP = document.getElementById('bernoulliP');
+        const simulationCount = document.getElementById('simulationCount');
+        const runSimulationBtn = document.getElementById('runSimulation');
+        const resetSimulationBtn = document.getElementById('resetSimulation');
+
+        // 数据显示元素
+        const dataVariableCount = document.getElementById('dataVariableCount');
+        const dataEpsilon = document.getElementById('dataEpsilon');
+        const dataActualProbability = document.getElementById('dataActualProbability');
+        const dataHoeffdingBound = document.getElementById('dataHoeffdingBound');
+        const dataTightness = document.getElementById('dataTightness');
+
+        // 初始化
+        function init() {
+            setupEventListeners();
+            updateDistributionParams();
+            initCharts();
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            variableCountSlider.addEventListener('input', function() {
+                variableCountValue.textContent = this.value;
+                dataVariableCount.textContent = this.value;
+            });
+
+            epsilonSlider.addEventListener('input', function() {
+                epsilonValue.textContent = parseFloat(this.value).toFixed(1);
+                dataEpsilon.textContent = parseFloat(this.value).toFixed(1);
+            });
+
+            distributionType.addEventListener('change', updateDistributionParams);
+
+            runSimulationBtn.addEventListener('click', runSimulation);
+            resetSimulationBtn.addEventListener('click', resetSimulation);
+        }
+
+        // 更新分布参数
+        function updateDistributionParams() {
+            const type = distributionType.value;
+            let paramsHTML = '';
+
+            switch(type) {
+                case 'bernoulli':
+                    paramsHTML = `
+                        <div class="flex space-x-2">
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1">p (概率)</label>
+                                <input type="number" id="bernoulliP" value="0.5" min="0" max="1" step="0.01" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'uniform':
+                    paramsHTML = `
+                        <div class="flex space-x-2">
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1">最小值</label>
+                                <input type="number" id="uniformMin" value="0" min="-10" max="10" step="0.1" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1">最大值</label>
+                                <input type="number" id="uniformMax" value="1" min="-10" max="10" step="0.1" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'normal':
+                    paramsHTML = `
+                        <div class="flex space-x-2">
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1">均值 (μ)</label>
+                                <input type="number" id="normalMean" value="0" min="-10" max="10" step="0.1" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1">标准差 (σ)</label>
+                                <input type="number" id="normalStd" value="1" min="0.1" max="5" step="0.1" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'exponential':
+                    paramsHTML = `
+                        <div class="flex space-x-2">
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1">速率参数 (λ)</label>
+                                <input type="number" id="exponentialLambda" value="1" min="0.1" max="5" step="0.1" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+
+            distributionParams.innerHTML = paramsHTML;
+        }
+
+        // 初始化图表
+        function initCharts() {
+            // 分布图表
+            const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+            distributionChart = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '分布频率',
+                        data: [],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '值'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+
+            // 概率比较图表
+            const probabilityCtx = document.getElementById('probabilityChart').getContext('2d');
+            probabilityChart = new Chart(probabilityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['实际概率', '霍夫丁上界'],
+                    datasets: [{
+                        label: '概率值',
+                        data: [0, 0],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(239, 68, 68, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(239, 68, 68, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: '概率'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // 生成随机数
+        function generateRandomNumber(type, params) {
+            switch(type) {
+                case 'bernoulli':
+                    return Math.random() < params.p ? 1 : 0;
+                case 'uniform':
+                    return params.min + Math.random() * (params.max - params.min);
+                case 'normal':
+                    // Box-Muller 变换生成正态分布随机数
+                    let u1 = Math.random();
+                    let u2 = Math.random();
+                    let z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+                    return params.mean + z0 * params.std;
+                case 'exponential':
+                    return -Math.log(1 - Math.random()) / params.lambda;
+                default:
+                    return 0;
+            }
+        }
+
+        // 计算分布参数
+        function getDistributionParams() {
+            const type = distributionType.value;
+            let params = {};
+            let bounds = [0, 1]; // 默认边界
+
+            switch(type) {
+                case 'bernoulli':
+                    params.p = parseFloat(document.getElementById('bernoulliP').value);
+                    bounds = [0, 1];
+                    break;
+                case 'uniform':
+                    params.min = parseFloat(document.getElementById('uniformMin').value);
+                    params.max = parseFloat(document.getElementById('uniformMax').value);
+                    bounds = [params.min, params.max];
+                    break;
+                case 'normal':
+                    params.mean = parseFloat(document.getElementById('normalMean').value);
+                    params.std = parseFloat(document.getElementById('normalStd').value);
+                    // 对于正态分布，使用3倍标准差作为边界
+                    bounds = [params.mean - 3 * params.std, params.mean + 3 * params.std];
+                    break;
+                case 'exponential':
+                    params.lambda = parseFloat(document.getElementById('exponentialLambda').value);
+                    // 对于指数分布，使用均值的5倍作为上界
+                    bounds = [0, 5 / params.lambda];
+                    break;
+            }
+
+            return { type, params, bounds };
+        }
+
+        // 运行模拟
+        async function runSimulation() {
+            if (simulationRunning) return;
+            
+            simulationRunning = true;
+            runSimulationBtn.disabled = true;
+            runSimulationBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 运行中...';
+
+            try {
+                const n = parseInt(variableCountSlider.value);
+                const epsilon = parseFloat(epsilonSlider.value);
+                const simCount = parseInt(simulationCount.value);
+                const { type, params, bounds } = getDistributionParams();
+
+                // 计算理论期望和方差
+                let expectedValue = 0;
+                let variance = 0;
+                let rangeSumSquared = 0;
+
+                switch(type) {
+                    case 'bernoulli':
+                        expectedValue = n * params.p;
+                        variance = n * params.p * (1 - params.p);
+                        rangeSumSquared = n * Math.pow(bounds[1] - bounds[0], 2);
+                        break;
+                    case 'uniform':
+                        const uniformMean = (bounds[0] + bounds[1]) / 2;
+                        expectedValue = n * uniformMean;
+                        variance = n * Math.pow(bounds[1] - bounds[0], 2) / 12;
+                        rangeSumSquared = n * Math.pow(bounds[1] - bounds[0], 2);
+                        break;
+                    case 'normal':
+                        expectedValue = n * params.mean;
+                        variance = n * Math.pow(params.std, 2);
+                        rangeSumSquared = n * Math.pow(bounds[1] - bounds[0], 2);
+                        break;
+                    case 'exponential':
+                        const expMean = 1 / params.lambda;
+                        expectedValue = n * expMean;
+                        variance = n * Math.pow(expMean, 2);
+                        rangeSumSquared = n * Math.pow(bounds[1] - bounds[0], 2);
+                        break;
+                }
+
+                // 运行模拟
+                let sumValues = [];
+                let deviationCount = 0;
+
+                for (let i = 0; i < simCount; i++) {
+                    let sum = 0;
+                    for (let j = 0; j < n; j++) {
+                        sum += generateRandomNumber(type, params);
+                    }
+                    sumValues.push(sum);
+                    if (Math.abs(sum - expectedValue) >= epsilon) {
+                        deviationCount++;
+                    }
+                }
+
+                // 计算实际概率和霍夫丁上界
+                const actualProbability = deviationCount / simCount;
+                const hoeffdingBound = 2 * Math.exp(-2 * Math.pow(epsilon, 2) / rangeSumSquared);
+                const tightness = actualProbability / hoeffdingBound;
+
+                // 更新数据显示
+                dataActualProbability.textContent = actualProbability.toFixed(6);
+                dataHoeffdingBound.textContent = hoeffdingBound.toFixed(6);
+                dataTightness.textContent = tightness.toFixed(6);
+
+                // 更新图表
+                updateDistributionChart(sumValues, expectedValue, epsilon);
+                updateProbabilityChart(actualProbability, hoeffdingBound);
+
+                // 更新AI建议
+                updateAISuggestion(n, epsilon, actualProbability, hoeffdingBound, tightness);
+
+            } catch (error) {
+                console.error('模拟错误:', error);
+                alert('模拟过程中出现错误，请检查参数设置。');
+            } finally {
+                simulationRunning = false;
+                runSimulationBtn.disabled = false;
+                runSimulationBtn.innerHTML = '<i class="fa fa-play mr-2"></i> 运行模拟';
+            }
+        }
+
+        // 更新分布图表
+        function updateDistributionChart(values, expectedValue, epsilon) {
+            // 计算直方图
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const binCount = Math.min(50, Math.ceil(Math.sqrt(values.length)));
+            const binWidth = (max - min) / binCount;
+            const bins = Array(binCount).fill(0);
+            const binLabels = [];
+
+            for (let i = 0; i < binCount; i++) {
+                const binStart = min + i * binWidth;
+                binLabels.push(binStart.toFixed(2));
+            }
+
+            for (const value of values) {
+                const binIndex = Math.min(Math.floor((value - min) / binWidth), binCount - 1);
+                bins[binIndex]++;
+            }
+
+            distributionChart.data.labels = binLabels;
+            distributionChart.data.datasets[0].data = bins;
+            distributionChart.options.plugins.annotation = {
+                annotations: {
+                    line1: {
+                        type: 'line',
+                        xMin: expectedValue - epsilon,
+                        xMax: expectedValue - epsilon,
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        label: {
+                            display: true,
+                            content: 'μ - ε',
+                            position: 'top'
+                        }
+                    },
+                    line2: {
+                        type: 'line',
+                        xMin: expectedValue + epsilon,
+                        xMax: expectedValue + epsilon,
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        label: {
+                            display: true,
+                            content: 'μ + ε',
+                            position: 'top'
+                        }
+                    },
+                    line3: {
+                        type: 'line',
+                        xMin: expectedValue,
+                        xMax: expectedValue,
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        label: {
+                            display: true,
+                            content: 'μ',
+                            position: 'top'
+                        }
+                    }
+                }
+            };
+            distributionChart.update();
+        }
+
+        // 更新概率比较图表
+        function updateProbabilityChart(actualProbability, hoeffdingBound) {
+            probabilityChart.data.datasets[0].data = [actualProbability, hoeffdingBound];
+            probabilityChart.update();
+        }
+
+        // 更新AI建议
+        function updateAISuggestion(n, epsilon, actualProbability, hoeffdingBound, tightness) {
+            let suggestion = '';
+
+            if (tightness > 0.5) {
+                suggestion = `对于变量数量 n=${n} 和偏差值 ε=${epsilon.toFixed(1)}，霍夫丁上界相当紧，实际概率与上界的比值为 ${tightness.toFixed(2)}。这表明霍夫丁不等式在当前参数下提供了较好的估计。`;
+            } else if (tightness > 0.1) {
+                suggestion = `对于变量数量 n=${n} 和偏差值 ε=${epsilon.toFixed(1)}，霍夫丁上界与实际概率有一定差距，比值为 ${tightness.toFixed(2)}。尝试增加变量数量或减小偏差值，观察上界是否变得更紧。`;
+            } else {
+                suggestion = `对于变量数量 n=${n} 和偏差值 ε=${epsilon.toFixed(1)}，霍夫丁上界与实际概率差距较大，比值为 ${tightness.toFixed(2)}。这是正常现象，霍夫丁不等式是一个通用上界，适用于所有有界独立随机变量。`;
+            }
+
+            document.getElementById('aiSuggestion').textContent = suggestion;
+        }
+
+        // 重置模拟
+        function resetSimulation() {
+            variableCountSlider.value = 20;
+            variableCountValue.textContent = '20';
+            dataVariableCount.textContent = '20';
+            
+            epsilonSlider.value = 1;
+            epsilonValue.textContent = '1.0';
+            dataEpsilon.textContent = '1.0';
+            
+            distributionType.value = 'bernoulli';
+            updateDistributionParams();
+            
+            simulationCount.value = '10000';
+            
+            dataActualProbability.textContent = '-';
+            dataHoeffdingBound.textContent = '-';
+            dataTightness.textContent = '-';
+            
+            // 重置图表
+            distributionChart.data.labels = [];
+            distributionChart.data.datasets[0].data = [];
+            distributionChart.update();
+            
+            probabilityChart.data.datasets[0].data = [0, 0];
+            probabilityChart.update();
+            
+            // 重置AI建议
+            document.getElementById('aiSuggestion').textContent = '尝试调整变量数量和偏差值，观察霍夫丁上界如何变化。对于不同的分布类型，比较实际概率与理论上界的差异。';
+        }
+
+        // AI 聊天功能
+        function showAIChat(question) {
+            const modal = document.getElementById('aiChatModal');
+            const content = document.getElementById('aiChatContent');
+            const input = document.getElementById('aiChatInput');
+            
+            content.innerHTML = `
+                <div class="flex mb-4">
+                    <div class="bg-gray-100 rounded-lg py-2 px-4 max-w-[80%]">
+                        <p class="text-gray-800">${question}</p>
+                    </div>
+                </div>
+                <div class="flex justify-end mb-4">
+                    <div class="bg-primary bg-opacity-10 rounded-lg py-2 px-4 max-w-[80%]">
+                        <p class="text-gray-800">正在思考...</p>
+                    </div>
+                </div>
+            `;
+            
+            input.value = '';
+            modal.classList.remove('hidden');
+            
+            // 模拟AI回复
+            setTimeout(() => {
+                let answer = '';
+                
+                if (question === '什么是霍夫丁不等式？') {
+                    answer = '霍夫丁不等式是一个关于独立随机变量和的偏差概率的上界估计。对于n个独立随机变量X₁, X₂, ..., Xₙ，每个变量Xᵢ的取值范围在[aᵢ, bᵢ]内，令Sₙ = X₁ + X₂ + ... + Xₙ，那么对于任意的ε > 0，有：P(|Sₙ - E[Sₙ]| ≥ ε) ≤ 2exp(-2ε² / Σ(bᵢ - aᵢ)²)。这个不等式不依赖于具体的分布形式，只依赖于变量的取值范围。';
+                } else if (question === '霍夫丁不等式与切比雪夫不等式有什么区别？') {
+                    answer = '霍夫丁不等式和切比雪夫不等式都是概率不等式，但有几个重要区别：1. 霍夫丁不等式适用于有界独立随机变量，而切比雪夫不等式适用于任何具有有限方差的随机变量；2. 霍夫丁不等式给出指数形式的上界，而切比雪夫不等式给出多项式形式的上界；3. 霍夫丁不等式通常比切比雪夫不等式更紧，特别是对于大偏差情况；4. 霍夫丁不等式只适用于独立随机变量之和，而切比雪夫不等式适用于单个随机变量。';
+                } else if (question === '如何选择合适的实验参数？') {
+                    answer = '选择实验参数时，可以考虑以下几点：1. 变量数量n：较大的n会使霍夫丁上界更紧，因为上界随n的增加而指数衰减；2. 偏差值ε：较大的ε会使实际概率减小，同时霍夫丁上界也会减小；3. 分布类型：不同的分布会有不同的实际概率，伯努利分布和均匀分布是霍夫丁不等式的典型应用场景；4. 模拟次数：增加模拟次数可以提高结果的准确性，但会增加计算时间。';
+                } else {
+                    answer = '这是一个很好的问题！霍夫丁不等式是概率理论中的重要工具，它为独立随机变量和的偏差概率提供了一个通用的上界估计。在实际应用中，它常被用于分析统计学习算法的泛化能力和收敛性。';
+                }
+                
+                content.innerHTML = `
+                    <div class="flex mb-4">
+                        <div class="bg-gray-100 rounded-lg py-2 px-4 max-w-[80%]">
+                            <p class="text-gray-800">${question}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-end mb-4">
+                        <div class="bg-primary bg-opacity-10 rounded-lg py-2 px-4 max-w-[80%]">
+                            <p class="text-gray-800">${answer}</p>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        function closeAIChat() {
+            document.getElementById('aiChatModal').classList.add('hidden');
+        }
+
+        function sendAIChat() {
+            const input = document.getElementById('aiChatInput');
+            const question = input.value.trim();
+            if (question) {
+                showAIChat(question);
+            }
+        }
+
+        // 回车键发送消息
+        document.getElementById('aiChatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendAIChat();
+            }
+        });
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

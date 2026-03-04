@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>非独立同分布大数定律 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="limit-theorem-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-area-chart w-5 text-center"></i>
+                    <span>极限定理实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">调整依赖强度参数，观察非独立同分布随机变量的平均值收敛情况。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">非独立同分布大数定律</h2>
+                    <a href="limit-theorem-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">验证非独立同分布随机变量的平均值是否仍然收敛到期望值，即使变量之间存在依赖关系。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">实验次数</label>
+                        <input type="number" id="experimentCount" min="100" max="100000" value="10000" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">样本数量</label>
+                        <input type="number" id="sampleSize" min="100" max="5000" value="1000" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">分布类型</label>
+                        <select id="distributionType" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            <option value="normal">正态分布</option>
+                            <option value="exponential">指数分布</option>
+                            <option value="uniform">均匀分布</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">依赖强度</label>
+                    <input type="range" id="dependencyStrength" class="w-full" min="0" max="1" step="0.1" value="0.5">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>无依赖</span>
+                        <span>强依赖</span>
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button id="startExperiment" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-play mr-2"></i> 开始实验
+                    </button>
+                    <button id="resetExperiment" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 实验结果 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-blue-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-primary" id="theoreticalMean">0.00</div>
+                    <div class="text-sm text-gray-600">理论期望值</div>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-success" id="actualMean">0.00</div>
+                    <div class="text-sm text-gray-600">实际平均值</div>
+                </div>
+                <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-warning" id="error">0.00%</div>
+                    <div class="text-sm text-gray-600">误差</div>
+                </div>
+                <div class="bg-purple-50 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-purple-600" id="convergenceStatus">未收敛</div>
+                    <div class="text-sm text-gray-600">收敛状态</div>
+                </div>
+            </div>
+
+            <!-- 收敛趋势图 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">收敛趋势</h3>
+                <div class="h-80">
+                    <canvas id="convergenceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 样本分布图 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">样本分布</h3>
+                <div class="h-64">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">非独立同分布大数定律</h4>
+                        <p class="text-gray-600">非独立同分布大数定律是对传统大数定律的扩展，它表明即使随机变量之间存在依赖关系，只要满足一定条件（如协方差有界），它们的平均值仍然会收敛到期望值。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">实验验证步骤</h4>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-600 pl-4">
+                            <li>生成具有依赖关系的随机变量序列</li>
+                            <li>计算不同样本量下的平均值</li>
+                            <li>观察平均值是否收敛到理论期望值</li>
+                            <li>分析依赖强度对收敛速度的影响</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">结论</h4>
+                        <p class="text-gray-600">实验结果表明，即使变量之间存在依赖关系，只要满足一定条件，大数定律仍然成立。这一结论在统计学和概率论中具有重要意义。</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        非独立同分布大数定律的验证
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        依赖强度对收敛的影响
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        大数定律的应用场景
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 全局变量
+        let convergenceChart, distributionChart;
+        let experimentData = [];
+
+        // 初始化图表
+        function initCharts() {
+            // 收敛趋势图
+            const convergenceCtx = document.getElementById('convergenceChart').getContext('2d');
+            convergenceChart = new Chart(convergenceCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '样本平均值',
+                        data: [],
+                        borderColor: '#1E40AF',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: '理论期望值',
+                        data: [],
+                        borderColor: '#10B981',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '样本平均值收敛趋势'
+                        },
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '样本数量'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '平均值'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 样本分布图
+            const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+            distributionChart = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '样本频率',
+                        data: [],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(30, 64, 175, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '样本分布'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '数值区间'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '频率'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 生成具有依赖关系的随机变量
+        function generateDependentVariables(size, dependencyStrength, distributionType) {
+            const variables = [];
+            let previousValue = 0;
+
+            for (let i = 0; i < size; i++) {
+                let value;
+                
+                // 根据分布类型生成随机变量
+                switch (distributionType) {
+                    case 'normal':
+                        value = generateNormal(0, 1);
+                        break;
+                    case 'exponential':
+                        value = generateExponential(1);
+                        break;
+                    case 'uniform':
+                        value = generateUniform(0, 1);
+                        break;
+                    default:
+                        value = Math.random();
+                }
+
+                // 添加依赖关系
+                if (i > 0) {
+                    value = value * (1 - dependencyStrength) + previousValue * dependencyStrength;
+                }
+
+                variables.push(value);
+                previousValue = value;
+            }
+
+            return variables;
+        }
+
+        // 生成正态分布随机数
+        function generateNormal(mean, stdDev) {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random();
+            while (v === 0) v = Math.random();
+            let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+            return num * stdDev + mean;
+        }
+
+        // 生成指数分布随机数
+        function generateExponential(lambda) {
+            return -Math.log(Math.random()) / lambda;
+        }
+
+        // 生成均匀分布随机数
+        function generateUniform(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // 计算平均值
+        function calculateMean(values) {
+            return values.reduce((sum, val) => sum + val, 0) / values.length;
+        }
+
+        // 计算理论期望值
+        function getTheoreticalMean(distributionType) {
+            switch (distributionType) {
+                case 'normal':
+                    return 0;
+                case 'exponential':
+                    return 1;
+                case 'uniform':
+                    return 0.5;
+                default:
+                    return 0.5;
+            }
+        }
+
+        // 开始实验
+        function startExperiment() {
+            const experimentCount = parseInt(document.getElementById('experimentCount').value);
+            const sampleSize = parseInt(document.getElementById('sampleSize').value);
+            const dependencyStrength = parseFloat(document.getElementById('dependencyStrength').value);
+            const distributionType = document.getElementById('distributionType').value;
+
+            // 计算理论期望值
+            const theoreticalMean = getTheoreticalMean(distributionType);
+            document.getElementById('theoreticalMean').textContent = theoreticalMean.toFixed(2);
+
+            // 存储实验数据
+            experimentData = [];
+            const means = [];
+            const sampleCounts = [];
+
+            // 进行实验
+            for (let i = 1; i <= experimentCount; i += experimentCount / 100) {
+                const variables = generateDependentVariables(sampleSize, dependencyStrength, distributionType);
+                const mean = calculateMean(variables);
+                means.push(mean);
+                sampleCounts.push(i);
+                experimentData.push(...variables);
+            }
+
+            // 计算实际平均值
+            const actualMean = calculateMean(experimentData);
+            document.getElementById('actualMean').textContent = actualMean.toFixed(4);
+
+            // 计算误差
+            const error = Math.abs((actualMean - theoreticalMean) / theoreticalMean) * 100;
+            document.getElementById('error').textContent = error.toFixed(2) + '%';
+
+            // 确定收敛状态
+            const convergenceStatus = error < 1 ? '已收敛' : '未收敛';
+            document.getElementById('convergenceStatus').textContent = convergenceStatus;
+
+            // 更新收敛趋势图
+            const theoreticalMeans = Array(means.length).fill(theoreticalMean);
+            convergenceChart.data.labels = sampleCounts;
+            convergenceChart.data.datasets[0].data = means;
+            convergenceChart.data.datasets[1].data = theoreticalMeans;
+            convergenceChart.update();
+
+            // 更新样本分布图
+            updateDistributionChart(experimentData);
+        }
+
+        // 更新样本分布图
+        function updateDistributionChart(data) {
+            // 计算直方图
+            const binCount = 20;
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const binWidth = (max - min) / binCount;
+            const bins = Array(binCount).fill(0);
+            const binLabels = [];
+
+            for (let i = 0; i < binCount; i++) {
+                const binStart = min + i * binWidth;
+                const binEnd = binStart + binWidth;
+                binLabels.push(`${binStart.toFixed(2)}-${binEnd.toFixed(2)}`);
+            }
+
+            for (const value of data) {
+                const binIndex = Math.min(Math.floor((value - min) / binWidth), binCount - 1);
+                if (binIndex >= 0) {
+                    bins[binIndex]++;
+                }
+            }
+
+            distributionChart.data.labels = binLabels;
+            distributionChart.data.datasets[0].data = bins;
+            distributionChart.update();
+        }
+
+        // 重置实验
+        function resetExperiment() {
+            // 重置表单
+            document.getElementById('experimentCount').value = 10000;
+            document.getElementById('sampleSize').value = 1000;
+            document.getElementById('dependencyStrength').value = 0.5;
+            document.getElementById('distributionType').value = 'normal';
+
+            // 重置结果
+            document.getElementById('theoreticalMean').textContent = '0.00';
+            document.getElementById('actualMean').textContent = '0.00';
+            document.getElementById('error').textContent = '0.00%';
+            document.getElementById('convergenceStatus').textContent = '未收敛';
+
+            // 重置图表
+            convergenceChart.data.labels = [];
+            convergenceChart.data.datasets[0].data = [];
+            convergenceChart.data.datasets[1].data = [];
+            convergenceChart.update();
+
+            distributionChart.data.labels = [];
+            distributionChart.data.datasets[0].data = [];
+            distributionChart.update();
+
+            experimentData = [];
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+
+            // 绑定事件
+            document.getElementById('startExperiment').addEventListener('click', startExperiment);
+            document.getElementById('resetExperiment').addEventListener('click', resetExperiment);
+        });
+    </script>
+</body>
+</html>

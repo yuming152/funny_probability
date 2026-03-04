@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多轮博弈概率 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .dice {
+                transition: all 0.5s ease;
+            }
+            .dice-roll {
+                animation: roll 0.5s ease-in-out;
+            }
+            @keyframes roll {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            .player-active {
+                border: 2px solid #10B981;
+                box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">多轮博弈概率实验，学习先手优势和胜负分布统计。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">多轮博弈概率实验</h2>
+                    <a href="multi-stage-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回多阶段实验
+                    </a>
+                </div>
+                <p class="text-gray-600">两人轮流掷骰子，先掷出 6 者获胜，计算先手 / 后手获胜概率及多轮后的胜负分布。</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 参数设置区 -->
+                <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">参数设置</h3>
+                    
+                    <!-- 博弈设置 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">博弈设置</h4>
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-600 mb-1">实验次数</label>
+                            <input type="number" id="experiment-times" min="10" max="10000" value="1000" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">最大轮数（每局）</label>
+                            <input type="number" id="max-rounds" min="1" max="100" value="50" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent">
+                        </div>
+                    </div>
+                    
+                    <!-- 单局模拟 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">单局模拟</h4>
+                        <div class="p-4 bg-blue-50 rounded-lg mb-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="text-center">
+                                    <h5 class="font-medium text-gray-800">先手</h5>
+                                    <div id="player1-dice" class="w-16 h-16 bg-white rounded-lg shadow-md flex items-center justify-center mx-auto my-3 dice">
+                                        <span class="text-2xl font-bold">?</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600">胜场: <span id="player1-wins">0</span></div>
+                                </div>
+                                <div class="text-center">
+                                    <h5 class="font-medium text-gray-800">后手</h5>
+                                    <div id="player2-dice" class="w-16 h-16 bg-white rounded-lg shadow-md flex items-center justify-center mx-auto my-3 dice">
+                                        <span class="text-2xl font-bold">?</span>
+                                    </div>
+                                    <div class="text-sm text-gray-600">胜场: <span id="player2-wins">0</span></div>
+                                </div>
+                            </div>
+                            <button id="single-game" class="w-full bg-success text-white py-2 rounded-lg hover:bg-green-600 transition-all-300 font-medium">
+                                模拟一局
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="space-y-3">
+                        <button id="start-experiment" class="w-full bg-success text-white py-3 rounded-lg hover:bg-green-600 transition-all-300 font-medium">
+                            开始实验
+                        </button>
+                        <button id="reset-experiment" class="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 transition-all-300 font-medium">
+                            重置实验
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 实验过程区 -->
+                <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">实验过程</h3>
+                    
+                    <!-- 博弈过程 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">博弈过程</h4>
+                        <div id="game-process" class="h-64 bg-gray-50 rounded-lg p-4 overflow-y-auto">
+                            <p class="text-gray-500 text-center py-8">点击开始实验或模拟一局查看博弈过程</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 实时进度 -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">实验进度</h4>
+                        <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                            <div id="progress-bar" class="bg-success h-4 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span id="progress-text">0/1000</span>
+                            <span id="estimated-time">估计时间: 0s</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 结果统计区 -->
+                <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">结果统计</h3>
+                    
+                    <!-- 理论概率 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">理论概率</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">先手获胜概率</span>
+                                <span class="font-medium text-gray-800" id="player1-theoretical">54.55%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">后手获胜概率</span>
+                                <span class="font-medium text-gray-800" id="player2-theoretical">45.45%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 实验结果 -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-700 mb-3">实验结果</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">先手获胜次数</span>
+                                <span class="font-medium text-gray-800" id="player1-actual">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">后手获胜次数</span>
+                                <span class="font-medium text-gray-800" id="player2-actual">0</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">先手获胜概率</span>
+                                <span class="font-medium text-gray-800" id="player1-rate">0.00%</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                                <span class="text-gray-700">后手获胜概率</span>
+                                <span class="font-medium text-gray-800" id="player2-rate">0.00%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 胜负分布 -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-3">胜负分布</h4>
+                        <div class="h-48">
+                            <canvas id="win-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        先手优势的数学原理
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算博弈中的获胜概率
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        多轮博弈的胜负分布规律
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let winDistributionChart = null;
+        let isExperimentRunning = false;
+        let experimentData = {
+            player1: { wins: 0, rate: 0 },
+            player2: { wins: 0, rate: 0 },
+            totalGames: 0
+        };
+        let singleGameData = {
+            player1: { wins: 0 },
+            player2: { wins: 0 }
+        };
+        
+        // 初始化图表
+        function initCharts() {
+            // 胜负分布图表
+            const distributionCtx = document.getElementById('win-distribution-chart').getContext('2d');
+            winDistributionChart = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['先手', '后手'],
+                    datasets: [{
+                        label: '理论概率',
+                        data: [54.55, 45.45],
+                        backgroundColor: '#3B82F6',
+                        borderWidth: 1
+                    }, {
+                        label: '实验概率',
+                        data: [0, 0],
+                        backgroundColor: '#10B981',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: '获胜概率 (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 模拟单次博弈
+        function simulateSingleGame() {
+            const maxRounds = parseInt(document.getElementById('max-rounds').value) || 50;
+            let currentPlayer = 1; // 1 for 先手, 2 for 后手
+            
+            for (let round = 1; round <= maxRounds; round++) {
+                // 模拟掷骰子
+                const roll = Math.floor(Math.random() * 6) + 1;
+                
+                // 更新骰子显示
+                if (currentPlayer === 1) {
+                    const dice1 = document.getElementById('player1-dice');
+                    dice1.classList.add('dice-roll');
+                    setTimeout(() => {
+                        dice1.innerHTML = `<span class="text-2xl font-bold">${roll}</span>`;
+                        dice1.classList.remove('dice-roll');
+                    }, 250);
+                } else {
+                    const dice2 = document.getElementById('player2-dice');
+                    dice2.classList.add('dice-roll');
+                    setTimeout(() => {
+                        dice2.innerHTML = `<span class="text-2xl font-bold">${roll}</span>`;
+                        dice2.classList.remove('dice-roll');
+                    }, 250);
+                }
+                
+                // 检查是否获胜
+                if (roll === 6) {
+                    return currentPlayer;
+                }
+                
+                // 切换玩家
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+            }
+            
+            // 达到最大轮数，平局（但在这个实验中我们认为没有平局，最后一轮的玩家输）
+            return currentPlayer === 1 ? 2 : 1;
+        }
+        
+        // 执行单局模拟
+        function runSingleGame() {
+            const winner = simulateSingleGame();
+            
+            // 更新单局数据
+            if (winner === 1) {
+                singleGameData.player1.wins++;
+                document.getElementById('player1-wins').textContent = singleGameData.player1.wins;
+            } else {
+                singleGameData.player2.wins++;
+                document.getElementById('player2-wins').textContent = singleGameData.player2.wins;
+            }
+            
+            // 更新博弈过程
+            const processElement = document.getElementById('game-process');
+            const processText = `游戏结束: ${winner === 1 ? '先手' : '后手'}获胜\n`;
+            processElement.innerHTML += processText;
+            processElement.scrollTop = processElement.scrollHeight;
+        }
+        
+        // 批量执行实验
+        function runBatchExperiments() {
+            if (isExperimentRunning) return;
+            
+            isExperimentRunning = true;
+            const experimentTimes = parseInt(document.getElementById('experiment-times').value) || 1000;
+            const maxRounds = parseInt(document.getElementById('max-rounds').value) || 50;
+            
+            let completedExperiments = 0;
+            let player1Wins = 0;
+            let player2Wins = 0;
+            
+            const startTime = Date.now();
+            
+            // 清空博弈过程
+            document.getElementById('game-process').innerHTML = '';
+            
+            // 使用requestAnimationFrame分批执行实验
+            function executeBatch() {
+                const batchSize = Math.min(100, experimentTimes - completedExperiments);
+                
+                for (let i = 0; i < batchSize; i++) {
+                    let currentPlayer = 1;
+                    let winner = null;
+                    
+                    for (let round = 1; round <= maxRounds; round++) {
+                        const roll = Math.floor(Math.random() * 6) + 1;
+                        if (roll === 6) {
+                            winner = currentPlayer;
+                            break;
+                        }
+                        currentPlayer = currentPlayer === 1 ? 2 : 1;
+                    }
+                    
+                    if (!winner) {
+                        winner = currentPlayer === 1 ? 2 : 1;
+                    }
+                    
+                    if (winner === 1) {
+                        player1Wins++;
+                    } else {
+                        player2Wins++;
+                    }
+                    
+                    completedExperiments++;
+                }
+                
+                // 更新进度
+                const progress = (completedExperiments / experimentTimes) * 100;
+                document.getElementById('progress-bar').style.width = progress + '%';
+                document.getElementById('progress-text').textContent = completedExperiments + '/' + experimentTimes;
+                
+                // 估计剩余时间
+                const elapsedTime = (Date.now() - startTime) / 1000;
+                const estimatedTotalTime = (elapsedTime / completedExperiments) * experimentTimes;
+                const estimatedRemainingTime = Math.max(0, estimatedTotalTime - elapsedTime);
+                document.getElementById('estimated-time').textContent = '估计时间: ' + estimatedRemainingTime.toFixed(1) + 's';
+                
+                // 每100次实验更新一次博弈过程
+                if (completedExperiments % 100 === 0) {
+                    const processElement = document.getElementById('game-process');
+                    const processText = `实验 ${completedExperiments}: 先手获胜${player1Wins}次, 后手获胜${player2Wins}次\n`;
+                    processElement.innerHTML += processText;
+                    processElement.scrollTop = processElement.scrollHeight;
+                }
+                
+                if (completedExperiments < experimentTimes) {
+                    requestAnimationFrame(executeBatch);
+                } else {
+                    // 实验完成
+                    isExperimentRunning = false;
+                    
+                    // 计算概率
+                    const player1Rate = (player1Wins / experimentTimes) * 100;
+                    const player2Rate = (player2Wins / experimentTimes) * 100;
+                    
+                    // 更新显示
+                    document.getElementById('player1-actual').textContent = player1Wins;
+                    document.getElementById('player2-actual').textContent = player2Wins;
+                    document.getElementById('player1-rate').textContent = player1Rate.toFixed(2) + '%';
+                    document.getElementById('player2-rate').textContent = player2Rate.toFixed(2) + '%';
+                    
+                    // 更新实验数据
+                    experimentData.player1.wins = player1Wins;
+                    experimentData.player2.wins = player2Wins;
+                    experimentData.player1.rate = player1Rate;
+                    experimentData.player2.rate = player2Rate;
+                    experimentData.totalGames = experimentTimes;
+                    
+                    // 更新图表
+                    updateWinDistributionChart();
+                }
+            }
+            
+            executeBatch();
+        }
+        
+        // 更新胜负分布图表
+        function updateWinDistributionChart() {
+            if (winDistributionChart) {
+                winDistributionChart.data.datasets[1].data = [
+                    experimentData.player1.rate,
+                    experimentData.player2.rate
+                ];
+                winDistributionChart.update();
+            }
+        }
+        
+        // 重置实验
+        function resetExperiment() {
+            if (isExperimentRunning) return;
+            
+            // 重置进度
+            document.getElementById('progress-bar').style.width = '0%';
+            document.getElementById('progress-text').textContent = '0/1000';
+            document.getElementById('estimated-time').textContent = '估计时间: 0s';
+            
+            // 重置结果
+            document.getElementById('player1-actual').textContent = '0';
+            document.getElementById('player2-actual').textContent = '0';
+            document.getElementById('player1-rate').textContent = '0.00%';
+            document.getElementById('player2-rate').textContent = '0.00%';
+            
+            // 重置骰子
+            document.getElementById('player1-dice').innerHTML = '<span class="text-2xl font-bold">?</span>';
+            document.getElementById('player2-dice').innerHTML = '<span class="text-2xl font-bold">?</span>';
+            
+            // 重置单局数据
+            singleGameData = {
+                player1: { wins: 0 },
+                player2: { wins: 0 }
+            };
+            document.getElementById('player1-wins').textContent = '0';
+            document.getElementById('player2-wins').textContent = '0';
+            
+            // 重置实验数据
+            experimentData = {
+                player1: { wins: 0, rate: 0 },
+                player2: { wins: 0, rate: 0 },
+                totalGames: 0
+            };
+            
+            // 重置博弈过程
+            document.getElementById('game-process').innerHTML = '<p class="text-gray-500 text-center py-8">点击开始实验或模拟一局查看博弈过程</p>';
+            
+            // 更新图表
+            updateWinDistributionChart();
+        }
+        
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+        
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+        
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+        
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+        
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+        
+        // 事件监听
+        document.getElementById('start-experiment').addEventListener('click', runBatchExperiments);
+        document.getElementById('reset-experiment').addEventListener('click', resetExperiment);
+        document.getElementById('single-game').addEventListener('click', runSingleGame);
+        
+        // 初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+    </script>
+</body>
+</html>

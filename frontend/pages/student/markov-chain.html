@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>马尔可夫链状态转移 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .markov-chain {
+                position: relative;
+                height: 400px;
+                border: 2px solid #E5E7EB;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .state {
+                position: absolute;
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                font-weight: bold;
+                color: white;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                transition: all 0.5s ease;
+            }
+            .state.active {
+                transform: scale(1.1);
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            }
+            .transition {
+                position: absolute;
+                height: 2px;
+                background: #9CA3AF;
+                transform-origin: 0 0;
+            }
+            .transition-arrow {
+                position: absolute;
+                right: -8px;
+                top: -4px;
+                width: 0;
+                height: 0;
+                border-left: 8px solid #9CA3AF;
+                border-top: 4px solid transparent;
+                border-bottom: 4px solid transparent;
+            }
+            .transition-label {
+                position: absolute;
+                font-size: 12px;
+                color: #6B7280;
+                background: white;
+                padding: 2px 6px;
+                border-radius: 10px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="bayesian-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-refresh w-5 text-center"></i>
+                    <span>逆概率 / 贝叶斯进阶实验</span>
+                </a>
+                <a href="queuing-theory-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>排队论 / 随机过程基础实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">调整状态转移矩阵，观察马尔可夫链的状态转移过程和稳态分布。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">马尔可夫链状态转移</h2>
+                    <a href="queuing-theory-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">模拟马尔可夫链的状态转移过程，分析状态转移矩阵、稳态分布和吸收概率等特性。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">状态数量</label>
+                        <select id="state-count" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full">
+                            <option value="2">2个状态</option>
+                            <option value="3" selected>3个状态</option>
+                            <option value="4">4个状态</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟步数</label>
+                        <input type="number" id="simulation-steps" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent w-full" value="1000" min="100" max="10000" step="100">
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">状态转移矩阵</label>
+                    <div id="transition-matrix" class="grid grid-cols-3 gap-2">
+                        <input type="number" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.7" min="0" max="1" step="0.1">
+                        <input type="number" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.2" min="0" max="1" step="0.1">
+                        <input type="number" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.1" min="0" max="1" step="0.1">
+                        <input type="number" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.3" min="0" max="1" step="0.1">
+                        <input type="number" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.5" min="0" max="1" step="0.1">
+                        <input type="number" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.2" min="0" max="1" step="0.1">
+                        <input type="number" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.2" min="0" max="1" step="0.1">
+                        <input type="number" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.3" min="0" max="1" step="0.1">
+                        <input type="number" class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="0.5" min="0" max="1" step="0.1">
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button id="validate-matrix" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-check mr-2"></i> 验证矩阵
+                    </button>
+                    <button id="start-simulation" class="px-6 py-3 bg-secondary text-white rounded-lg hover:bg-orange-600 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-play mr-2"></i> 开始模拟
+                    </button>
+                    <button id="reset-simulation" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 马尔可夫链可视化 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">马尔可夫链可视化</h3>
+                <div class="markov-chain mb-4" id="markov-chain-visualization">
+                    <!-- 状态和转移将通过JavaScript动态生成 -->
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        <span id="current-state">当前状态: S₁</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <span id="current-step">当前步数: 0</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <span id="simulation-status">状态: 就绪</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 状态分布分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">状态分布分析</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">状态概率分布</h4>
+                        <div class="h-64">
+                            <canvas id="state-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">状态转移路径</h4>
+                        <div class="h-64">
+                            <canvas id="state-path-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">稳态分布</h4>
+                        <div class="space-y-3" id="steady-state-distribution">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">状态 1</span>
+                                <span class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">状态 2</span>
+                                <span class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">状态 3</span>
+                                <span class="font-bold text-primary">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">吸收概率（如果存在吸收态）</h4>
+                        <div class="space-y-3" id="absorption-probabilities">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">从状态 1 吸收到状态 1</span>
+                                <span class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">从状态 2 吸收到状态 1</span>
+                                <span class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">从状态 3 吸收到状态 1</span>
+                                <span class="font-bold text-primary">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">马尔可夫链的基本概念</h4>
+                        <p class="text-gray-600">马尔可夫链是一种随机过程，具有马尔可夫性质：未来状态的概率分布只依赖于当前状态，与过去的状态无关。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">状态转移矩阵</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600 mb-2">状态转移矩阵 P 是一个 n×n 的矩阵，其中 P[i][j] 表示从状态 i 转移到状态 j 的概率。</p>
+                            <p class="text-gray-600">对于一个有效的马尔可夫链，每个行的元素之和必须等于 1。</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">稳态分布</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600 mb-2">稳态分布 π 是一个概率向量，满足 πP = π。</p>
+                            <p class="text-gray-600">对于不可约且非周期的马尔可夫链，稳态分布是唯一的。</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">吸收态和吸收概率</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600 mb-2">吸收态是指一旦进入就无法离开的状态（P[i][i] = 1）。</p>
+                            <p class="text-gray-600">吸收概率是指从某个状态出发，最终被吸收到特定吸收态的概率。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结论 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结论</h3>
+                <div id="experiment-conclusion" class="text-gray-600">
+                    <p>请运行模拟以查看实验结论。</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        马尔可夫链的稳态分布求解
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        状态转移矩阵的性质
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        吸收态和吸收概率的计算
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 状态数量变化处理
+        document.getElementById('state-count').addEventListener('change', function() {
+            const stateCount = parseInt(this.value);
+            const matrixContainer = document.getElementById('transition-matrix');
+            matrixContainer.innerHTML = '';
+            matrixContainer.className = `grid grid-cols-${stateCount} gap-2`;
+            
+            // 生成默认转移矩阵
+            for (let i = 0; i < stateCount; i++) {
+                for (let j = 0; j < stateCount; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.className = 'border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent';
+                    input.min = '0';
+                    input.max = '1';
+                    input.step = '0.1';
+                    
+                    // 设置默认值
+                    if (i === j) {
+                        input.value = '0.5';
+                    } else {
+                        input.value = (0.5 / (stateCount - 1)).toFixed(1);
+                    }
+                    
+                    matrixContainer.appendChild(input);
+                }
+            }
+            
+            // 更新马尔可夫链可视化
+            updateMarkovChainVisualization();
+        });
+
+        // 验证转移矩阵
+        document.getElementById('validate-matrix').addEventListener('click', function() {
+            const stateCount = parseInt(document.getElementById('state-count').value);
+            const inputs = document.querySelectorAll('#transition-matrix input');
+            let isValid = true;
+            
+            for (let i = 0; i < stateCount; i++) {
+                let rowSum = 0;
+                for (let j = 0; j < stateCount; j++) {
+                    const index = i * stateCount + j;
+                    rowSum += parseFloat(inputs[index].value);
+                }
+                
+                if (Math.abs(rowSum - 1) > 0.01) {
+                    isValid = false;
+                    break;
+                }
+            }
+            
+            if (isValid) {
+                alert('转移矩阵有效！');
+            } else {
+                alert('转移矩阵无效：每行之和必须等于1');
+            }
+        });
+
+        // 图表初始化
+        let stateDistributionChart, statePathChart;
+
+        function initCharts() {
+            // 状态概率分布图表
+            const distributionCtx = document.getElementById('state-distribution-chart').getContext('2d');
+            stateDistributionChart = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['S₁', 'S₂', 'S₃'],
+                    datasets: [{
+                        label: '状态概率',
+                        data: [1, 0, 0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1
+                        }
+                    }
+                }
+            });
+
+            // 状态转移路径图表
+            const pathCtx = document.getElementById('state-path-chart').getContext('2d');
+            statePathChart = new Chart(pathCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '状态',
+                        data: [],
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 初始化图表
+        window.onload = function() {
+            initCharts();
+            updateMarkovChainVisualization();
+        };
+
+        // 更新马尔可夫链可视化
+        function updateMarkovChainVisualization() {
+            const stateCount = parseInt(document.getElementById('state-count').value);
+            const container = document.getElementById('markov-chain-visualization');
+            container.innerHTML = '';
+            
+            // 状态位置
+            const positions = [];
+            const radius = 150;
+            const centerX = container.offsetWidth / 2;
+            const centerY = container.offsetHeight / 2;
+            
+            for (let i = 0; i < stateCount; i++) {
+                const angle = (i / stateCount) * 2 * Math.PI;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                positions.push({ x, y });
+                
+                // 创建状态节点
+                const state = document.createElement('div');
+                state.className = 'state';
+                state.style.left = `${x - 40}px`;
+                state.style.top = `${y - 40}px`;
+                state.style.backgroundColor = `hsl(${i * (360 / stateCount)}, 70%, 50%)`;
+                state.textContent = `S${i + 1}`;
+                state.id = `state-${i + 1}`;
+                container.appendChild(state);
+            }
+            
+            // 获取转移矩阵
+            const inputs = document.querySelectorAll('#transition-matrix input');
+            
+            // 创建转移箭头
+            for (let i = 0; i < stateCount; i++) {
+                for (let j = 0; j < stateCount; j++) {
+                    if (i !== j) {
+                        const probability = parseFloat(inputs[i * stateCount + j].value);
+                        if (probability > 0) {
+                            const from = positions[i];
+                            const to = positions[j];
+                            
+                            // 计算箭头位置和角度
+                            const dx = to.x - from.x;
+                            const dy = to.y - from.y;
+                            const length = Math.sqrt(dx * dx + dy * dy);
+                            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                            
+                            // 创建转移线
+                            const transition = document.createElement('div');
+                            transition.className = 'transition';
+                            transition.style.width = `${length - 80}px`;
+                            transition.style.left = `${from.x}px`;
+                            transition.style.top = `${from.y}px`;
+                            transition.style.transform = `rotate(${angle}deg)`;
+                            container.appendChild(transition);
+                            
+                            // 创建箭头
+                            const arrow = document.createElement('div');
+                            arrow.className = 'transition-arrow';
+                            transition.appendChild(arrow);
+                            
+                            // 创建概率标签
+                            const label = document.createElement('div');
+                            label.className = 'transition-label';
+                            label.textContent = probability.toFixed(1);
+                            label.style.left = `${from.x + dx * 0.5 - 20}px`;
+                            label.style.top = `${from.y + dy * 0.5 - 15}px`;
+                            container.appendChild(label);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 模拟参数
+        let simulationInterval;
+        let currentStep = 0;
+        let currentState = 1;
+        let stateCounts = [];
+        let statePath = [];
+
+        // 开始模拟
+        document.getElementById('start-simulation').addEventListener('click', function() {
+            // 停止之前的模拟
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+            }
+
+            // 获取参数
+            const stateCount = parseInt(document.getElementById('state-count').value);
+            const simulationSteps = parseInt(document.getElementById('simulation-steps').value);
+            const inputs = document.querySelectorAll('#transition-matrix input');
+            
+            // 构建转移矩阵
+            const transitionMatrix = [];
+            for (let i = 0; i < stateCount; i++) {
+                const row = [];
+                for (let j = 0; j < stateCount; j++) {
+                    row.push(parseFloat(inputs[i * stateCount + j].value));
+                }
+                transitionMatrix.push(row);
+            }
+
+            // 初始化模拟
+            currentStep = 0;
+            currentState = 1;
+            stateCounts = new Array(stateCount).fill(0);
+            statePath = [];
+            
+            // 更新状态显示
+            document.getElementById('current-state').textContent = `当前状态: S${currentState}`;
+            document.getElementById('current-step').textContent = `当前步数: ${currentStep}`;
+            document.getElementById('simulation-status').textContent = `状态: 运行中`;
+            
+            // 标记当前状态
+            document.querySelectorAll('.state').forEach(state => {
+                state.classList.remove('active');
+            });
+            document.getElementById(`state-${currentState}`).classList.add('active');
+
+            // 开始模拟循环
+            simulationInterval = setInterval(function() {
+                currentStep++;
+                
+                // 根据转移矩阵随机转移状态
+                const probabilities = transitionMatrix[currentState - 1];
+                const random = Math.random();
+                let cumulativeProb = 0;
+                let newState = currentState;
+                
+                for (let i = 0; i < stateCount; i++) {
+                    cumulativeProb += probabilities[i];
+                    if (random <= cumulativeProb) {
+                        newState = i + 1;
+                        break;
+                    }
+                }
+                
+                // 更新状态
+                currentState = newState;
+                stateCounts[currentState - 1]++;
+                statePath.push(currentState);
+                
+                // 更新显示
+                document.getElementById('current-state').textContent = `当前状态: S${currentState}`;
+                document.getElementById('current-step').textContent = `当前步数: ${currentStep}`;
+                
+                // 标记当前状态
+                document.querySelectorAll('.state').forEach(state => {
+                    state.classList.remove('active');
+                });
+                document.getElementById(`state-${currentState}`).classList.add('active');
+                
+                // 更新图表
+                if (currentStep % 100 === 0) {
+                    // 更新状态分布图表
+                    const stateProbabilities = stateCounts.map(count => count / currentStep);
+                    stateDistributionChart.data.datasets[0].data = stateProbabilities;
+                    stateDistributionChart.update();
+                    
+                    // 更新状态路径图表
+                    const pathLabels = [];
+                    const pathData = [];
+                    for (let i = 0; i < statePath.length; i += 10) {
+                        pathLabels.push(i);
+                        pathData.push(statePath[i]);
+                    }
+                    statePathChart.data.labels = pathLabels;
+                    statePathChart.data.datasets[0].data = pathData;
+                    statePathChart.update();
+                }
+                
+                // 检查模拟是否结束
+                if (currentStep >= simulationSteps) {
+                    clearInterval(simulationInterval);
+                    
+                    // 计算最终状态分布
+                    const stateProbabilities = stateCounts.map(count => count / simulationSteps);
+                    
+                    // 更新稳态分布显示
+                    const steadyStateContainer = document.getElementById('steady-state-distribution');
+                    steadyStateContainer.innerHTML = '';
+                    for (let i = 0; i < stateCount; i++) {
+                        const div = document.createElement('div');
+                        div.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
+                        div.innerHTML = `
+                            <span class="text-gray-600">状态 ${i + 1}</span>
+                            <span class="font-bold text-primary">${stateProbabilities[i].toFixed(4)}</span>
+                        `;
+                        steadyStateContainer.appendChild(div);
+                    }
+                    
+                    // 更新实验结论
+                    const conclusion = document.getElementById('experiment-conclusion');
+                    conclusion.innerHTML = `
+                        <p>模拟步数：${simulationSteps}</p>
+                        <p>状态数量：${stateCount}</p>
+                        <p class="mt-2">最终状态分布：</p>
+                        <ul class="list-disc list-inside">
+                            ${stateProbabilities.map((prob, index) => `<li>状态 ${index + 1}: ${prob.toFixed(4)}</li>`).join('')}
+                        </ul>
+                        <p class="mt-4 font-medium">结论：马尔可夫链在经过足够多的步骤后，状态分布趋于稳定，接近稳态分布。</p>
+                    `;
+                    
+                    document.getElementById('simulation-status').textContent = `状态: 完成`;
+                }
+            }, 50);
+        });
+
+        // 重置模拟
+        document.getElementById('reset-simulation').addEventListener('click', function() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+            }
+            
+            // 重置显示
+            document.getElementById('current-state').textContent = `当前状态: S₁`;
+            document.getElementById('current-step').textContent = `当前步数: 0`;
+            document.getElementById('simulation-status').textContent = `状态: 就绪`;
+            
+            // 重置状态激活
+            document.querySelectorAll('.state').forEach(state => {
+                state.classList.remove('active');
+            });
+            document.getElementById('state-1').classList.add('active');
+            
+            // 重置图表
+            stateDistributionChart.data.datasets[0].data = [1, 0, 0];
+            stateDistributionChart.update();
+            
+            statePathChart.data.labels = [];
+            statePathChart.data.datasets[0].data = [];
+            statePathChart.update();
+            
+            // 重置稳态分布显示
+            const steadyStateContainer = document.getElementById('steady-state-distribution');
+            steadyStateContainer.innerHTML = '';
+            const stateCount = parseInt(document.getElementById('state-count').value);
+            for (let i = 0; i < stateCount; i++) {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
+                div.innerHTML = `
+                    <span class="text-gray-600">状态 ${i + 1}</span>
+                    <span class="font-bold text-primary">0.00</span>
+                `;
+                steadyStateContainer.appendChild(div);
+            }
+            
+            // 重置实验结论
+            document.getElementById('experiment-conclusion').innerHTML = '<p>请运行模拟以查看实验结论。</p>';
+        });
+    </script>
+</body>
+</html>

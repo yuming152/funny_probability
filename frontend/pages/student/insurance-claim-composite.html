@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>保险理赔复合实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .bg-gradient-danger {
+                background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .claim-item {
+                transition: all 0.3s ease;
+            }
+            .claim-item:hover {
+                transform: scale(1.02);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">通过保险理赔复合实验，学习如何计算多次小事故与一次重大事故的复合概率。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">保险理赔复合实验</h2>
+                    <a href="rare-events-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回稀有事件实验
+                    </a>
+                </div>
+                <p class="text-gray-600">模拟一年内多次小事故与一次重大事故的复合概率模型，计算总赔付额超过阈值的概率。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">模拟次数</label>
+                            <input type="number" id="simulation-count" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="10000" min="1000" max="100000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">小事故概率 (每次)</label>
+                            <input type="number" id="small-accident-prob" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="0.1" min="0.01" max="0.5" step="0.01">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">小事故平均赔付额</label>
+                            <input type="number" id="small-claim-mean" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="1000" min="100" max="5000">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">小事故标准差</label>
+                            <input type="number" id="small-claim-std" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="200" min="50" max="1000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">重大事故概率</label>
+                            <input type="number" id="major-accident-prob" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="0.01" min="0.001" max="0.1" step="0.001">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">重大事故平均赔付额</label>
+                            <input type="number" id="major-claim-mean" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="50000" min="10000" max="200000">
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">重大事故标准差</label>
+                            <input type="number" id="major-claim-std" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="10000" min="5000" max="50000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">总赔付额阈值</label>
+                            <input type="number" id="claim-threshold" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent" value="60000" min="10000" max="200000">
+                        </div>
+                        <div class="pt-6">
+                            <button id="run-experiment" class="w-full bg-secondary text-white py-3 rounded-lg hover:bg-orange-600 transition-all-300 font-medium flex items-center justify-center">
+                                <i class="fa fa-play mr-2"></i> 运行实验
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">总模拟次数</h4>
+                        <p id="total-simulations" class="text-2xl font-bold text-primary">0</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">超过阈值次数</h4>
+                        <p id="threshold-exceed-count" class="text-2xl font-bold text-secondary">0</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">超过阈值概率</h4>
+                        <p id="threshold-exceed-prob" class="text-2xl font-bold text-success">0%</p>
+                    </div>
+                </div>
+
+                <!-- 理赔可视化 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">理赔情况可视化</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h5 class="text-sm font-medium text-gray-700 mb-2">最近10次理赔情况</h5>
+                            <div id="claim-list" class="space-y-2 max-h-60 overflow-y-auto">
+                                <!-- 理赔项目将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h5 class="text-sm font-medium text-gray-700 mb-2">理赔额分布</h5>
+                            <canvas id="claim-distribution-chart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 总赔付额趋势 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">总赔付额趋势</h4>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <canvas id="claim-trend-chart" height="250"></canvas>
+                    </div>
+                </div>
+
+                <!-- 统计分析 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">小事故统计</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">平均发生次数:</span>
+                                <span id="small-accident-avg" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">平均赔付额:</span>
+                                <span id="small-claim-avg" class="font-medium">¥0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">总赔付额:</span>
+                                <span id="small-claim-total" class="font-medium">¥0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">重大事故统计</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">发生次数:</span>
+                                <span id="major-accident-count" class="font-medium">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">平均赔付额:</span>
+                                <span id="major-claim-avg" class="font-medium">¥0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">总赔付额:</span>
+                                <span id="major-claim-total" class="font-medium">¥0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论解释 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论解释</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">复合概率模型</h4>
+                        <p class="text-gray-600">保险理赔复合模型考虑了两种类型的事故：小事故和重大事故。小事故发生概率较高但赔付额较小，重大事故发生概率较低但赔付额较大。</p>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">概率计算</h4>
+                        <p class="text-gray-600">设小事故发生概率为  p_s ，重大事故发生概率为  p_m ，则：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>一年内发生  k  次小事故的概率： P(X = k) = inom{n}{k} p_s^k (1-p_s)^{n-k} ，其中  n  为可能的事故次数</li>
+                            <li>一年内发生至少一次重大事故的概率： P(Y eq 1) = 1 - (1-p_m)^n </li>
+                            <li>总赔付额超过阈值的概率：通过模拟计算  P(	ext{总赔付额} > T) </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">模型假设</h4>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>小事故和重大事故的发生是独立事件</li>
+                            <li>小事故的赔付额服从正态分布  N(u_s, igma_s^2) </li>
+                            <li>重大事故的赔付额服从正态分布  N(u_m, igma_m^2) </li>
+                            <li>每次事故的发生是独立的</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">实际应用</h4>
+                        <p class="text-gray-600">该模型可用于保险定价、风险评估和准备金计算。通过模拟不同情景下的赔付情况，保险公司可以更好地理解风险并制定相应的策略。</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        保险理赔复合概率模型
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算总赔付额超过阈值的概率
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        保险风险评估方法
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验相关变量
+        let claimDistributionChart = null;
+        let claimTrendChart = null;
+
+        // 初始化图表
+        function initCharts() {
+            // 理赔额分布图表
+            const distributionCtx = document.getElementById('claim-distribution-chart').getContext('2d');
+            claimDistributionChart = new Chart(distributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-10k', '10k-20k', '20k-30k', '30k-40k', '40k-50k', '50k-60k', '60k+'],
+                    datasets: [{
+                        label: '理赔次数',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: '#F97316',
+                        borderColor: '#F97316',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 总赔付额趋势图表
+            const trendCtx = document.getElementById('claim-trend-chart').getContext('2d');
+            claimTrendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '总赔付额',
+                        data: [],
+                        borderColor: '#1E40AF',
+                        backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '赔付额 (¥)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '模拟次数'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 运行实验
+        document.getElementById('run-experiment').addEventListener('click', function() {
+            // 获取参数
+            const simulationCount = parseInt(document.getElementById('simulation-count').value);
+            const smallAccidentProb = parseFloat(document.getElementById('small-accident-prob').value);
+            const smallClaimMean = parseFloat(document.getElementById('small-claim-mean').value);
+            const smallClaimStd = parseFloat(document.getElementById('small-claim-std').value);
+            const majorAccidentProb = parseFloat(document.getElementById('major-accident-prob').value);
+            const majorClaimMean = parseFloat(document.getElementById('major-claim-mean').value);
+            const majorClaimStd = parseFloat(document.getElementById('major-claim-std').value);
+            const claimThreshold = parseFloat(document.getElementById('claim-threshold').value);
+
+            // 初始化统计变量
+            let thresholdExceedCount = 0;
+            let smallAccidentTotal = 0;
+            let smallClaimTotal = 0;
+            let majorAccidentCount = 0;
+            let majorClaimTotal = 0;
+            const claimAmounts = [];
+            const recentClaims = [];
+            const trendData = [];
+            const trendLabels = [];
+
+            // 模拟实验
+            for (let i = 0; i < simulationCount; i++) {
+                // 计算小事故次数（假设一年365天）
+                let smallAccidentCount = 0;
+                let smallClaimAmount = 0;
+                for (let j = 0; j < 365; j++) {
+                    if (Math.random() < smallAccidentProb) {
+                        smallAccidentCount++;
+                        // 生成小事故赔付额（正态分布）
+                        const claim = generateNormal(smallClaimMean, smallClaimStd);
+                        smallClaimAmount += Math.max(0, claim); // 确保赔付额非负
+                    }
+                }
+
+                // 检查是否发生重大事故
+                let majorClaimAmount = 0;
+                let hasMajorAccident = false;
+                if (Math.random() < majorAccidentProb) {
+                    hasMajorAccident = true;
+                    majorAccidentCount++;
+                    // 生成重大事故赔付额（正态分布）
+                    majorClaimAmount = Math.max(0, generateNormal(majorClaimMean, majorClaimStd));
+                }
+
+                // 计算总赔付额
+                const totalClaim = smallClaimAmount + majorClaimAmount;
+                claimAmounts.push(totalClaim);
+
+                // 检查是否超过阈值
+                if (totalClaim > claimThreshold) {
+                    thresholdExceedCount++;
+                }
+
+                // 更新统计数据
+                smallAccidentTotal += smallAccidentCount;
+                smallClaimTotal += smallClaimAmount;
+                majorClaimTotal += majorClaimAmount;
+
+                // 记录最近10次理赔
+                if (i >= simulationCount - 10) {
+                    recentClaims.push({
+                        smallCount: smallAccidentCount,
+                        smallAmount: smallClaimAmount,
+                        major: hasMajorAccident,
+                        majorAmount: majorClaimAmount,
+                        total: totalClaim,
+                        exceed: totalClaim > claimThreshold
+                    });
+                }
+
+                // 记录趋势数据（每100次模拟记录一次）
+                if (i % 100 === 0) {
+                    trendLabels.push(i);
+                    trendData.push(totalClaim);
+                }
+            }
+
+            // 更新统计结果
+            document.getElementById('total-simulations').textContent = simulationCount;
+            document.getElementById('threshold-exceed-count').textContent = thresholdExceedCount;
+            document.getElementById('threshold-exceed-prob').textContent = ((thresholdExceedCount / simulationCount) * 100).toFixed(2) + '%';
+
+            // 更新小事故统计
+            document.getElementById('small-accident-avg').textContent = (smallAccidentTotal / simulationCount).toFixed(2);
+            document.getElementById('small-claim-avg').textContent = '¥' + (smallClaimTotal / simulationCount).toFixed(2);
+            document.getElementById('small-claim-total').textContent = '¥' + smallClaimTotal.toFixed(2);
+
+            // 更新重大事故统计
+            document.getElementById('major-accident-count').textContent = majorAccidentCount;
+            document.getElementById('major-claim-avg').textContent = '¥' + (majorClaimTotal / Math.max(1, majorAccidentCount)).toFixed(2);
+            document.getElementById('major-claim-total').textContent = '¥' + majorClaimTotal.toFixed(2);
+
+            // 更新最近理赔列表
+            const claimList = document.getElementById('claim-list');
+            claimList.innerHTML = '';
+            recentClaims.forEach((claim, index) => {
+                const claimItem = document.createElement('div');
+                claimItem.className = 'claim-item p-3 border border-gray-200 rounded-lg ' + (claim.exceed ? 'bg-red-50' : 'bg-white');
+                claimItem.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">模拟 ${simulationCount - 9 + index}</span>
+                        <span class="text-sm ${claim.exceed ? 'text-danger font-medium' : 'text-success'}">
+                            ${claim.exceed ? '超过阈值' : '未超过阈值'}
+                        </span>
+                    </div>
+                    <div class="text-sm space-y-1">
+                        <div>小事故: ${claim.smallCount} 次, ¥${claim.smallAmount.toFixed(2)}</div>
+                        <div>重大事故: ${claim.major ? '是, ¥' + claim.majorAmount.toFixed(2) : '否'}</div>
+                        <div class="font-medium mt-1">总赔付额: ¥${claim.total.toFixed(2)}</div>
+                    </div>
+                `;
+                claimList.appendChild(claimItem);
+            });
+
+            // 更新理赔额分布图表
+            const distributionData = [0, 0, 0, 0, 0, 0, 0];
+            claimAmounts.forEach(amount => {
+                if (amount < 10000) distributionData[0]++;
+                else if (amount < 20000) distributionData[1]++;
+                else if (amount < 30000) distributionData[2]++;
+                else if (amount < 40000) distributionData[3]++;
+                else if (amount < 50000) distributionData[4]++;
+                else if (amount < 60000) distributionData[5]++;
+                else distributionData[6]++;
+            });
+            claimDistributionChart.data.datasets[0].data = distributionData;
+            claimDistributionChart.update();
+
+            // 更新总赔付额趋势图表
+            claimTrendChart.data.labels = trendLabels;
+            claimTrendChart.data.datasets[0].data = trendData;
+            claimTrendChart.update();
+        });
+
+        // 生成正态分布随机数
+        function generateNormal(mean, std) {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+            return num * std + mean;
+        }
+
+        // 初始化图表
+        window.addEventListener('DOMContentLoaded', initCharts);
+    </script>
+</body>
+</html>

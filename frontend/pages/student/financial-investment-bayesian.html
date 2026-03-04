@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金融投资贝叶斯决策 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .bg-gradient-accent {
+                background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .strategy-card {
+                transition: all 0.3s ease;
+            }
+            .strategy-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">通过金融投资贝叶斯决策实验，学习如何应用贝叶斯定理结合市场先验信息和新的经济数据，更新投资策略的成功概率。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">金融投资贝叶斯决策</h2>
+                    <a href="bayesian-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回贝叶斯实验
+                    </a>
+                </div>
+                <p class="text-gray-600">结合市场先验信息和新的经济数据，使用贝叶斯定理更新投资策略的成功概率。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">投资策略</label>
+                            <select id="investment-strategy" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="growth">成长型投资</option>
+                                <option value="value">价值型投资</option>
+                                <option value="momentum">动量投资</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">策略先验成功率</label>
+                            <input type="number" id="prior-success-rate" min="0" max="1" step="0.01" value="0.6" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">经济数据类型</label>
+                            <select id="economic-data-type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="gdp">GDP增长</option>
+                                <option value="inflation">通货膨胀</option>
+                                <option value="employment">就业率</option>
+                                <option value="interest">利率变化</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">经济数据结果</label>
+                            <select id="economic-data-result" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="positive">正面</option>
+                                <option value="neutral">中性</option>
+                                <option value="negative">负面</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">策略在正面数据下的成功率</label>
+                            <input type="number" id="success-given-positive" min="0" max="1" step="0.01" value="0.8" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">策略在负面数据下的成功率</label>
+                            <input type="number" id="success-given-negative" min="0" max="1" step="0.01" value="0.4" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="mb-4">
+                                <i class="fa fa-line-chart text-primary text-6xl"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-gray-800 mb-2">金融投资贝叶斯决策</h4>
+                            <p class="text-gray-600">基于贝叶斯定理，结合市场先验信息和新的经济数据，更新投资策略的成功概率。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button id="update-probability" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 更新概率
+                    </button>
+                    <button id="reset-experiment" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 实验结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">概率分析</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">策略先验成功率 (P(S)):</span>
+                                <span id="prior-success-value" class="font-medium">60.00%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">经济数据正面概率 (P(D)):</span>
+                                <span id="data-positive-probability" class="font-medium">33.33%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">策略在正面数据下的成功率 (P(D|S)):</span>
+                                <span id="success-given-positive-value" class="font-medium">80.00%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">策略在负面数据下的成功率 (P(¬D|S)):</span>
+                                <span id="success-given-negative-value" class="font-medium">40.00%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-3">后验概率</h4>
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <div class="flex items-center mb-2">
+                                <div id="posterior-result" class="text-2xl font-bold text-primary">72.00%</div>
+                                <div class="ml-3 px-3 py-1 bg-primary text-white rounded-full text-sm">更新后成功率</div>
+                            </div>
+                            <div class="text-sm text-gray-600">P(S|D) - 给定经济数据下策略成功的概率</div>
+                        </div>
+                        <div class="mt-4 space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">先验成功率:</span>
+                                <span id="prior-success-rate-display" class="font-medium">60.00%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">更新后成功率:</span>
+                                <span id="posterior-success-rate" class="font-medium">72.00%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">成功率变化:</span>
+                                <span id="success-rate-change" class="font-medium text-success">+12.00%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 概率计算过程 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">概率计算过程</h4>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="space-y-2 text-sm">
+                            <div><strong>1. 已知参数:</strong></div>
+                            <div class="pl-4">P(S) = 0.6 (策略先验成功率)</div>
+                            <div class="pl-4">P(D|S) = 0.8 (策略在正面数据下的成功率)</div>
+                            <div class="pl-4">P(¬D|S) = 0.4 (策略在负面数据下的成功率)</div>
+                            <div class="pl-4">P(D) = 0.3333 (经济数据正面概率)</div>
+                            <div><strong>2. 计算互补概率:</strong></div>
+                            <div class="pl-4">P(¬S) = 1 - P(S) = 0.4</div>
+                            <div><strong>3. 应用贝叶斯定理计算后验概率:</strong></div>
+                            <div class="pl-4">P(S|D) = [P(D|S) * P(S)] / P(D) = 0.72</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 可视化结果 -->
+                <div>
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">结果可视化</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <canvas id="probability-chart" height="200"></canvas>
+                        </div>
+                        <div>
+                            <canvas id="strategy-comparison-chart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 策略分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">策略分析</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="strategy-card bg-blue-50 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">成长型投资</h4>
+                        <p class="text-sm text-gray-600 mb-3">关注高增长潜力的公司，通常具有较高的风险和回报。</p>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">先验成功率:</span>
+                                <span class="font-medium">60%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">正面数据下成功率:</span>
+                                <span class="font-medium">80%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">负面数据下成功率:</span>
+                                <span class="font-medium">40%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="strategy-card bg-green-50 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">价值型投资</h4>
+                        <p class="text-sm text-gray-600 mb-3">关注被低估的公司，通常具有较低的风险和稳定的回报。</p>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">先验成功率:</span>
+                                <span class="font-medium">65%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">正面数据下成功率:</span>
+                                <span class="font-medium">75%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">负面数据下成功率:</span>
+                                <span class="font-medium">55%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="strategy-card bg-yellow-50 rounded-lg p-4">
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">动量投资</h4>
+                        <p class="text-sm text-gray-600 mb-3">关注价格趋势，通常在市场上涨时表现良好。</p>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">先验成功率:</span>
+                                <span class="font-medium">55%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">正面数据下成功率:</span>
+                                <span class="font-medium">85%</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">负面数据下成功率:</span>
+                                <span class="font-medium">35%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">贝叶斯定理在金融投资中的应用</h4>
+                        <p class="text-gray-600">贝叶斯定理在金融投资中用于结合先验信息和新数据，更新投资策略的成功概率，公式为：</p>
+                        <div class="bg-gray-50 p-3 rounded-lg mt-2">
+                            P(S|D) = [P(D|S) * P(S)] / P(D)
+                        </div>
+                        <p class="text-gray-600 mt-2">其中，P(S|D)是给定经济数据下策略成功的概率，P(D|S)是策略成功时经济数据为正面的概率，P(S)是策略的先验成功率，P(D)是经济数据为正面的概率。</p>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">先验信息与后验信息</h4>
+                        <p class="text-gray-600">在金融投资中，先验信息包括历史表现、市场趋势等，新信息包括经济数据、公司财报等。贝叶斯定理帮助投资者根据新信息更新对投资策略的信心。</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>先验概率：基于历史数据的策略成功率</li>
+                            <li>似然度：策略在不同经济环境下的表现</li>
+                            <li>后验概率：结合新信息后更新的策略成功率</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-medium text-gray-800 mb-2">实际应用</h4>
+                        <p class="text-gray-600">贝叶斯定理在金融投资中的实际应用包括：</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-gray-600">
+                            <li>投资策略评估</li>
+                            <li>风险评估</li>
+                            <li>投资组合优化</li>
+                            <li>市场预测</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        贝叶斯定理在投资中的应用
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何评估投资策略的成功率
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        经济数据对投资决策的影响
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验逻辑
+        let probabilityChart = null;
+        let strategyComparisonChart = null;
+
+        // 初始化图表
+        function initCharts() {
+            // 概率分析图表
+            const probabilityCtx = document.getElementById('probability-chart').getContext('2d');
+            probabilityChart = new Chart(probabilityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['先验成功率', '后验成功率', '成功率变化'],
+                    datasets: [{
+                        label: '概率值',
+                        data: [0.6, 0.72, 0.12],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(245, 158, 11, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: '成功率分析'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            title: {
+                                display: true,
+                                text: '概率值'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 策略比较图表
+            const strategyComparisonCtx = document.getElementById('strategy-comparison-chart').getContext('2d');
+            strategyComparisonChart = new Chart(strategyComparisonCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['先验成功率', '正面数据下成功率', '负面数据下成功率', '风险承受能力', '收益潜力'],
+                    datasets: [{
+                        label: '成长型投资',
+                        data: [0.6, 0.8, 0.4, 0.8, 0.9],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                    }, {
+                        label: '价值型投资',
+                        data: [0.65, 0.75, 0.55, 0.4, 0.6],
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(16, 185, 129, 1)'
+                    }, {
+                        label: '动量投资',
+                        data: [0.55, 0.85, 0.35, 0.7, 0.8],
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(245, 158, 11, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: '策略比较'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 1
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新概率
+        function updateProbability() {
+            const priorSuccessRate = parseFloat(document.getElementById('prior-success-rate').value);
+            const successGivenPositive = parseFloat(document.getElementById('success-given-positive').value);
+            const successGivenNegative = parseFloat(document.getElementById('success-given-negative').value);
+            const economicDataResult = document.getElementById('economic-data-result').value;
+
+            // 假设经济数据正面、中性、负面的概率分别为 1/3
+            const dataPositiveProbability = 1/3;
+            const dataNeutralProbability = 1/3;
+            const dataNegativeProbability = 1/3;
+
+            // 计算后验概率
+            let posteriorProbability;
+            if (economicDataResult === 'positive') {
+                posteriorProbability = (successGivenPositive * priorSuccessRate) / dataPositiveProbability;
+            } else if (economicDataResult === 'negative') {
+                posteriorProbability = (successGivenNegative * priorSuccessRate) / dataNegativeProbability;
+            } else { // neutral
+                // 对于中性数据，使用先验概率和两种情况的平均值
+                const neutralSuccessRate = (successGivenPositive + successGivenNegative) / 2;
+                posteriorProbability = (neutralSuccessRate * priorSuccessRate) / dataNeutralProbability;
+            }
+
+            // 确保概率在合理范围内
+            posteriorProbability = Math.min(Math.max(posteriorProbability, 0), 1);
+
+            // 计算成功率变化
+            const successRateChange = posteriorProbability - priorSuccessRate;
+
+            // 更新结果
+            document.getElementById('prior-success-value').textContent = (priorSuccessRate * 100).toFixed(2) + '%';
+            document.getElementById('data-positive-probability').textContent = (dataPositiveProbability * 100).toFixed(2) + '%';
+            document.getElementById('success-given-positive-value').textContent = (successGivenPositive * 100).toFixed(2) + '%';
+            document.getElementById('success-given-negative-value').textContent = (successGivenNegative * 100).toFixed(2) + '%';
+            document.getElementById('prior-success-rate-display').textContent = (priorSuccessRate * 100).toFixed(2) + '%';
+            document.getElementById('posterior-success-rate').textContent = (posteriorProbability * 100).toFixed(2) + '%';
+            document.getElementById('success-rate-change').textContent = (successRateChange >= 0 ? '+' : '') + (successRateChange * 100).toFixed(2) + '%';
+            document.getElementById('success-rate-change').className = successRateChange >= 0 ? 'font-medium text-success' : 'font-medium text-danger';
+            document.getElementById('posterior-result').textContent = (posteriorProbability * 100).toFixed(2) + '%';
+
+            // 更新图表
+            updateCharts(priorSuccessRate, posteriorProbability, successRateChange);
+        }
+
+        // 更新图表
+        function updateCharts(priorSuccessRate, posteriorProbability, successRateChange) {
+            // 更新概率分析图表
+            probabilityChart.data.datasets[0].data = [priorSuccessRate, posteriorProbability, successRateChange];
+            probabilityChart.update();
+        }
+
+        // 重置实验
+        function resetExperiment() {
+            document.getElementById('investment-strategy').value = 'growth';
+            document.getElementById('prior-success-rate').value = '0.6';
+            document.getElementById('economic-data-type').value = 'gdp';
+            document.getElementById('economic-data-result').value = 'positive';
+            document.getElementById('success-given-positive').value = '0.8';
+            document.getElementById('success-given-negative').value = '0.4';
+            document.getElementById('prior-success-value').textContent = '60.00%';
+            document.getElementById('data-positive-probability').textContent = '33.33%';
+            document.getElementById('success-given-positive-value').textContent = '80.00%';
+            document.getElementById('success-given-negative-value').textContent = '40.00%';
+            document.getElementById('prior-success-rate-display').textContent = '60.00%';
+            document.getElementById('posterior-success-rate').textContent = '72.00%';
+            document.getElementById('success-rate-change').textContent = '+12.00%';
+            document.getElementById('success-rate-change').className = 'font-medium text-success';
+            document.getElementById('posterior-result').textContent = '72.00%';
+
+            // 重置图表
+            updateCharts(0.6, 0.72, 0.12);
+        }
+
+        // 事件监听器
+        document.getElementById('update-probability').addEventListener('click', updateProbability);
+        document.getElementById('reset-experiment').addEventListener('click', resetExperiment);
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', initCharts);
+    </script>
+</body>
+</html>

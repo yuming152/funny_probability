@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>泊松过程模拟 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .shadow-card-hover {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .bg-gradient-secondary {
+                background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            }
+            .bg-gradient-success {
+                background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.8);
+            }
+            .card-border {
+                border: 1px solid rgba(209, 213, 219, 0.5);
+            }
+            .poisson-process {
+                position: relative;
+                height: 200px;
+                border: 2px solid #E5E7EB;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .time-axis {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background: #9CA3AF;
+            }
+            .event {
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: #3B82F6;
+                bottom: 0;
+                transform: translate(-50%, -50%);
+                transition: all 0.5s ease;
+            }
+            .event::after {
+                content: '';
+                position: absolute;
+                top: -20px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 2px;
+                height: 20px;
+                background: #3B82F6;
+            }
+            .event-label {
+                position: absolute;
+                top: -40px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 12px;
+                color: #6B7280;
+                background: white;
+                padding: 2px 6px;
+                border-radius: 10px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="multi-stage-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-sitemap w-5 text-center"></i>
+                    <span>多阶断复合概率实验</span>
+                </a>
+                <a href="bayesian-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-refresh w-5 text-center"></i>
+                    <span>逆概率 / 贝叶斯进阶实验</span>
+                </a>
+                <a href="queuing-theory-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-users w-5 text-center"></i>
+                    <span>排队论 / 随机过程基础实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">调整速率参数 λ，观察泊松过程的事件发生规律。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">泊松过程模拟</h2>
+                    <a href="queuing-theory-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">模拟泊松过程的事件发生过程，分析事件发生的时间间隔、事件计数等特性。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">速率参数 λ (事件/单位时间)</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" id="lambda" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1" min="0.1" max="5" step="0.1">
+                            <span class="text-gray-500">事件/单位时间</span>
+                        </div>
+                        <input type="range" id="lambda-slider" class="w-full mt-2" min="0.1" max="5" step="0.1" value="1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟时间长度</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" id="simulation-time" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="10" min="1" max="30" step="1">
+                            <span class="text-gray-500">单位时间</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟次数</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" id="simulation-count" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" value="1000" min="100" max="5000" step="100">
+                            <span class="text-gray-500">次</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button id="start-simulation" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-play mr-2"></i> 开始模拟
+                    </button>
+                    <button id="reset-simulation" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 泊松过程可视化 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">泊松过程可视化</h3>
+                <div class="poisson-process mb-4" id="poisson-process-visualization">
+                    <div class="time-axis"></div>
+                    <!-- 事件将通过JavaScript动态生成 -->
+                </div>
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        <span id="current-time">当前时间: 0.00</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <span id="event-count">事件计数: 0</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <span id="simulation-status">状态: 就绪</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 事件间隔分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">事件间隔分析</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">事件间隔分布</h4>
+                        <div class="h-64">
+                            <canvas id="interarrival-chart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">事件间隔统计</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">平均间隔时间</span>
+                                <span id="mean-interarrival" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">间隔时间方差</span>
+                                <span id="variance-interarrival" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">理论平均间隔</span>
+                                <span id="theoretical-mean-interarrival" class="font-bold text-primary">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 事件计数分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">事件计数分析</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">事件计数过程</h4>
+                        <div class="h-64">
+                            <canvas id="counting-process-chart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">事件计数分布</h4>
+                        <div class="h-64">
+                            <canvas id="count-distribution-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">计数统计</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">平均事件数</span>
+                                <span id="mean-count" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">事件数方差</span>
+                                <span id="variance-count" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">理论平均事件数</span>
+                                <span id="theoretical-mean-count" class="font-bold text-primary">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-3">泊松分布验证</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">卡方检验统计量</span>
+                                <span id="chi-square" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">p值</span>
+                                <span id="p-value" class="font-bold text-primary">0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-gray-600">分布拟合结果</span>
+                                <span id="fit-result" class="font-bold text-primary">未验证</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">泊松过程的定义</h4>
+                        <p class="text-gray-600">泊松过程是一种计数过程，具有以下特性：</p>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1 mt-2">
+                            <li>独立增量性：不重叠时间区间内的事件数相互独立</li>
+                            <li>平稳增量性：事件数的分布只依赖于时间区间的长度</li>
+                            <li>稀有性：在任意有限时间区间内，事件数是有限的</li>
+                            <li>无记忆性：事件之间的时间间隔服从指数分布</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">泊松分布</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600 mb-2">在长度为 t 的时间区间内，事件数 N(t) 服从参数为 λt 的泊松分布：</p>
+                            <p class="text-gray-600 text-center">P(N(t) = k) = (λt)^k e^(-λt) / k!</p>
+                            <p class="text-gray-600 mt-2">其中 λ 是速率参数，表示单位时间内的平均事件数。</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">指数分布</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-gray-600 mb-2">事件之间的时间间隔 T 服从参数为 λ 的指数分布：</p>
+                            <p class="text-gray-600 text-center">f(t) = λe^(-λt), t ≥ 0</p>
+                            <p class="text-gray-600 mt-2">指数分布的均值和方差均为 1/λ。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实验结论 -->
+            <div class="bg-white rounded-xl shadow-card p-6 card-border">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验结论</h3>
+                <div id="experiment-conclusion" class="text-gray-600">
+                    <p>请运行模拟以查看实验结论。</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50 glass-effect">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        泊松过程的基本性质
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        指数分布的无记忆性
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        泊松分布的应用场景
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 滑块与输入框同步
+        document.getElementById('lambda-slider').addEventListener('input', function() {
+            document.getElementById('lambda').value = this.value;
+        });
+
+        document.getElementById('lambda').addEventListener('input', function() {
+            document.getElementById('lambda-slider').value = this.value;
+        });
+
+        // 图表初始化
+        let interarrivalChart, countingProcessChart, countDistributionChart;
+
+        function initCharts() {
+            // 事件间隔分布图表
+            const interarrivalCtx = document.getElementById('interarrival-chart').getContext('2d');
+            interarrivalChart = new Chart(interarrivalCtx, {
+                type: 'histogram',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '事件间隔分布',
+                        data: [],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 事件计数过程图表
+            const countingProcessCtx = document.getElementById('counting-process-chart').getContext('2d');
+            countingProcessChart = new Chart(countingProcessCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '事件计数',
+                        data: [],
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 事件计数分布图表
+            const countDistributionCtx = document.getElementById('count-distribution-chart').getContext('2d');
+            countDistributionChart = new Chart(countDistributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '实际分布',
+                        data: [],
+                        backgroundColor: 'rgba(249, 115, 22, 0.6)',
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: '理论泊松分布',
+                        data: [],
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 初始化图表
+        window.onload = initCharts;
+
+        // 生成指数分布随机数
+        function exponentialRandom(mean) {
+            return -mean * Math.log(Math.random());
+        }
+
+        // 计算泊松概率
+        function poissonProbability(lambda, k) {
+            return Math.pow(lambda, k) * Math.exp(-lambda) / factorial(k);
+        }
+
+        // 计算阶乘
+        function factorial(n) {
+            if (n === 0 || n === 1) return 1;
+            return n * factorial(n - 1);
+        }
+
+        // 模拟参数
+        let simulationInterval;
+        let currentTime = 0;
+        let eventCount = 0;
+        let nextEventTime = 0;
+        let interarrivalTimes = [];
+        let countingProcess = [];
+        let countDistributions = [];
+
+        // 开始模拟
+        document.getElementById('start-simulation').addEventListener('click', function() {
+            // 停止之前的模拟
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+            }
+
+            // 获取参数
+            const lambda = parseFloat(document.getElementById('lambda').value);
+            const simulationTime = parseFloat(document.getElementById('simulation-time').value);
+            const simulationCount = parseInt(document.getElementById('simulation-count').value);
+
+            // 初始化模拟
+            currentTime = 0;
+            eventCount = 0;
+            nextEventTime = exponentialRandom(1 / lambda);
+            interarrivalTimes = [];
+            countingProcess = [];
+            countDistributions = [];
+
+            // 更新理论值显示
+            document.getElementById('theoretical-mean-interarrival').textContent = (1 / lambda).toFixed(4);
+            document.getElementById('theoretical-mean-count').textContent = (lambda * simulationTime).toFixed(4);
+
+            // 清空可视化区域
+            const visualization = document.getElementById('poisson-process-visualization');
+            visualization.innerHTML = '<div class="time-axis"></div>';
+
+            // 更新状态显示
+            document.getElementById('current-time').textContent = `当前时间: ${currentTime.toFixed(2)}`;
+            document.getElementById('event-count').textContent = `事件计数: ${eventCount}`;
+            document.getElementById('simulation-status').textContent = `状态: 运行中`;
+
+            // 开始单次模拟可视化
+            simulationInterval = setInterval(function() {
+                currentTime += 0.1;
+                
+                // 更新当前时间显示
+                document.getElementById('current-time').textContent = `当前时间: ${currentTime.toFixed(2)}`;
+                
+                // 检查是否有事件发生
+                if (currentTime >= nextEventTime) {
+                    eventCount++;
+                    
+                    // 记录事件间隔
+                    if (eventCount > 1) {
+                        interarrivalTimes.push(currentTime - nextEventTime);
+                    }
+                    
+                    // 记录计数过程
+                    countingProcess.push({ time: currentTime, count: eventCount });
+                    
+                    // 创建事件可视化
+                    const event = document.createElement('div');
+                    event.className = 'event';
+                    event.style.left = `${(currentTime / simulationTime) * 100}%`;
+                    
+                    const eventLabel = document.createElement('div');
+                    eventLabel.className = 'event-label';
+                    eventLabel.textContent = eventCount;
+                    
+                    visualization.appendChild(event);
+                    visualization.appendChild(eventLabel);
+                    
+                    // 安排下一次事件
+                    nextEventTime = currentTime + exponentialRandom(1 / lambda);
+                    
+                    // 更新事件计数显示
+                    document.getElementById('event-count').textContent = `事件计数: ${eventCount}`;
+                }
+                
+                // 检查模拟是否结束
+                if (currentTime >= simulationTime) {
+                    clearInterval(simulationInterval);
+                    
+                    // 进行多次模拟以获取分布
+                    for (let i = 0; i < simulationCount; i++) {
+                        let simEventCount = 0;
+                        let simCurrentTime = 0;
+                        let simNextEventTime = exponentialRandom(1 / lambda);
+                        
+                        while (simCurrentTime < simulationTime) {
+                            simCurrentTime = simNextEventTime;
+                            if (simCurrentTime < simulationTime) {
+                                simEventCount++;
+                                simNextEventTime = simCurrentTime + exponentialRandom(1 / lambda);
+                            }
+                        }
+                        
+                        countDistributions.push(simEventCount);
+                    }
+                    
+                    // 计算事件间隔统计
+                    if (interarrivalTimes.length > 0) {
+                        const meanInterarrival = interarrivalTimes.reduce((a, b) => a + b, 0) / interarrivalTimes.length;
+                        const varianceInterarrival = interarrivalTimes.reduce((a, b) => a + Math.pow(b - meanInterarrival, 2), 0) / interarrivalTimes.length;
+                        
+                        document.getElementById('mean-interarrival').textContent = meanInterarrival.toFixed(4);
+                        document.getElementById('variance-interarrival').textContent = varianceInterarrival.toFixed(4);
+                        
+                        // 更新事件间隔分布图表
+                        const maxInterval = Math.max(...interarrivalTimes);
+                        const binWidth = maxInterval / 10;
+                        const bins = [];
+                        const binCounts = [];
+                        
+                        for (let i = 0; i < 10; i++) {
+                            bins.push(`${(i * binWidth).toFixed(1)}-${((i + 1) * binWidth).toFixed(1)}`);
+                            binCounts.push(0);
+                        }
+                        
+                        interarrivalTimes.forEach(interval => {
+                            const binIndex = Math.min(Math.floor(interval / binWidth), 9);
+                            binCounts[binIndex]++;
+                        });
+                        
+                        interarrivalChart.data.labels = bins;
+                        interarrivalChart.data.datasets[0].data = binCounts;
+                        interarrivalChart.update();
+                    }
+                    
+                    // 更新计数过程图表
+                    const timeLabels = [];
+                    const countData = [];
+                    countingProcess.forEach(point => {
+                        timeLabels.push(point.time.toFixed(1));
+                        countData.push(point.count);
+                    });
+                    
+                    countingProcessChart.data.labels = timeLabels;
+                    countingProcessChart.data.datasets[0].data = countData;
+                    countingProcessChart.update();
+                    
+                    // 计算计数统计
+                    const meanCount = countDistributions.reduce((a, b) => a + b, 0) / countDistributions.length;
+                    const varianceCount = countDistributions.reduce((a, b) => a + Math.pow(b - meanCount, 2), 0) / countDistributions.length;
+                    
+                    document.getElementById('mean-count').textContent = meanCount.toFixed(4);
+                    document.getElementById('variance-count').textContent = varianceCount.toFixed(4);
+                    
+                    // 更新计数分布图表
+                    const maxCount = Math.max(...countDistributions);
+                    const countLabels = [];
+                    const actualCounts = [];
+                    const theoreticalCounts = [];
+                    
+                    for (let i = 0; i <= maxCount; i++) {
+                        countLabels.push(i);
+                        actualCounts.push(countDistributions.filter(count => count === i).length);
+                        theoreticalCounts.push(Math.round(poissonProbability(lambda * simulationTime, i) * simulationCount));
+                    }
+                    
+                    countDistributionChart.data.labels = countLabels;
+                    countDistributionChart.data.datasets[0].data = actualCounts;
+                    countDistributionChart.data.datasets[1].data = theoreticalCounts;
+                    countDistributionChart.update();
+                    
+                    // 简化的卡方检验
+                    let chiSquare = 0;
+                    for (let i = 0; i <= maxCount; i++) {
+                        const expected = poissonProbability(lambda * simulationTime, i) * simulationCount;
+                        if (expected > 5) {
+                            const observed = actualCounts[i];
+                            chiSquare += Math.pow(observed - expected, 2) / expected;
+                        }
+                    }
+                    
+                    // 简化的p值计算（实际应用中应使用卡方分布表）
+                    const pValue = Math.exp(-chiSquare / 2);
+                    
+                    document.getElementById('chi-square').textContent = chiSquare.toFixed(4);
+                    document.getElementById('p-value').textContent = pValue.toFixed(4);
+                    document.getElementById('fit-result').textContent = pValue > 0.05 ? '拟合良好' : '拟合不佳';
+                    
+                    // 更新实验结论
+                    const conclusion = document.getElementById('experiment-conclusion');
+                    conclusion.innerHTML = `
+                        <p>模拟时间长度：${simulationTime}单位时间</p>
+                        <p>速率参数 λ：${lambda}事件/单位时间</p>
+                        <p>模拟次数：${simulationCount}次</p>
+                        <p class="mt-2">事件间隔分析：</p>
+                        <ul class="list-disc list-inside">
+                            <li>平均间隔时间：${document.getElementById('mean-interarrival').textContent}</li>
+                            <li>理论平均间隔：${document.getElementById('theoretical-mean-interarrival').textContent}</li>
+                        </ul>
+                        <p class="mt-2">事件计数分析：</p>
+                        <ul class="list-disc list-inside">
+                            <li>平均事件数：${document.getElementById('mean-count').textContent}</li>
+                            <li>理论平均事件数：${document.getElementById('theoretical-mean-count').textContent}</li>
+                        </ul>
+                        <p class="mt-2">分布拟合：${document.getElementById('fit-result').textContent}</p>
+                        <p class="mt-4 font-medium">结论：泊松过程的事件间隔服从指数分布，事件计数服从泊松分布。当模拟次数足够多时，实际分布与理论分布高度一致。</p>
+                    `;
+                    
+                    document.getElementById('simulation-status').textContent = `状态: 完成`;
+                }
+            }, 100);
+        });
+
+        // 重置模拟
+        document.getElementById('reset-simulation').addEventListener('click', function() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+            }
+            
+            // 重置参数
+            document.getElementById('lambda').value = 1;
+            document.getElementById('lambda-slider').value = 1;
+            document.getElementById('simulation-time').value = 10;
+            document.getElementById('simulation-count').value = 1000;
+            
+            // 重置显示
+            document.getElementById('current-time').textContent = `当前时间: 0.00`;
+            document.getElementById('event-count').textContent = `事件计数: 0`;
+            document.getElementById('simulation-status').textContent = `状态: 就绪`;
+            
+            document.getElementById('mean-interarrival').textContent = '0.00';
+            document.getElementById('variance-interarrival').textContent = '0.00';
+            document.getElementById('theoretical-mean-interarrival').textContent = '0.00';
+            
+            document.getElementById('mean-count').textContent = '0.00';
+            document.getElementById('variance-count').textContent = '0.00';
+            document.getElementById('theoretical-mean-count').textContent = '0.00';
+            
+            document.getElementById('chi-square').textContent = '0.00';
+            document.getElementById('p-value').textContent = '0.00';
+            document.getElementById('fit-result').textContent = '未验证';
+            
+            // 清空可视化区域
+            const visualization = document.getElementById('poisson-process-visualization');
+            visualization.innerHTML = '<div class="time-axis"></div>';
+            
+            // 重置图表
+            interarrivalChart.data.labels = [];
+            interarrivalChart.data.datasets[0].data = [];
+            interarrivalChart.update();
+            
+            countingProcessChart.data.labels = [];
+            countingProcessChart.data.datasets[0].data = [];
+            countingProcessChart.update();
+            
+            countDistributionChart.data.labels = [];
+            countDistributionChart.data.datasets[0].data = [];
+            countDistributionChart.data.datasets[1].data = [];
+            countDistributionChart.update();
+            
+            // 重置实验结论
+            document.getElementById('experiment-conclusion').innerHTML = '<p>请运行模拟以查看实验结论。</p>';
+        });
+    </script>
+</body>
+</html>

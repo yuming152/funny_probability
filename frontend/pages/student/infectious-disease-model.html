@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>传染病传播模型 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .infection-node {
+                transition: all 0.3s ease;
+            }
+            .infection-node:hover {
+                transform: scale(1.1);
+            }
+            .grid-container {
+                display: grid;
+                grid-template-columns: repeat(10, 1fr);
+                gap: 4px;
+            }
+            .grid-node {
+                aspect-ratio: 1;
+                border-radius: 4px;
+                transition: all 0.3s ease;
+            }
+            .grid-node.susceptible {
+                background-color: #E0E7FF;
+            }
+            .grid-node.infected {
+                background-color: #FEE2E2;
+            }
+            .grid-node.recovered {
+                background-color: #D1FAE5;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="non-independent-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-virus w-5 text-center"></i>
+                    <span>非独立重复实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">调整参数，观察传染病传播过程，分析感染人数分布。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">传染病传播模型</h2>
+                    <a href="non-independent-experiments.html" class="flex items-center text-primary hover:text-secondary transition-all-300">
+                        <i class="fa fa-arrow-left mr-2"></i> 返回实验列表
+                    </a>
+                </div>
+                <p class="text-gray-600">从 1 个感染者开始，每轮接触 2 人，感染概率随接触次数递减，模拟多轮后感染人数分布。</p>
+            </div>
+
+            <!-- 实验参数设置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">实验参数设置</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">初始感染人数</label>
+                        <input type="number" id="initial-infections" min="1" max="10" value="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">每轮接触人数</label>
+                        <input type="number" id="contacts-per-round" min="1" max="5" value="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">基础感染概率 (%)</label>
+                        <input type="number" id="base-infection-rate" min="1" max="100" value="50" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">感染概率递减系数</label>
+                        <input type="number" id="decay-factor" min="0.1" max="1" step="0.1" value="0.8" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">模拟轮数</label>
+                        <input type="number" id="simulation-rounds" min="1" max="50" value="10" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">总人口数</label>
+                        <input type="number" id="total-population" min="50" max="200" value="100" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4">
+                    <button id="start-simulation" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-play mr-2"></i> 开始模拟
+                    </button>
+                    <button id="reset-simulation" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all-300 font-medium flex items-center">
+                        <i class="fa fa-refresh mr-2"></i> 重置
+                    </button>
+                </div>
+            </div>
+
+            <!-- 模拟结果 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- 感染传播可视化 -->
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">感染传播可视化</h3>
+                    <div class="mb-4">
+                        <div class="flex space-x-4 mb-2">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-blue-100 rounded mr-2"></div>
+                                <span class="text-sm text-gray-600">易感者</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-red-100 rounded mr-2"></div>
+                                <span class="text-sm text-gray-600">感染者</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 bg-green-100 rounded mr-2"></div>
+                                <span class="text-sm text-gray-600">康复者</span>
+                            </div>
+                        </div>
+                        <div class="grid-container mb-4" id="infection-grid"></div>
+                        <div class="text-center text-sm text-gray-600" id="current-round">当前轮次: 0</div>
+                    </div>
+                    <div class="flex justify-center">
+                        <button id="next-round" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-all-300 font-medium flex items-center">
+                            <i class="fa fa-step-forward mr-2"></i> 下一轮
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 感染人数趋势 -->
+                <div class="bg-white rounded-xl shadow-card p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">感染人数趋势</h3>
+                    <div class="h-64">
+                        <canvas id="infection-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 统计结果 -->
+            <div class="bg-white rounded-xl shadow-card p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">统计结果</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-primary" id="total-infected">0</div>
+                        <div class="text-sm text-gray-600">总感染人数</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-success" id="total-recovered">0</div>
+                        <div class="text-sm text-gray-600">总康复人数</div>
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-warning" id="peak-infection">0</div>
+                        <div class="text-sm text-gray-600">峰值感染人数</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-purple-600" id="infection-rate">0%</div>
+                        <div class="text-sm text-gray-600">感染率</div>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <h4 class="font-bold text-gray-800 mb-2">感染概率变化</h4>
+                    <div class="h-40">
+                        <canvas id="probability-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 理论分析 -->
+            <div class="bg-white rounded-xl shadow-card p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">理论分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">非独立传播模型</h4>
+                        <p class="text-gray-600">本实验模拟了传染病的非独立传播过程，其中感染概率随接触次数递减，体现了现实中病原体传播能力的衰减。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">概率递减模型</h4>
+                        <p class="text-gray-600">感染概率计算公式：P(n) = P0 * (decay)^(n-1)，其中 P0 是基础感染概率，decay 是递减系数，n 是接触次数。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800 mb-2">感染人数分布</h4>
+                        <p class="text-gray-600">通过模拟可以观察到感染人数的分布情况，包括峰值感染时间、总感染人数等重要指标。</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        传染病传播模型的数学原理
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何计算感染概率
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        感染人数分布的分析方法
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 实验逻辑
+        let infectionGrid = [];
+        let currentRound = 0;
+        let totalInfected = 0;
+        let totalRecovered = 0;
+        let peakInfection = 0;
+        let infectionData = [];
+        let probabilityData = [];
+        let infectionChart = null;
+        let probabilityChart = null;
+
+        // 初始化网格
+        function initializeGrid() {
+            const grid = document.getElementById('infection-grid');
+            const totalPopulation = parseInt(document.getElementById('total-population').value);
+            const gridSize = Math.ceil(Math.sqrt(totalPopulation));
+            
+            grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            grid.innerHTML = '';
+            infectionGrid = [];
+            
+            for (let i = 0; i < totalPopulation; i++) {
+                const node = document.createElement('div');
+                node.className = 'grid-node susceptible';
+                node.dataset.state = 'susceptible';
+                grid.appendChild(node);
+                infectionGrid.push('susceptible');
+            }
+            
+            // 设置初始感染者
+            const initialInfections = parseInt(document.getElementById('initial-infections').value);
+            for (let i = 0; i < initialInfections; i++) {
+                const randomIndex = Math.floor(Math.random() * totalPopulation);
+                infectionGrid[randomIndex] = 'infected';
+                grid.children[randomIndex].className = 'grid-node infected';
+                grid.children[randomIndex].dataset.state = 'infected';
+            }
+            
+            totalInfected = initialInfections;
+            totalRecovered = 0;
+            peakInfection = initialInfections;
+            currentRound = 0;
+            infectionData = [];
+            probabilityData = [];
+            
+            updateStatistics();
+            updateCharts();
+            document.getElementById('current-round').textContent = `当前轮次: ${currentRound}`;
+        }
+
+        // 更新统计信息
+        function updateStatistics() {
+            document.getElementById('total-infected').textContent = totalInfected;
+            document.getElementById('total-recovered').textContent = totalRecovered;
+            document.getElementById('peak-infection').textContent = peakInfection;
+            const totalPopulation = parseInt(document.getElementById('total-population').value);
+            const infectionRate = ((totalInfected / totalPopulation) * 100).toFixed(1);
+            document.getElementById('infection-rate').textContent = `${infectionRate}%`;
+        }
+
+        // 更新图表
+        function updateCharts() {
+            const ctx1 = document.getElementById('infection-chart').getContext('2d');
+            const ctx2 = document.getElementById('probability-chart').getContext('2d');
+            
+            if (infectionChart) {
+                infectionChart.destroy();
+            }
+            
+            if (probabilityChart) {
+                probabilityChart.destroy();
+            }
+            
+            infectionChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: infectionData.length}, (_, i) => i),
+                    datasets: [{
+                        label: '感染人数',
+                        data: infectionData,
+                        borderColor: '#EF4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '人数'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '轮次'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            probabilityChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: probabilityData.length}, (_, i) => i),
+                    datasets: [{
+                        label: '感染概率',
+                        data: probabilityData,
+                        borderColor: '#1E40AF',
+                        backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: '概率 (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '接触次数'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 执行一轮模拟
+        function runOneRound() {
+            const grid = document.getElementById('infection-grid');
+            const contactsPerRound = parseInt(document.getElementById('contacts-per-round').value);
+            const baseInfectionRate = parseInt(document.getElementById('base-infection-rate').value) / 100;
+            const decayFactor = parseFloat(document.getElementById('decay-factor').value);
+            const totalPopulation = parseInt(document.getElementById('total-population').value);
+            
+            let newInfections = 0;
+            
+            // 找出所有感染者
+            const infectedIndices = [];
+            for (let i = 0; i < infectionGrid.length; i++) {
+                if (infectionGrid[i] === 'infected') {
+                    infectedIndices.push(i);
+                }
+            }
+            
+            // 每个感染者接触其他人
+            infectedIndices.forEach(infectedIndex => {
+                for (let j = 0; j < contactsPerRound; j++) {
+                    // 随机选择一个易感者
+                    let targetIndex;
+                    do {
+                        targetIndex = Math.floor(Math.random() * totalPopulation);
+                    } while (infectionGrid[targetIndex] !== 'susceptible' || targetIndex === infectedIndex);
+                    
+                    // 计算感染概率（随接触次数递减）
+                    const contactCount = j + 1;
+                    const infectionProbability = baseInfectionRate * Math.pow(decayFactor, contactCount - 1);
+                    
+                    // 记录概率变化
+                    if (j === 0) {
+                        probabilityData.push(infectionProbability * 100);
+                    }
+                    
+                    // 随机感染
+                    if (Math.random() < infectionProbability) {
+                        infectionGrid[targetIndex] = 'infected';
+                        grid.children[targetIndex].className = 'grid-node infected';
+                        grid.children[targetIndex].dataset.state = 'infected';
+                        newInfections++;
+                    }
+                }
+                
+                // 感染者康复
+                infectionGrid[infectedIndex] = 'recovered';
+                grid.children[infectedIndex].className = 'grid-node recovered';
+                grid.children[infectedIndex].dataset.state = 'recovered';
+                totalRecovered++;
+            });
+            
+            totalInfected = newInfections;
+            peakInfection = Math.max(peakInfection, totalInfected);
+            currentRound++;
+            
+            infectionData.push(totalInfected);
+            updateStatistics();
+            updateCharts();
+            document.getElementById('current-round').textContent = `当前轮次: ${currentRound}`;
+        }
+
+        // 开始模拟
+        document.getElementById('start-simulation').addEventListener('click', function() {
+            initializeGrid();
+            const simulationRounds = parseInt(document.getElementById('simulation-rounds').value);
+            
+            let round = 0;
+            const interval = setInterval(() => {
+                runOneRound();
+                round++;
+                if (round >= simulationRounds) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        });
+
+        // 重置模拟
+        document.getElementById('reset-simulation').addEventListener('click', initializeGrid);
+
+        // 下一轮
+        document.getElementById('next-round').addEventListener('click', runOneRound);
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', initializeGrid);
+    </script>
+</body>
+</html>

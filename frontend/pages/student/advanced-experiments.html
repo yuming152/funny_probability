@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>进阶型验证实验 - 学生端</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E40AF', // 蓝色 - 学术严谨
+                        secondary: '#F97316', // 橙色 - 互动活力
+                        accent: '#3B82F6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-card {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            }
+            .sidebar-active {
+                background-color: rgba(30, 64, 175, 0.1);
+                color: #1E40AF;
+                font-weight: 500;
+            }
+            .experiment-card {
+                transition: all 0.3s ease;
+                position: relative;
+                z-index: 10;
+                pointer-events: auto;
+            }
+            .experiment-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                z-index: 20;
+            }
+            .tree-node {
+                position: relative;
+                transition: all 0.3s ease;
+                z-index: 10;
+                pointer-events: auto;
+            }
+            .tree-node:hover {
+                transform: translateY(-2px);
+                z-index: 20;
+            }
+            .tree-popup {
+                position: absolute;
+                top: 50%;
+                left: 100%;
+                margin-left: 1rem;
+                margin-top: -10rem;
+                z-index: 99999;
+                background: white;
+                border-radius: 0.75rem;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                padding: 1rem;
+                min-width: 20rem;
+                border: 1px solid rgba(209, 213, 219, 0.5);
+                max-height: 80vh;
+                overflow-y: auto;
+                pointer-events: auto;
+                backdrop-filter: blur(8px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-md z-10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <button id="mobile-menu-btn" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-all-300 mr-2">
+                    <i class="fa fa-bars text-gray-600"></i>
+                </button>
+                <div class="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <i class="fa fa-line-chart text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">邮数工坊 - 学生端</h1>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="relative">
+                    <button class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-all-300">
+                        <i class="fa fa-bell text-gray-600"></i>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-danger rounded-full"></span>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-primary font-medium">李</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-gray-700 font-medium">李明</span>
+                        <div class="text-xs text-gray-500">学号: 2023001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="flex h-[calc(100vh-73px)]">
+        <!-- 左侧功能菜单 -->
+        <aside id="sidebar" class="w-64 bg-white shadow-md p-4 flex flex-col md:block hidden">
+            <nav class="space-y-1">
+                <a href="student.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-home w-5 text-center"></i>
+                    <span>学习路径</span>
+                </a>
+                <a href="probability-experiment-library.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-flask w-5 text-center"></i>
+                    <span>概率实验库</span>
+                </a>
+                <a href="advanced-experiments.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg sidebar-active">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>进阶型验证实验</span>
+                </a>
+                <a href="student-experiment.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cogs w-5 text-center"></i>
+                    <span>实验操作</span>
+                </a>
+                <a href="student-exercise.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-pencil w-5 text-center"></i>
+                    <span>习题练习</span>
+                </a>
+                <a href="student-review.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-book w-5 text-center"></i>
+                    <span>知识点复习</span>
+                </a>
+                <a href="student-ai-assistant.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-magic w-5 text-center"></i>
+                    <span>AI学习助手</span>
+                </a>
+                <a href="student-achievements.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-trophy w-5 text-center"></i>
+                    <span>学习成就</span>
+                </a>
+                <a href="student-settings.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-all-300">
+                    <i class="fa fa-cog w-5 text-center"></i>
+                    <span>设置</span>
+                </a>
+            </nav>
+            <div class="mt-auto pt-4 border-t border-gray-200">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-medium text-primary mb-2">使用提示</h4>
+                    <p class="text-sm text-gray-600">选择进阶型实验，挑战更复杂的概率问题。</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 中间实验操作区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">进阶型验证实验</h2>
+                <p class="text-gray-600">挑战复杂的概率问题，深入理解概率理论的应用。</p>
+            </div>
+
+            <!-- 实验类型卡片 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">实验类型</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 一、多阶段复合概率实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="multi-stage">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-random text-primary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">多阶段复合概率实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">多阶段不放回摸球、分层抽检复合、多轮博弈概率</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="multi-stage-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="multi-stage-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    多阶段不放回摸球
+                                </a>
+                                <a href="multi-stage-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    分层抽检复合
+                                </a>
+                                <a href="multi-stage-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    多轮博弈概率
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 二、非独立重复实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="non-independent">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-virus text-danger text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">非独立重复实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">传染病传播模型、记忆性抽检、股票涨跌序列</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="non-independent-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="non-independent-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    传染病传播模型
+                                </a>
+                                <a href="non-independent-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    记忆性抽检
+                                </a>
+                                <a href="non-independent-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    股票涨跌序列
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 三、高维随机变量联合实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="high-dimensional">
+                        <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-cube text-teal-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">高维随机变量联合实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">三维空间随机取点、多产品质量指标、多轮骰子和分布</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="high-dimensional-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="high-dimensional-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    三维空间随机取点
+                                </a>
+                                <a href="high-dimensional-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    多产品质量指标
+                                </a>
+                                <a href="high-dimensional-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    多轮骰子和分布
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 四、稀有事件与小概率事件的复合实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="rare-events">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-rocket text-purple-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">稀有事件与小概率事件的复合实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">罕见疾病筛查、保险理赔复合、航天系统可靠性</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="rare-events-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="rare-events-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    罕见疾病筛查
+                                </a>
+                                <a href="rare-events-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    保险理赔复合
+                                </a>
+                                <a href="rare-events-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    航天系统可靠性
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 五、含随机数或随机区间的概率实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="random-interval">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-ruler text-success text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">含随机数或随机区间的概率实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">随机区间覆盖、蒙特卡洛积分、随机数生成检验</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="random-interval-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="random-interval-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    随机区间覆盖
+                                </a>
+                                <a href="random-interval-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    蒙特卡洛积分
+                                </a>
+                                <a href="random-interval-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    随机数生成检验
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 六、大数定律 / 中心极限定理的进阶验证实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="limit-theorem">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-balance-scale text-primary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">大数定律 / 中心极限定理的进阶验证实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">非独立同分布大数定律、重尾分布中心极限、多变量中心极限</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="limit-theorem-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="limit-theorem-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    非独立同分布大数定律
+                                </a>
+                                <a href="limit-theorem-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    重尾分布中心极限
+                                </a>
+                                <a href="limit-theorem-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    多变量中心极限
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 七、逆概率 / 贝叶斯进阶实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="bayesian">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-database text-purple-600 text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">逆概率 / 贝叶斯进阶实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">多源信息融合、贝叶斯估计、动态贝叶斯网络</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="bayesian-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="bayesian-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    多源信息融合
+                                </a>
+                                <a href="bayesian-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    贝叶斯估计
+                                </a>
+                                <a href="bayesian-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    动态贝叶斯网络
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 八、排队论 / 随机过程基础实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="queueing">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-users text-success text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">排队论 / 随机过程基础实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">M/M/1 排队、布朗运动路径、泊松过程计数</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="queueing-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="queuing-theory-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    M/M/1 排队
+                                </a>
+                                <a href="queuing-theory-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    布朗运动路径
+                                </a>
+                                <a href="queuing-theory-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    泊松过程计数
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 九、概率不等式的构造与验证实验 -->
+                    <div class="tree-node bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer experiment-card" data-type="inequality">
+                        <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa fa-balance-scale text-secondary text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">概率不等式的构造与验证实验</h4>
+                        <p class="text-sm text-gray-600 mb-4">切比雪夫不等式验证、马尔可夫不等式应用、柯西-施瓦茨不等式构造</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">3个实验</span>
+                            <i class="fa fa-chevron-right text-gray-400"></i>
+                        </div>
+                        <div class="inequality-tree hidden tree-popup">
+                            <h5 class="font-bold text-gray-800 mb-3">实验列表</h5>
+                            <div class="space-y-2">
+                                <a href="probability-inequality-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    切比雪夫不等式验证
+                                </a>
+                                <a href="probability-inequality-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    马尔可夫不等式应用
+                                </a>
+                                <a href="probability-inequality-experiments.html" class="block bg-white border border-gray-200 rounded-lg p-3 hover:bg-blue-50 transition-all-300">
+                                    柯西-施瓦茨不等式构造
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 推荐实验 -->
+            <div class="mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">推荐实验</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- 多阶段不放回摸球 -->
+                    <a href="multi-stage-experiments.html" class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="aspect-w-16 aspect-h-9 mb-4 rounded-lg overflow-hidden bg-blue-100">
+                            <div class="flex items-center justify-center h-full">
+                                <i class="fa fa-random text-primary text-4xl"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">多阶段不放回摸球</h4>
+                        <p class="text-sm text-gray-600 mb-3">计算复合事件概率，理解多阶段概率计算</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">多阶段复合概率实验</span>
+                            <span class="text-primary hover:text-secondary transition-all-300">
+                                开始实验
+                            </span>
+                        </div>
+                    </a>
+
+                    <!-- 传染病传播模型 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="aspect-w-16 aspect-h-9 mb-4 rounded-lg overflow-hidden bg-red-100">
+                            <div class="flex items-center justify-center h-full">
+                                <i class="fa fa-virus text-danger text-4xl"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">传染病传播模型</h4>
+                        <p class="text-sm text-gray-600 mb-3">模拟病毒传播过程，分析感染人数分布</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">非独立重复实验</span>
+                            <a href="non-independent-experiments.html" class="text-primary hover:text-secondary transition-all-300">
+                                开始实验
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 三维空间随机取点 -->
+                    <div class="bg-white rounded-xl shadow-card p-4 hover:shadow-lg transition-all-300 cursor-pointer">
+                        <div class="aspect-w-16 aspect-h-9 mb-4 rounded-lg overflow-hidden bg-teal-100">
+                            <div class="flex items-center justify-center h-full">
+                                <i class="fa fa-cube text-teal-600 text-4xl"></i>
+                            </div>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">三维空间随机取点</h4>
+                        <p class="text-sm text-gray-600 mb-3">分析三维联合分布，计算空间概率</p>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">高维随机变量联合实验</span>
+                            <a href="high-dimensional-experiments.html" class="text-primary hover:text-secondary transition-all-300">
+                                开始实验
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 底部AI助手 -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="ai-assistant-btn" class="w-16 h-16 bg-gradient-primary rounded-full shadow-lg flex items-center justify-center hover:scale-110 transition-all-300">
+            <i class="fa fa-magic text-white text-2xl"></i>
+        </button>
+        <!-- AI学习助手弹窗 -->
+        <div id="ai-assistant-modal" class="hidden absolute bottom-20 right-0 w-80 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">AI学习助手</h3>
+                <button id="close-ai-modal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="bg-gray-100 rounded-lg p-3 mb-3">
+                    <p class="text-sm text-gray-700">你好，李明！有什么我可以帮助你的吗？</p>
+                </div>
+                <div class="space-y-2 mb-4">
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        如何选择适合的进阶实验？
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        多阶段复合概率的计算方法
+                    </button>
+                    <button class="w-full text-left px-3 py-2 bg-blue-50 text-primary rounded-lg hover:bg-blue-100 transition-all-300 text-sm">
+                        推荐适合我的进阶实验
+                    </button>
+                </div>
+                <div class="flex items-center">
+                    <input type="text" class="flex-1 border border-gray-300 rounded-l-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="输入你的问题...">
+                    <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-all-300">
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 移动端菜单控制
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+        });
+
+        // 点击侧边栏外部关闭侧边栏（移动端）
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (window.innerWidth < 768 && !sidebar.contains(event.target) && !mobileMenuBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+            }
+        });
+
+        // AI助手弹窗控制
+        document.getElementById('ai-assistant-btn').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.toggle('hidden');
+        });
+
+        document.getElementById('close-ai-modal').addEventListener('click', function() {
+            const modal = document.getElementById('ai-assistant-modal');
+            modal.classList.add('hidden');
+        });
+
+        // 点击其他地方关闭AI助手弹窗
+        document.addEventListener('click', function(event) {
+            const aiBtn = document.getElementById('ai-assistant-btn');
+            const aiModal = document.getElementById('ai-assistant-modal');
+            if (!aiBtn.contains(event.target) && !aiModal.contains(event.target)) {
+                aiModal.classList.add('hidden');
+            }
+        });
+
+        // 树状图交互
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为每个实验类型添加点击事件
+            document.querySelectorAll('.experiment-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const type = this.getAttribute('data-type');
+                    const tree = this.querySelector(`.${type}-tree`);
+                    
+                    // 切换当前树状图的显示状态
+                    tree.classList.toggle('hidden');
+                    
+                    // 关闭其他树状图
+                    document.querySelectorAll('.tree-popup').forEach(otherTree => {
+                        if (otherTree !== tree) {
+                            otherTree.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // 点击其他地方关闭树状图
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.experiment-card')) {
+                    document.querySelectorAll('.tree-popup').forEach(tree => {
+                        tree.classList.add('hidden');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
